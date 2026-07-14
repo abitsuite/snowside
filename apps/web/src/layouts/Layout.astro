@@ -1,23 +1,27 @@
+---
+// apps/web/src/layouts/Layout.astro
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+---
 <!doctype html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro Basics</title>
-	</head>
-	<body>
-		<slot />
-	</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet" />
+    <title>Snowside – eCash Sidechain on Avalanche</title>
+    <meta name="description" content="Native BTC gas. Instant USDC bridging. Bitcoin‑security, Avalanche speed." />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <style is:global>
+      /* apps/web/src/styles/global.css is imported directly to ensure Tailwind works */
+    </style>
+    <link rel="stylesheet" href="/src/styles/global.css" />
+  </head>
+  <body class="bg-white text-gray-800">
+    <Nav />
+    <main><slot /></main>
+    <Footer />
+  </body>
 </html>
-
-<style>
-	html,
-	body {
-		margin: 0;
-		width: 100%;
-		height: 100%;
-	}
-</style>
