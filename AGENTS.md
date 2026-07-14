@@ -1,32 +1,20 @@
-# Snowside – AI & Contributor Instructions
+# Snowside – Agent Instructions
 
-## Project context
-Snowside is an Avalanche L1 sidechain for Paul Sztorc’s eCash hard‑fork. This monorepo contains:
-- `apps/web` – Astro‑based landing page (static, Tailwind CSS)
-- Future: `apps/docs`, `packages/l1`, etc.
+## Monorepo structure
+- `packages/web` – React + Vite + Tailwind landing page (deployed to Cloudflare Pages via `master`)
+- `packages/docs` – (future) technical documentation
+- `packages/l1` – (future) Avalanche L1 code
 
-## Tech stack & constraints
-- **Package manager:** pnpm (workspace defined in `pnpm-workspace.yaml`)
-- **Web framework:** Astro (static output, no SSR)
-- **Styling:** Tailwind CSS (via `@astrojs/tailwind` integration)
-- **No server‑side adapters** – the site is a pure static build; do not add `@astrojs/cloudflare` or similar without discussion.
-- **Build command:** `pnpm --filter web run build` (or `pnpm build` from root)
-- **Deployment:** Cloudflare Pages (connected to `master` branch)
+## Core workflow rule
+**Push to production often.** After every meaningful change (e.g., a new section, a style fix, a dark‑mode update), build the project locally, commit from the repo root, and push to `master`. Cloudflare Pages will automatically deploy the latest commit.  
+Never leave uncommitted work sitting locally at the end of a session.
+
+## Build & deploy
+- Web app build command: `cd packages/web && npm run build`
+- Production URL: https://snowside.network
 
 ## File conventions
-1. **Path headers** – every source file (exceptions: `README.md`, configuration files that break with comments, and generated content) must begin with a comment containing the file’s relative path from the monorepo root.
-   - Example Astro: `---\n// apps/web/src/pages/index.astro\n---`
-   - Example JS: `// apps/web/src/config.js`
-   - Use the appropriate comment syntax for the file type.
-2. **Components** – place reusable Astro components in `apps/web/src/components/`.
-3. **Layouts** – use `apps/web/src/layouts/` for page shells.
-4. **Static assets** – images, fonts, etc. go in `apps/web/public/`.
+- All source files should include a comment at the very top with the file’s path relative to the monorepo root (e.g., `// packages/web/src/components/Hero.jsx`).
 
-## Workflow & rules
-- Before adding new directories or packages, discuss first to keep the workspace intentional.
-- Never modify `pnpm-workspace.yaml` without explicit approval.
-- **Session handoff** – at the end of every development session, update `docs/HANDOFF.md` (or create it if missing). This document must reflect the current state of the project, including any newly created files, decisions, and next steps. Always include the date.
-- After completing a change, run `pnpm build` (or `pnpm --filter web run build`) to verify the static site compiles without errors.
-
-## Credits
-The initial repository structure was set up on 2026‑07‑14.
+## Handoff
+- At the end of each session, update `docs/HANDOFF.md` with the current state of the project and next steps.
