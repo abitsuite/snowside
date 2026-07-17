@@ -1,0 +1,96 @@
+---
+// packages/pitch/src/components/Footer.astro
+const year = new Date().getFullYear();
+
+interface FooterLink {
+  label: string;
+  href: string;
+  external?: boolean;
+}
+
+interface FooterColumn {
+  heading: string;
+  links: FooterLink[];
+}
+
+const columns: FooterColumn[] = [
+  {
+    heading: 'Sections',
+    links: [
+      { label: 'Overview', href: '/#overview' },
+      { label: 'How It Works', href: '/#how-it-works' },
+      { label: 'Comparison', href: '/#comparison' },
+      { label: 'Roadmap', href: '/#roadmap' },
+      { label: 'FAQ', href: '/#faq' },
+    ],
+  },
+  {
+    heading: 'Resources',
+    links: [
+      { label: 'NodeRunr', href: 'https://layer1.run', external: true },
+      { label: 'GitHub', href: 'https://github.com/nyusternie/layer1run', external: true },
+      { label: 'Documentation', href: 'https://docs.layer1.run', external: true },
+      { label: 'Avalanche', href: 'https://avax.network', external: true },
+    ],
+  },
+  {
+    heading: 'Contact',
+    links: [
+      { label: 'X / Twitter', href: 'https://x.com/0xShomari', external: true },
+      { label: 'Email', href: 'mailto:shomari@abitsuite.com', external: true },
+    ],
+  },
+];
+---
+
+<footer class="border-t border-white/5 bg-surface-0 px-6 py-16">
+  <div class="mx-auto max-w-6xl">
+    <div class="flex flex-col gap-12 lg:flex-row lg:justify-between">
+      <!-- Brand -->
+      <div class="max-w-xs">
+        <a href="/" class="font-mono text-xl font-bold text-white">
+          ❄️ Snowside
+        </a>
+        <p class="mt-4 font-mono text-sm font-semibold leading-snug text-slate-300">
+          The eCash Sidechain on Avalanche
+        </p>
+        <p class="mt-3 text-sm leading-relaxed text-slate-500">
+          Native BTC gas. USDC bridging. Powered by NodeRunr.
+        </p>
+      </div>
+
+      <!-- Link columns -->
+      <div class="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:gap-12">
+        {columns.map((column) => (
+          <div>
+            <h3 class="font-mono text-sm font-semibold text-white">
+              {column.heading}
+            </h3>
+            <ul class="mt-4 space-y-3">
+              {column.links.map((link) => (
+                <li>
+                  <a
+                    href={link.href}
+                    class="text-sm text-slate-400 transition-colors hover:text-white"
+                    {...(link.external
+                      ? { target: '_blank', rel: 'noopener noreferrer' }
+                      : {})}
+                  >
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <!-- Bottom bar -->
+    <div class="mt-12 border-t border-white/5 pt-8">
+      <div class="font-mono text-sm text-slate-500">
+        © {year} Snowside. Open source. No token. Powered by Avalanche.
+      </div>
+    </div>
+  </div>
+</footer>

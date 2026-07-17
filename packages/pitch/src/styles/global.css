@@ -1,0 +1,52 @@
+/* packages/pitch/src/styles/global.css */
+@import 'tailwindcss';
+
+@theme {
+  /* Avalanche-inspired palette */
+  --color-snow-50:  #f0f7ff;
+  --color-snow-100: #e0f0ff;
+  --color-snow-200: #c8e6f7;
+  --color-snow-300: #a0d0f0;
+  --color-snow-400: #6bb8e0;
+  --color-snow-500: #4a9fc8;
+  --color-snow-600: #2d7da8;
+  --color-snow-700: #1f5e80;
+
+  /* Avalanche purple accent */
+  --color-aval-600: #6b2d5b;
+  --color-aval-700: #562548;
+
+  /* Bitcoin orange */
+  --color-btc: #f7931a;
+
+  /* USDC blue */
+  --color-usdc: #2775ca;
+
+  /* Dark surface scale (for nav/footer/hero) */
+  --color-surface-0: #0a0f1a;
+  --color-surface-1: #121826;
+  --color-surface-2: #1a2335;
+  --color-surface-3: #222d44;
+
+  /* Status */
+  --color-yes: #2ecc71;
+  --color-no:  #e74c3c;
+
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-snow-50);
+  color: #1a2335;
+}
+
+::selection {
+  background-color: var(--color-aval-600);
+  color: white;
+}

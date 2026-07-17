@@ -2,10 +2,13 @@
   "name": "snowside",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "pnpm --filter web run build"
+    "build:web": "pnpm --filter snowside-web run build",
+    "build:pitch": "pnpm --filter @snowside/pitch run build",
+    "build": "pnpm run build:web && pnpm run build:pitch",
+    "dev:web": "pnpm --filter snowside-web run dev",
+    "dev:pitch": "pnpm --filter @snowside/pitch run dev",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",

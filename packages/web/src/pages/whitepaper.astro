@@ -1,0 +1,60 @@
+---
+// packages/web/src/pages/whitepaper.astro
+import Base from '../layouts/Base.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import { WHITEPAPER_VERSION } from '../data/whitepaper/meta';
+
+const title = `Snowside Whitepaper v${WHITEPAPER_VERSION}`;
+const description = `Snowside — A dedicated Avalanche Layer-1 for the eCash hard-fork — Technical Whitepaper v${WHITEPAPER_VERSION}`;
+
+const pdfUrl = '/whitepaper.pdf';
+---
+
+<Base title={title} description={description}>
+  <Nav />
+  <main>
+    <section class="relative pt-20 md:pt-24 pb-16 md:pb-20">
+      <div class="relative max-w-7xl mx-auto px-4 sm:px-6">
+        <div class="py-4 md:py-8">
+          <div class="flex items-center justify-between mb-4">
+            <h1 class="text-2xl md:text-4xl font-bold tracking-tight text-gray-900 dark:text-white">
+              Snowside Whitepaper v{WHITEPAPER_VERSION}
+            </h1>
+
+            <a
+              href={pdfUrl}
+              download={`snowside-whitepaper-v${WHITEPAPER_VERSION}.pdf`}
+              class="inline-flex items-center gap-2 rounded-full bg-aval-600 text-white font-semibold text-sm py-2.5 px-5 hover:bg-aval-700 transition duration-200 whitespace-nowrap"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              Download PDF
+            </a>
+          </div>
+
+          <div class="w-full rounded-lg overflow-hidden shadow-lg border border-gray-200 dark:border-white/10" style="height: calc(100vh - 200px); min-height: 600px;">
+            <iframe
+              src={pdfUrl}
+              title="Snowside Technical Whitepaper"
+              class="w-full h-full border-0"
+              loading="lazy"
+              allow="fullscreen"
+            ></iframe>
+          </div>
+
+          <p class="text-sm text-gray-500 mt-3 text-center">
+            Having trouble viewing?
+            <a href={pdfUrl} class="underline hover:text-gray-700 dark:hover:text-slate-300">
+              Open the PDF directly
+            </a>
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+  <Footer />
+</Base>
