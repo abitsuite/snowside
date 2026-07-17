@@ -31,7 +31,7 @@ const steps = [
   {
     num: '02',
     title: 'Avalanche L1 Consensus',
-    desc: 'A dedicated validator set runs Snowside with sub-second finality. Validators are community-operated via NodeRunr automation.',
+    desc: 'A dedicated validator set runs Snowside with sub-second finality. Validators are community-operated via NodΞRunr automation.',
   },
   {
     num: '03',
@@ -45,8 +45,8 @@ const steps = [
   },
   {
     num: '05',
-    title: 'NodeRunr Automation',
-    desc: 'Validators deploy, monitor, and update via NodeRunr — the open-source daemon that won a $10k retro9000 grant from the Avalanche Foundation.',
+    title: 'NodΞRunr Automation',
+    desc: 'Validators deploy, monitor, and update via NodΞRunr — the open-source daemon that won a $10k retro9000 grant from the Avalanche Foundation.',
   },
 ];
 
@@ -83,7 +83,7 @@ const comparison = [
   { feature: 'Gas token', snowside: 'BTC', ethside: 'BTC', lightning: 'BTC' },
   { feature: 'Smart contracts', snowside: 'Full EVM', ethside: 'Full EVM', lightning: 'Limited (scripts)' },
   { feature: 'Stablecoin support', snowside: 'Native USDC via ICM', ethside: 'Manual bridging', lightning: 'None' },
-  { feature: 'Node operation', snowside: 'Automated (NodeRunr)', ethside: 'Manual', lightning: 'Manual' },
+  { feature: 'Node operation', snowside: 'Automated (NodΞRunr)', ethside: 'Manual', lightning: 'Manual' },
   { feature: 'Maintenance burden', snowside: 'Low', ethside: 'High (retired)', lightning: 'Medium' },
   { feature: 'Validator sovereignty', snowside: 'Dedicated set', ethside: 'Shared with BTC', lightning: 'N/A' },
 ];
@@ -91,7 +91,7 @@ const comparison = [
 const risks = [
   {
     risk: 'Low initial validator count',
-    mitigation: 'Launch with at least 3 community validators. NodeRunr reduces technical barriers to participation. Validator incentives funded by BTC gas fees.',
+    mitigation: 'Launch with at least 3 community validators. NodΞRunr reduces technical barriers to participation. Validator incentives funded by BTC gas fees.',
   },
   {
     risk: 'BMM adoption by miners',
@@ -107,7 +107,7 @@ const risks = [
   },
   {
     risk: 'Long-term maintainability',
-    mitigation: "EthSide was retired because manual operation was unsustainable. NodeRunr's automation eliminates the maintenance burden that killed the predecessor.",
+    mitigation: "EthSide was retired because manual operation was unsustainable. NodΞRunr's automation eliminates the maintenance burden that killed the predecessor.",
   },
   {
     risk: 'Regulatory uncertainty',
@@ -116,28 +116,28 @@ const risks = [
 ];
 
 const roadmap = [
-  { month: 'Month 1', milestone: 'Fuji testnet launch with NodeRunr template; automated validator setup; initial BMM integration testing' },
+  { month: 'Month 1', milestone: 'Fuji testnet launch with NodΞRunr template; automated validator setup; initial BMM integration testing' },
   { month: 'Month 2', milestone: 'Security audit of eCash smart contracts; ICM USDC bridge integration with C-Chain; block explorer deployment' },
   { month: 'Month 3', milestone: 'Mainnet launch with at least 3 community validators; public RPC endpoints; developer documentation released' },
   { month: 'Month 4', milestone: 'Community AMA with Paul Sztorc; validator onboarding program; first eCash dApp deployments' },
-  { month: 'Ongoing', milestone: 'Validator growth, protocol maintenance via NodeRunr, ecosystem development grant program' },
+  { month: 'Ongoing', milestone: 'Validator growth, protocol maintenance via NodΞRunr, ecosystem development grant program' },
 ];
 
 const faqs = [
-  { q: 'What is Snowside?', a: 'Snowside is an Avalanche Layer-1 blockchain designed to host Paul Sztorc\'s eCash hard-fork. It uses BTC for gas (via blind merged mining), bridges USDC from Avalanche\'s C-Chain, and runs on automated validators powered by NodeRunr.' },
-  { q: 'Why Avalanche and not a standalone chain?', a: 'EthSide, Paul\'s previous EVM sidechain, was retired because standalone chain maintenance was too burdensome. Avalanche provides sub-second finality, a sovereign validator set, native ICM bridging, and low operational costs via the Avalanche9000 subscription model. Combined with NodeRunr automation, the maintenance burden is effectively eliminated.' },
+  { q: 'What is Snowside?', a: 'Snowside is an Avalanche Layer-1 blockchain designed to host Paul Sztorc\'s eCash hard-fork. It uses BTC for gas (via blind merged mining), bridges USDC from Avalanche\'s C-Chain, and runs on automated validators powered by NodΞRunr.' },
+  { q: 'Why Avalanche and not a standalone chain?', a: 'EthSide, Paul\'s previous EVM sidechain, was retired because standalone chain maintenance was too burdensome. Avalanche provides sub-second finality, a sovereign validator set, native ICM bridging, and low operational costs via the Avalanche9000 subscription model. Combined with NodΞRunr automation, the maintenance burden is effectively eliminated.' },
   { q: 'How does BTC gas work?', a: 'Bitcoin miners commit to Snowside blocks through Blind Merged Mining (BMM) — they don\'t run the sidechain themselves, but they earn the BTC transaction fees from it. Users on Snowside pay gas in BTC, creating a closed economic loop entirely within Bitcoin.' },
   { q: 'Is there a Snowside token?', a: 'No. There is no new token, no pre-mine, no ICO, and no airdrop. The network runs on BTC (gas) and USDC (liquidity). This is a deliberate design choice to avoid regulatory complexity and focus on utility.' },
-  { q: 'What is NodeRunr?', a: 'NodeRunr is an open-source daemon created by 0xShomari that automates Avalanche L1 node deployment, monitoring, and updates. It won a $10,000 retro9000 grant from the Avalanche Foundation and is already used by multiple Avalanche L1 teams.' },
+  { q: 'What is NodΞRunr?', a: 'NodΞRunr is an open-source daemon created by 0xShomari that automates Avalanche L1 node deployment, monitoring, and updates. It won a $10,000 retro9000 grant from the Avalanche Foundation and is already used by multiple Avalanche L1 teams.' },
   { q: 'Who is Paul Sztorc and what is eCash?', a: "Paul Sztorc is the creator of Drivechain (BIP 300/301) and a long-standing Bitcoin researcher. His eCash proposal is a specification for an electronic cash system built as a Bitcoin sidechain, preserving privacy and scalability. Snowside is built to host this eCash implementation." },
   { q: 'How is USDC bridged?', a: 'USDC is bridged trust-lessly from Avalanche\'s C-Chain using the Interchain Messaging (ICM) protocol — a native Avalanche feature, not a third-party bridge. ICM inherits the full security of Avalanche consensus.' },
-  { q: 'How can I run a validator?', a: 'Validators are deployed via NodeRunr, which provides one-click setup, 24/7 monitoring, and automatic updates. The NodeRunr template for Snowside will be available at launch. Visit layer1.run to learn more.' },
-  { q: 'What is the Team1 Mini Grant?', a: 'The Team1 Mini Grant is an Avalanche Foundation program that funds ecosystem projects. Snowside is applying to fund the final mainnet launch, validator onboarding, and community development. The team has already received a $10k retro9000 grant for NodeRunr.' },
+  { q: 'How can I run a validator?', a: 'Validators are deployed via NodΞRunr, which provides one-click setup, 24/7 monitoring, and automatic updates. The NodΞRunr template for Snowside will be available at launch. Visit layer1.run to learn more.' },
+  { q: 'What is the Team1 Mini Grant?', a: 'The Team1 Mini Grant is an Avalanche Foundation program that funds ecosystem projects. Snowside is applying to fund the final mainnet launch, validator onboarding, and community development. The team has already received a $10k retro9000 grant for NodΞRunr.' },
   { q: 'When does mainnet launch?', a: 'Mainnet is targeted for Month 3 of the roadmap, following Fuji testnet launch (Month 1), security audits and bridge integration (Month 2). The exact date depends on audit completion and validator readiness.' },
 ];
 
 const title = 'Snowside — The eCash Sidechain on Avalanche | Pitch';
-const description = 'Snowside is an Avalanche L1 for Paul Sztorc\'s eCash hard-fork. BTC gas via blind merged mining. USDC bridged via ICM. Automated by NodeRunr. No token. Open source.';
+const description = 'Snowside is an Avalanche L1 for Paul Sztorc\'s eCash hard-fork. BTC gas via blind merged mining. USDC bridged via ICM. Automated by NodΞRunr. No token. Open source.';
 ---
 
 <Base title={title} description={description}>
@@ -156,7 +156,7 @@ const description = 'Snowside is an Avalanche L1 for Paul Sztorc\'s eCash hard-f
       </h1>
       <p class="mx-auto mt-6 max-w-2xl text-lg text-slate-300 md:text-xl">
         Native BTC gas. Instant USDC bridging. Bitcoin security, Avalanche speed —
-        powered by NodeRunr automation. Built for Paul Sztorc's eCash revival.
+        powered by NodΞRunr automation. Built for Paul Sztorc's eCash revival.
       </p>
       <div class="mt-10 flex flex-col justify-center gap-4 sm:flex-row">
         <a
@@ -345,12 +345,12 @@ const description = 'Snowside is an Avalanche L1 for Paul Sztorc\'s eCash hard-f
       </h2>
       <p class="mx-auto mt-6 max-w-2xl leading-relaxed text-slate-700">
         Snowside is a project by <strong class="text-aval-700">0xShomari</strong>,
-        creator of NodeRunr — the open-source daemon that won a $10,000 retro9000
+        creator of NodΞRunr — the open-source daemon that won a $10,000 retro9000
         grant from the Avalanche Foundation.
       </p>
       <ul class="mx-auto mt-6 max-w-md space-y-2 text-left text-sm text-slate-600">
         <li class="flex items-center gap-2"><span class="text-yes">✅</span> Received a $10,000 retro9000 grant from the Avalanche Foundation</li>
-        <li class="flex items-center gap-2"><span class="text-yes">✅</span> NodeRunr is open source and already used by multiple Avalanche L1 teams</li>
+        <li class="flex items-center gap-2"><span class="text-yes">✅</span> NodΞRunr is open source and already used by multiple Avalanche L1 teams</li>
         <li class="flex items-center gap-2"><span class="text-yes">✅</span> Direct support from Paul Sztorc (informal collaboration)</li>
       </ul>
       <p class="mt-6 text-sm text-slate-500">
@@ -445,7 +445,7 @@ const description = 'Snowside is an Avalanche L1 for Paul Sztorc\'s eCash hard-f
       </div>
       <p class="mt-8 text-xs text-slate-500">
         Snowside is an independent open-source project. It is not affiliated with or
-        endorsed by the Avalanche Foundation beyond the retro9000 grant for NodeRunr.
+        endorsed by the Avalanche Foundation beyond the retro9000 grant for NodΞRunr.
       </p>
     </div>
   </section>

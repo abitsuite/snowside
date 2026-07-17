@@ -23,7 +23,7 @@ Snowside is an Avalanche L1 sidechain project. The monorepo at `/Workspace/abits
    - Created `astro.config.mjs`, `tsconfig.json`, `src/styles/global.css` (Tailwind v4 theme with Snowside colors)
    - Created `src/layouts/Base.astro` (SEO meta, OG tags, fonts)
    - Converted all 11 React components to `.astro`:
-     Nav, Hero, About, WhyAvalanche, ValueProposition, NodeRunr, ECash, Team, Roadmap, CTA, Footer
+     Nav, Hero, About, WhyAvalanche, ValueProposition, NodΞRunr, ECash, Team, Roadmap, CTA, Footer
    - Created `src/pages/index.astro` (composes all components with Base layout)
    - Updated `package.json` (removed React deps, added Astro + jspdf)
    - Updated root `package.json` with workspace build scripts

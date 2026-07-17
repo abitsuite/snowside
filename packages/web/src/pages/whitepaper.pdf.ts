@@ -44,7 +44,7 @@ async function generateWhitepaper(): Promise<ArrayBuffer> {
     title: `Snowside Whitepaper v${meta.version}`,
     author: meta.author,
     subject: 'A dedicated Avalanche Layer-1 for the eCash hard-fork',
-    keywords: 'blockchain, Snowside, Avalanche, eCash, BMM, BIP-301, Bitcoin sidechain, EVM, NodeRunr',
+    keywords: 'blockchain, Snowside, Avalanche, eCash, BMM, BIP-301, Bitcoin sidechain, EVM, NodΞRunr',
     creator: 'snowside.network',
   });
 

@@ -3,7 +3,7 @@
 //
 // Visual intent: show the cost/revenue balance for running a Snowside
 // validator. Low cost (Avalanche9000 subscription ~$10-20/mo) vs revenue
-// (BTC gas fees). NodeRunr handles all operational overhead.
+// (BTC gas fees). NodΞRunr handles all operational overhead.
 
 import type { Figure } from '../types';
 
@@ -17,7 +17,7 @@ export const validatorEconomics: Figure = {
   kind: 'figure',
   caption:
     'Figure: Validator economics. Operational cost is ~$10-20/month via ' +
-    'Avalanche9000 subscription. Revenue comes from BTC gas fees. NodeRunr ' +
+    'Avalanche9000 subscription. Revenue comes from BTC gas fees. NodΞRunr ' +
     'eliminates manual maintenance, making community-run validation feasible.',
   height: 110,
 
