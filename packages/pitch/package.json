@@ -10,7 +10,7 @@
     "lint": "astro check"
   },
   "dependencies": {
-    "@tailwindcss/vite": "4.3.3",
+    "@tailwindcss/postcss": "4.3.3",
     "astro": "6.3.8",
     "jspdf": "4.2.1",
     "tailwindcss": "4.3.2"
