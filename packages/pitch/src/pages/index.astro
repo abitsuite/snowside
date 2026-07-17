@@ -1,0 +1,454 @@
+---
+// packages/pitch/src/pages/index.astro
+import Base from '../layouts/Base.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+
+const features = [
+  {
+    icon: '⚡',
+    title: 'Native BTC Gas',
+    desc: 'Transaction fees paid in real Bitcoin via blind merged mining. No new token, no pre-mine, no inflation.',
+  },
+  {
+    icon: '🌉',
+    title: 'USDC Bridging',
+    desc: 'Avalanche Interchain Messaging (ICM) bridges USDC from the C-Chain natively. Stable liquidity from day one.',
+  },
+  {
+    icon: '🚫',
+    title: 'No Token',
+    desc: 'No competing consensus token. Just BTC for gas and USDC for liquidity. Simple economics, zero friction.',
+  },
+];
+
+const steps = [
+  {
+    num: '01',
+    title: 'Blind Merged Mining (BMM)',
+    desc: 'Bitcoin miners commit to Snowside blocks without running them. They earn BTC fees from the sidechain while securing it with existing hash power.',
+  },
+  {
+    num: '02',
+    title: 'Avalanche L1 Consensus',
+    desc: 'A dedicated validator set runs Snowside with sub-second finality. Validators are community-operated via NodeRunr automation.',
+  },
+  {
+    num: '03',
+    title: 'BTC Gas Flow',
+    desc: 'Users pay gas in BTC. Miners collect fees through BMM commitments. The economic loop closes entirely within Bitcoin — no new asset needed.',
+  },
+  {
+    num: '04',
+    title: 'ICM USDC Bridge',
+    desc: 'The Avalanche Interchain Messaging protocol trustlessly bridges USDC from the C-Chain to Snowside, enabling stablecoin liquidity without wrapped assets.',
+  },
+  {
+    num: '05',
+    title: 'NodeRunr Automation',
+    desc: 'Validators deploy, monitor, and update via NodeRunr — the open-source daemon that won a $10k retro9000 grant from the Avalanche Foundation.',
+  },
+];
+
+const whyAvalanche = [
+  {
+    title: 'Sub-second finality',
+    desc: 'eCash transactions confirm instantly, dramatically improving user experience over existing Bitcoin-adjacent chains.',
+  },
+  {
+    title: 'Sovereign validator set',
+    desc: 'Snowside runs its own validators, ensuring dedicated throughput for eCash operations.',
+  },
+  {
+    title: 'Native interoperability',
+    desc: 'Avalanche ICM allows trust-less bridging of USDC from the C-Chain without third-party bridges.',
+  },
+  {
+    title: 'Low operational cost',
+    desc: "Avalanche9000's subscription model makes community-run validation cheap and feasible.",
+  },
+  {
+    title: 'Tooling maturity',
+    desc: 'Full EVM compatibility — Remix, Hardhat, The Graph, Foundry all work out-of-the-box.',
+  },
+  {
+    title: 'Proven L1 track record',
+    desc: 'Multiple Avalanche L1s are already live in production. The infrastructure is battle-tested.',
+  },
+];
+
+const comparison = [
+  { feature: 'Consensus mechanism', snowside: 'Avalanche PoS + BMM', ethside: 'Bitcoin BMM only', lightning: 'Off-chain channels' },
+  { feature: 'Finality time', snowside: '< 1 second', ethside: '~ 10 minutes', lightning: 'Instant (payment)' },
+  { feature: 'Gas token', snowside: 'BTC', ethside: 'BTC', lightning: 'BTC' },
+  { feature: 'Smart contracts', snowside: 'Full EVM', ethside: 'Full EVM', lightning: 'Limited (scripts)' },
+  { feature: 'Stablecoin support', snowside: 'Native USDC via ICM', ethside: 'Manual bridging', lightning: 'None' },
+  { feature: 'Node operation', snowside: 'Automated (NodeRunr)', ethside: 'Manual', lightning: 'Manual' },
+  { feature: 'Maintenance burden', snowside: 'Low', ethside: 'High (retired)', lightning: 'Medium' },
+  { feature: 'Validator sovereignty', snowside: 'Dedicated set', ethside: 'Shared with BTC', lightning: 'N/A' },
+];
+
+const risks = [
+  {
+    risk: 'Low initial validator count',
+    mitigation: 'Launch with at least 3 community validators. NodeRunr reduces technical barriers to participation. Validator incentives funded by BTC gas fees.',
+  },
+  {
+    risk: 'BMM adoption by miners',
+    mitigation: 'BMM fees are denominated in BTC. Miners earn real revenue with zero additional hashing cost. The economic incentive is straightforward and self-sustaining.',
+  },
+  {
+    risk: 'USDC bridge security',
+    mitigation: 'ICM is a native Avalanche protocol, not a third-party bridge. It uses the full security of the Avalanche consensus — the same mechanism securing billions in TVL on the C-Chain.',
+  },
+  {
+    risk: 'eCash specification changes',
+    mitigation: 'Direct coordination with Paul Sztorc ensures the L1 configuration tracks the eCash spec. Smart contracts are upgradeable during the initial testnet phase.',
+  },
+  {
+    risk: 'Long-term maintainability',
+    mitigation: "EthSide was retired because manual operation was unsustainable. NodeRunr's automation eliminates the maintenance burden that killed the predecessor.",
+  },
+  {
+    risk: 'Regulatory uncertainty',
+    mitigation: 'Snowside uses existing, established assets (BTC, USDC) — no new token issuance. The chain is fully open source and community-operated.',
+  },
+];
+
+const roadmap = [
+  { month: 'Month 1', milestone: 'Fuji testnet launch with NodeRunr template; automated validator setup; initial BMM integration testing' },
+  { month: 'Month 2', milestone: 'Security audit of eCash smart contracts; ICM USDC bridge integration with C-Chain; block explorer deployment' },
+  { month: 'Month 3', milestone: 'Mainnet launch with at least 3 community validators; public RPC endpoints; developer documentation released' },
+  { month: 'Month 4', milestone: 'Community AMA with Paul Sztorc; validator onboarding program; first eCash dApp deployments' },
+  { month: 'Ongoing', milestone: 'Validator growth, protocol maintenance via NodeRunr, ecosystem development grant program' },
+];
+
+const faqs = [
+  { q: 'What is Snowside?', a: 'Snowside is an Avalanche Layer-1 blockchain designed to host Paul Sztorc\'s eCash hard-fork. It uses BTC for gas (via blind merged mining), bridges USDC from Avalanche\'s C-Chain, and runs on automated validators powered by NodeRunr.' },
+  { q: 'Why Avalanche and not a standalone chain?', a: 'EthSide, Paul\'s previous EVM sidechain, was retired because standalone chain maintenance was too burdensome. Avalanche provides sub-second finality, a sovereign validator set, native ICM bridging, and low operational costs via the Avalanche9000 subscription model. Combined with NodeRunr automation, the maintenance burden is effectively eliminated.' },
+  { q: 'How does BTC gas work?', a: 'Bitcoin miners commit to Snowside blocks through Blind Merged Mining (BMM) — they don\'t run the sidechain themselves, but they earn the BTC transaction fees from it. Users on Snowside pay gas in BTC, creating a closed economic loop entirely within Bitcoin.' },
+  { q: 'Is there a Snowside token?', a: 'No. There is no new token, no pre-mine, no ICO, and no airdrop. The network runs on BTC (gas) and USDC (liquidity). This is a deliberate design choice to avoid regulatory complexity and focus on utility.' },
+  { q: 'What is NodeRunr?', a: 'NodeRunr is an open-source daemon created by 0xShomari that automates Avalanche L1 node deployment, monitoring, and updates. It won a $10,000 retro9000 grant from the Avalanche Foundation and is already used by multiple Avalanche L1 teams.' },
+  { q: 'Who is Paul Sztorc and what is eCash?', a: "Paul Sztorc is the creator of Drivechain (BIP 300/301) and a long-standing Bitcoin researcher. His eCash proposal is a specification for an electronic cash system built as a Bitcoin sidechain, preserving privacy and scalability. Snowside is built to host this eCash implementation." },
+  { q: 'How is USDC bridged?', a: 'USDC is bridged trust-lessly from Avalanche\'s C-Chain using the Interchain Messaging (ICM) protocol — a native Avalanche feature, not a third-party bridge. ICM inherits the full security of Avalanche consensus.' },
+  { q: 'How can I run a validator?', a: 'Validators are deployed via NodeRunr, which provides one-click setup, 24/7 monitoring, and automatic updates. The NodeRunr template for Snowside will be available at launch. Visit layer1.run to learn more.' },
+  { q: 'What is the Team1 Mini Grant?', a: 'The Team1 Mini Grant is an Avalanche Foundation program that funds ecosystem projects. Snowside is applying to fund the final mainnet launch, validator onboarding, and community development. The team has already received a $10k retro9000 grant for NodeRunr.' },
+  { q: 'When does mainnet launch?', a: 'Mainnet is targeted for Month 3 of the roadmap, following Fuji testnet launch (Month 1), security audits and bridge integration (Month 2). The exact date depends on audit completion and validator readiness.' },
+];
+
+const title = 'Snowside — The eCash Sidechain on Avalanche | Pitch';
+const description = 'Snowside is an Avalanche L1 for Paul Sztorc\'s eCash hard-fork. BTC gas via blind merged mining. USDC bridged via ICM. Automated by NodeRunr. No token. Open source.';
+---
+
+<Base title={title} description={description}>
+  <Nav />
+
+  <!-- ═══ 1. HERO ═══ -->
+  <section class="relative overflow-hidden pt-32 pb-20 bg-surface-0">
+    <div class="absolute inset-0 -z-10 bg-gradient-to-br from-surface-1 via-surface-0 to-aval-700/30"></div>
+    <div class="mx-auto max-w-4xl px-6 text-center">
+      <span class="inline-block rounded-full border border-aval-600/30 bg-aval-600/10 px-4 py-1.5 text-sm font-mono font-semibold text-snow-300">
+        Avalanche L1 · Bitcoin Sidechain · No Token
+      </span>
+      <h1 class="mt-8 text-4xl font-extrabold leading-tight text-white md:text-6xl">
+        Snowside
+        <span class="block mt-2 text-aval-600 md:inline-block">The eCash Sidechain on Avalanche</span>
+      </h1>
+      <p class="mx-auto mt-6 max-w-2xl text-lg text-slate-300 md:text-xl">
+        Native BTC gas. Instant USDC bridging. Bitcoin security, Avalanche speed —
+        powered by NodeRunr automation. Built for Paul Sztorc's eCash revival.
+      </p>
+      <div class="mt-10 flex flex-col justify-center gap-4 sm:flex-row">
+        <a
+          href="https://snowside.network/whitepaper.pdf"
+          class="rounded-lg bg-aval-600 px-8 py-3 text-sm font-semibold text-white transition-colors hover:bg-aval-700"
+        >
+          Read the Whitepaper
+        </a>
+        <a
+          href="https://github.com/abitsuite/snowside"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="rounded-lg border border-slate-600 px-8 py-3 text-sm font-semibold text-slate-200 transition-colors hover:bg-surface-2"
+        >
+          View on GitHub
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 2. OVERVIEW ═══ -->
+  <section id="overview" class="bg-snow-50 py-24">
+    <div class="mx-auto max-w-6xl px-6">
+      <h2 class="text-center text-3xl font-bold text-surface-0">
+        Two native assets, zero friction
+      </h2>
+      <p class="mx-auto mt-4 max-w-2xl text-center text-lg text-slate-600">
+        Bridging Bitcoin and stablecoin economies in one network.
+      </p>
+      <div class="mt-12 grid grid-cols-1 gap-8 md:grid-cols-3">
+        {features.map((f) => (
+          <div class="rounded-xl border border-snow-200 bg-white p-6 shadow-sm">
+            <div class="text-3xl">{f.icon}</div>
+            <h3 class="mt-4 text-lg font-semibold text-surface-0">{f.title}</h3>
+            <p class="mt-2 text-sm leading-relaxed text-slate-600">{f.desc}</p>
+          </div>
+        ))}
+      </div>
+      <!-- Naming rationale callout -->
+      <div class="mt-12 rounded-xl border border-aval-600/20 bg-aval-600/5 p-6">
+        <p class="text-center text-slate-700">
+          <strong class="font-mono text-aval-700">Why "Snowside"?</strong> The name
+          reflects our commitment to the Avalanche ecosystem and our lineage within
+          the family of Bitcoin sidechains that Paul Sztorc already maintains.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 3. HOW IT WORKS ═══ -->
+  <section id="how-it-works" class="bg-surface-0 py-24">
+    <div class="mx-auto max-w-6xl px-6">
+      <h2 class="text-center text-3xl font-bold text-white">
+        How it works
+      </h2>
+      <p class="mx-auto mt-4 max-w-2xl text-center text-lg text-slate-400">
+        Five layers of technology, one cohesive sidechain.
+      </p>
+      <div class="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {steps.map((s) => (
+          <div class="rounded-xl border border-white/5 bg-surface-1 p-6">
+            <div class="font-mono text-3xl font-bold text-aval-600">{s.num}</div>
+            <h3 class="mt-3 text-lg font-semibold text-white">{s.title}</h3>
+            <p class="mt-2 text-sm leading-relaxed text-slate-400">{s.desc}</p>
+          </div>
+        ))}
+      </div>
+      <!-- Architecture diagram placeholder -->
+      <div class="mt-12 rounded-xl border border-dashed border-slate-600 bg-surface-1 p-8 text-center">
+        <p class="font-mono text-sm text-slate-500">
+          [Architecture diagram: Bitcoin → BMM → Snowside L1 → ICM → C-Chain]
+        </p>
+        <p class="mt-2 text-xs text-slate-600">
+          Full vector diagram available in the whitepaper PDF
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 4. WHY AVALANCHE ═══ -->
+  <section id="why-avalanche" class="bg-snow-50 py-24">
+    <div class="mx-auto max-w-6xl px-6">
+      <h2 class="text-center text-3xl font-bold text-surface-0">
+        Why Avalanche is the perfect substrate
+      </h2>
+      <div class="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {whyAvalanche.map((w) => (
+          <div class="rounded-xl border border-snow-200 bg-white p-6 shadow-sm">
+            <h3 class="text-lg font-semibold text-surface-0">{w.title}</h3>
+            <p class="mt-2 text-sm leading-relaxed text-slate-600">{w.desc}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 5. COMPARISON ═══ -->
+  <section id="comparison" class="bg-surface-0 py-24">
+    <div class="mx-auto max-w-5xl px-6">
+      <h2 class="text-center text-3xl font-bold text-white">
+        How Snowside compares
+      </h2>
+      <p class="mx-auto mt-4 max-w-2xl text-center text-lg text-slate-400">
+        Snowside vs. EthSide (Paul's retired chain) vs. Lightning Network
+      </p>
+      <div class="mt-12 overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead>
+            <tr class="border-b border-white/10">
+              <th class="py-3 pr-4 font-mono font-semibold text-slate-400">Feature</th>
+              <th class="py-3 pr-4 font-mono font-semibold text-aval-600">Snowside</th>
+              <th class="py-3 pr-4 font-mono font-semibold text-slate-500">EthSide</th>
+              <th class="py-3 font-mono font-semibold text-slate-500">Lightning</th>
+            </tr>
+          </thead>
+          <tbody>
+            {comparison.map((row, i) => (
+              <tr class={i % 2 === 0 ? 'border-b border-white/5 bg-white/5' : 'border-b border-white/5'}>
+                <td class="py-3 pr-4 font-medium text-slate-300">{row.feature}</td>
+                <td class="py-3 pr-4 font-semibold text-snow-300">{row.snowside}</td>
+                <td class="py-3 pr-4 text-slate-500">{row.ethside}</td>
+                <td class="py-3 text-slate-500">{row.lightning}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 6. RISKS AND MITIGATIONS ═══ -->
+  <section id="risks" class="bg-snow-50 py-24">
+    <div class="mx-auto max-w-6xl px-6">
+      <h2 class="text-center text-3xl font-bold text-surface-0">
+        Risks and mitigations
+      </h2>
+      <div class="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2">
+        {risks.map((r) => (
+          <div class="rounded-xl border border-snow-200 bg-white p-6 shadow-sm">
+            <div class="flex items-start gap-3">
+              <span class="mt-0.5 inline-block rounded bg-no/10 px-2 py-0.5 text-xs font-mono font-bold text-no">RISK</span>
+              <p class="flex-1 text-sm font-semibold text-surface-0">{r.risk}</p>
+            </div>
+            <div class="mt-4 flex items-start gap-3">
+              <span class="mt-0.5 inline-block rounded bg-yes/10 px-2 py-0.5 text-xs font-mono font-bold text-yes">FIX</span>
+              <p class="flex-1 text-sm leading-relaxed text-slate-600">{r.mitigation}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 7. ROADMAP ═══ -->
+  <section id="roadmap" class="bg-surface-0 py-24">
+    <div class="mx-auto max-w-3xl px-6">
+      <h2 class="text-center text-3xl font-bold text-white">
+        From testnet to mainnet
+      </h2>
+      <div class="mt-12">
+        {roadmap.map((r, i) => (
+          <div class="flex gap-6 pb-8 last:pb-0">
+            <div class="flex flex-col items-center">
+              <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-aval-600 font-mono text-xs font-bold text-white">
+                {i + 1}
+              </div>
+              {i < roadmap.length - 1 && (
+                <div class="mt-2 w-px flex-1 bg-white/10"></div>
+              )}
+            </div>
+            <div class="pb-2">
+              <h3 class="font-mono text-sm font-bold text-snow-300">{r.month}</h3>
+              <p class="mt-1 text-sm leading-relaxed text-slate-400">{r.milestone}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 8. TEAM ═══ -->
+  <section id="team" class="bg-snow-50 py-24">
+    <div class="mx-auto max-w-4xl px-6 text-center">
+      <h2 class="text-3xl font-bold text-surface-0">
+        Who builds Snowside
+      </h2>
+      <p class="mx-auto mt-6 max-w-2xl leading-relaxed text-slate-700">
+        Snowside is a project by <strong class="text-aval-700">0xShomari</strong>,
+        creator of NodeRunr — the open-source daemon that won a $10,000 retro9000
+        grant from the Avalanche Foundation.
+      </p>
+      <ul class="mx-auto mt-6 max-w-md space-y-2 text-left text-sm text-slate-600">
+        <li class="flex items-center gap-2"><span class="text-yes">✅</span> Received a $10,000 retro9000 grant from the Avalanche Foundation</li>
+        <li class="flex items-center gap-2"><span class="text-yes">✅</span> NodeRunr is open source and already used by multiple Avalanche L1 teams</li>
+        <li class="flex items-center gap-2"><span class="text-yes">✅</span> Direct support from Paul Sztorc (informal collaboration)</li>
+      </ul>
+      <p class="mt-6 text-sm text-slate-500">
+        <strong>Current status:</strong> Applying for a Team1 Mini Grant to fund the
+        final launch and community onboarding.
+      </p>
+      <div class="mt-8 flex flex-wrap justify-center gap-4">
+        <a
+          href="https://x.com/0xShomari"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="rounded-lg bg-aval-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-aval-700"
+        >
+          X / Twitter
+        </a>
+        <a
+          href="mailto:shomari@abitsuite.com"
+          class="rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-surface-0 transition-colors hover:bg-snow-100"
+        >
+          Email
+        </a>
+        <span class="inline-block self-center rounded-md bg-aval-600/10 px-3 py-1 text-xs font-medium text-aval-700">
+          Avalanche Foundation Grant Recipient
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 9. FAQ ═══ -->
+  <section id="faq" class="bg-surface-0 py-24">
+    <div class="mx-auto max-w-3xl px-6">
+      <h2 class="text-center text-3xl font-bold text-white">
+        Frequently asked questions
+      </h2>
+      <div class="mt-12 space-y-3">
+        {faqs.map((faq) => (
+          <details class="group rounded-xl border border-white/5 bg-surface-1">
+            <summary class="flex cursor-pointer items-center justify-between p-5 font-semibold text-white">
+              <span class="text-sm">{faq.q}</span>
+              <svg
+                class="h-5 w-5 shrink-0 text-slate-500 transition-transform group-open:rotate-180"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </summary>
+            <div class="px-5 pb-5 text-sm leading-relaxed text-slate-400">
+              {faq.a}
+            </div>
+          </details>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 10. CTA ═══ -->
+  <section id="cta" class="relative overflow-hidden bg-surface-1 py-24">
+    <div class="absolute inset-0 -z-10 bg-gradient-to-br from-aval-700/20 via-surface-1 to-surface-0"></div>
+    <div class="mx-auto max-w-3xl px-6 text-center">
+      <h2 class="text-3xl font-bold text-white">
+        Join the Snowside movement
+      </h2>
+      <p class="mx-auto mt-4 max-w-xl text-lg text-slate-300">
+        Open source. No token. Powered by Avalanche. Supported by the Bitcoin
+        sidechain community.
+      </p>
+      <div class="mt-10 flex flex-col justify-center gap-4 sm:flex-row">
+        <a
+          href="https://snowside.network/whitepaper.pdf"
+          class="rounded-lg bg-aval-600 px-8 py-3 text-sm font-semibold text-white transition-colors hover:bg-aval-700"
+        >
+          Read the Whitepaper
+        </a>
+        <a
+          href="https://github.com/abitsuite/snowside"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="rounded-lg border border-slate-600 px-8 py-3 text-sm font-semibold text-slate-200 transition-colors hover:bg-surface-2"
+        >
+          View on GitHub
+        </a>
+        <a
+          href="https://x.com/0xShomari"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="rounded-lg border border-slate-600 px-8 py-3 text-sm font-semibold text-slate-200 transition-colors hover:bg-surface-2"
+        >
+          Follow on X
+        </a>
+      </div>
+      <p class="mt-8 text-xs text-slate-500">
+        Snowside is an independent open-source project. It is not affiliated with or
+        endorsed by the Avalanche Foundation beyond the retro9000 grant for NodeRunr.
+      </p>
+    </div>
+  </section>
+
+  <Footer />
+</Base>
