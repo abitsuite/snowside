@@ -2,22 +2,34 @@
 // packages/web/src/components/ValueProposition.astro
 ---
 
-<section class="py-24 bg-white">
+<section id="value" class="py-24 bg-surface-0">
   <div class="max-w-4xl mx-auto px-4 text-center">
-    <h2 class="text-3xl font-bold text-gray-900 mb-4">
+    <h2 class="text-3xl font-bold text-white mb-4">
       Two native assets, zero friction
     </h2>
-    <p class="text-xl text-gray-500 mb-8">
+    <p class="text-xl text-slate-400 mb-8">
       Bridging Bitcoin and stablecoin economies in one network.
     </p>
-    <p class="text-gray-700 leading-relaxed max-w-2xl mx-auto">
-      Snowside natively uses <strong>BTC</strong> for gas and transaction fees, preserving the
-      economic model of Bitcoin. At the same time, a standard <strong>USDC bridge</strong> from
+    <p class="text-slate-300 leading-relaxed max-w-2xl mx-auto">
+      Snowside natively uses <strong class="text-btc">BTC</strong> for gas and transaction fees, preserving the
+      economic model of Bitcoin. At the same time, a standard <strong class="text-usdc">USDC bridge</strong> from
       Avalanche's C‑Chain is integrated from day one, allowing users to bring in stable liquidity
       without exposure to volatile assets.
     </p>
-    <p class="mt-4 text-gray-700 max-w-2xl mx-auto">
+    <p class="mt-4 text-slate-300 max-w-2xl mx-auto">
       No competing token. No new consensus token. Just BTC &amp; USDC, secure and fast.
     </p>
+
+    <!-- Asset badge row -->
+    <div class="mt-10 flex justify-center gap-4 flex-wrap">
+      <div class="flex items-center gap-2 rounded-full bg-surface-2 border border-white/10 px-6 py-3">
+        <span class="text-2xl font-bold text-btc">₿</span>
+        <span class="font-mono font-semibold text-btc">BTC Gas</span>
+      </div>
+      <div class="flex items-center gap-2 rounded-full bg-surface-2 border border-white/10 px-6 py-3">
+        <span class="text-2xl font-bold text-usdc">$</span>
+        <span class="font-mono font-semibold text-usdc">USDC Bridge</span>
+      </div>
+    </div>
   </div>
 </section>

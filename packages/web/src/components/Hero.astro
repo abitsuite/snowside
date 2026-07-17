@@ -2,18 +2,32 @@
 // packages/web/src/components/Hero.astro
 ---
 
-<section class="relative pt-32 pb-20 overflow-hidden">
-  <div class="absolute inset-0 -z-10 bg-gradient-to-br from-snow-200 via-white to-[#EDE0F0] dark:from-gray-900 dark:via-gray-950 dark:to-gray-900"></div>
-  <div class="max-w-4xl mx-auto px-4 text-center">
-    <h1 class="text-4xl md:text-6xl font-extrabold text-gray-900 dark:text-white leading-tight">
+<section class="relative pt-32 pb-20 overflow-hidden bg-surface-0">
+  <!-- Gradient background -->
+  <div class="absolute inset-0 -z-10 bg-gradient-to-br from-surface-0 via-surface-1 to-surface-0"></div>
+
+  <!-- Subtle grid pattern -->
+  <div class="absolute inset-0 -z-10 opacity-[0.02]" style="background-image: linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px); background-size: 48px 48px;"></div>
+
+  <!-- Radial glow accent -->
+  <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] -z-10 bg-snow-500/10 rounded-full blur-[120px]"></div>
+
+  <!-- Image placeholder: hero illustration
+  <div class="absolute right-0 top-1/2 -translate-y-1/2 w-1/2 h-96 hidden lg:block">
+    TODO: Add network topology / architecture diagram
+  </div>
+  -->
+
+  <div class="relative max-w-4xl mx-auto px-4 text-center">
+    <h1 class="text-4xl md:text-6xl font-extrabold text-white leading-tight">
       Snowside<br />
-      <span class="text-aval-600 dark:text-purple-300">The eCash Sidechain on Avalanche</span>
+      <span class="text-snow-400">The eCash Sidechain on Avalanche</span>
     </h1>
-    <p class="mt-6 text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+    <p class="mt-6 text-lg md:text-xl text-slate-300 max-w-2xl mx-auto">
       Native BTC gas. Instant USDC bridging. Bitcoin‑security, Avalanche speed.
     </p>
     <div class="mt-10 flex flex-col sm:flex-row justify-center gap-4">
-      <a href="#about" class="rounded-full px-8 py-3 text-sm font-semibold bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+      <a href="#about" class="rounded-full px-8 py-3 text-sm font-semibold bg-surface-2 border border-white/10 text-slate-200 hover:bg-surface-3 hover:border-white/20 transition">
         Learn More
       </a>
       <a href="/whitepaper" class="rounded-full px-8 py-3 text-sm font-semibold bg-aval-600 text-white hover:bg-aval-700 transition">

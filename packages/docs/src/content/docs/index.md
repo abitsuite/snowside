@@ -3,8 +3,6 @@ title: Introduction
 description: Snowside — an Avalanche Layer-1 for Paul Sztorc's eCash hard-fork
 ---
 
-import { Steps, Card, CardGrid } from '@astrojs/starlight/components';
-
 Snowside is a dedicated Avalanche Layer-1 blockchain built to host Paul Sztorc's
 upcoming eCash hard-fork. It runs as a clean EVM sidechain where the native gas
 token is BTC itself — no new minted tokens, no pre-mine, just Bitcoin security
