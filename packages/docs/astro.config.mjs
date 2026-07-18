@@ -1,3 +1,4 @@
+// packages/docs/astro.config.mjs
 // @ts-check
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
@@ -45,6 +46,21 @@ export default defineConfig({
             { label: 'Glossary', slug: 'reference/glossary' },
             { label: 'Configuration', slug: 'reference/configuration' },
           ],
+        },
+      ],
+      head: [
+        {
+          tag: 'script',
+          attrs: {
+            async: true,
+            defer: true,
+            src: 'https://scripts.simpleanalyticscdn.com/latest.js',
+          },
+        },
+        {
+          tag: 'noscript',
+          content:
+            '<img src="https://queue.simpleanalyticscdn.com/noscript.gif" alt="" referrerpolicy="no-referrer-when-downgrade" />',
         },
       ],
     }),
