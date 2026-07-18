@@ -1,0 +1,241 @@
+---
+// packages/web/src/pages/validators.astro
+import Base from '../layouts/Base.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+
+const title = 'Become a Validator — Snowside';
+const description = 'Run a Snowside L1 validator with NodΞRunr. Prerequisites, deployment steps, and monitoring for Avalanche L1 validators.';
+---
+
+<Base title={title} description={description}>
+  <div class="bg-surface-0 text-slate-200">
+    <Nav />
+
+    <!-- Hero -->
+    <section class="pt-32 pb-16 bg-gradient-to-b from-surface-0 to-surface-1">
+      <div class="max-w-3xl mx-auto px-4 text-center">
+        <h1 class="text-4xl font-bold text-white mb-4">Become a Snowside Validator</h1>
+        <p class="text-slate-300 text-lg">
+          Secure the Snowside L1 and process transactions for the eCash Drivechain. Setup takes under a minute with NodΞRunr.
+        </p>
+      </div>
+    </section>
+
+    <!-- What is a validator -->
+    <section class="py-16 bg-snow-50">
+      <div class="max-w-3xl mx-auto px-4">
+        <h2 class="text-2xl font-bold text-slate-900 mb-6">What is a validator?</h2>
+        <p class="text-slate-700 leading-relaxed">
+          On Avalanche, an L1 (formerly called a subnet) is a sovereign network of validators that agree to process a set of blockchains. Validators are the backbone of the network — they stake AVAX, run nodes, and participate in consensus to secure the chain.
+        </p>
+        <p class="text-slate-700 leading-relaxed mt-4">
+          Snowside is an Avalanche L1. By running a validator, you help secure the network and process transactions for the eCash Drivechain.
+        </p>
+      </div>
+    </section>
+
+    <!-- Prerequisites -->
+    <section class="py-16 bg-surface-0">
+      <div class="max-w-3xl mx-auto px-4">
+        <h2 class="text-2xl font-bold text-white mb-6">Prerequisites</h2>
+        <ul class="space-y-3 text-slate-300">
+          <li class="flex items-start gap-3">
+            <span class="text-aval-600 mt-1">▸</span>
+            <span>A server (VPS) with at least 4 CPU cores, 8 GB RAM, and 200 GB SSD</span>
+          </li>
+          <li class="flex items-start gap-3">
+            <span class="text-aval-600 mt-1">▸</span>
+            <span>Ubuntu 22.04 or later (NodΞRunr also supports Debian 12+)</span>
+          </li>
+          <li class="flex items-start gap-3">
+            <span class="text-aval-600 mt-1">▸</span>
+            <span>AVAX for the Avalanche Primary Network stake</span>
+          </li>
+          <li class="flex items-start gap-3">
+            <span class="text-aval-600 mt-1">▸</span>
+            <span>SSH access to the server</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Quick start with NodΞRunr -->
+    <section class="py-16 bg-snow-50">
+      <div class="max-w-3xl mx-auto px-4">
+        <h2 class="text-2xl font-bold text-slate-900 mb-6">Quick start with NodΞRunr</h2>
+        <p class="text-slate-700 mb-8">
+          NodΞRunr handles deployment, monitoring, updates, and communication automatically — no manual config file editing, no SSH gymnastics, no babysitting.
+        </p>
+        <div class="space-y-6">
+          <!-- Step 1 -->
+          <div class="bg-surface-1 border border-white/10 rounded-xl p-6">
+            <div class="flex items-center gap-3 mb-3">
+              <span class="flex items-center justify-center w-8 h-8 rounded-full bg-aval-600 text-white text-sm font-bold">1</span>
+              <h3 class="text-lg font-semibold text-white">Install NodΞRunr</h3>
+            </div>
+            <p class="text-slate-300 text-sm mb-3">
+              Connect to your server via SSH and run the NodΞRunr installer:
+            </p>
+            <!--CODEPH:0-->
+            <p class="text-slate-400 text-xs mt-2">
+              This installs the NodΞRunr daemon and its dependencies.
+            </p>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="bg-surface-1 border border-white/10 rounded-xl p-6">
+            <div class="flex items-center gap-3 mb-3">
+              <span class="flex items-center justify-center w-8 h-8 rounded-full bg-aval-600 text-white text-sm font-bold">2</span>
+              <h3 class="text-lg font-semibold text-white">Select the Snowside template</h3>
+            </div>
+            <p class="text-slate-300 text-sm mb-3">
+              List available templates and select Snowside:
+            </p>
+            <!--CODEPH:1-->
+            <p class="text-slate-400 text-xs mt-2">
+              NodΞRunr downloads the latest Snowside L1 configuration, including genesis parameters, precompile settings, and validator keys.
+            </p>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="bg-surface-1 border border-white/10 rounded-xl p-6">
+            <div class="flex items-center gap-3 mb-3">
+              <span class="flex items-center justify-center w-8 h-8 rounded-full bg-aval-600 text-white text-sm font-bold">3</span>
+              <h3 class="text-lg font-semibold text-white">Configure your validator</h3>
+            </div>
+            <p class="text-slate-300 text-sm mb-3">
+              Set your validator name and stake address:
+            </p>
+            <!--CODEPH:2-->
+            <p class="text-slate-400 text-xs mt-2">
+              NodΞRunr generates the validator's node ID, BLS keys, and TLS certificates automatically.
+            </p>
+          </div>
+
+          <!-- Step 4 -->
+          <div class="bg-surface-1 border border-white/10 rounded-xl p-6">
+            <div class="flex items-center gap-3 mb-3">
+              <span class="flex items-center justify-center w-8 h-8 rounded-full bg-aval-600 text-white text-sm font-bold">4</span>
+              <h3 class="text-lg font-semibold text-white">Deploy</h3>
+            </div>
+            <p class="text-slate-300 text-sm mb-3">
+              Start the validator with a single command:
+            </p>
+            <!--CODEPH:3-->
+            <p class="text-slate-400 text-xs mt-2">
+              NodΞRunr installs the Avalanche node, configures it for the Snowside subnet, registers the validator with the Primary Network, and begins block production.
+            </p>
+          </div>
+
+          <!-- Step 5 -->
+          <div class="bg-surface-1 border border-white/10 rounded-xl p-6">
+            <div class="flex items-center gap-3 mb-3">
+              <span class="flex items-center justify-center w-8 h-8 rounded-full bg-aval-600 text-white text-sm font-bold">5</span>
+              <h3 class="text-lg font-semibold text-white">Verify</h3>
+            </div>
+            <p class="text-slate-300 text-sm mb-3">
+              Check that your validator is online and producing blocks:
+            </p>
+            <!--CODEPH:4-->
+            <p class="text-slate-400 text-xs mt-2">
+              You should see a green active indicator and a block height increasing. If any issues arise, NodΞRunr's encrypted alert system notifies you automatically.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Monitoring -->
+    <section class="py-16 bg-surface-0">
+      <div class="max-w-3xl mx-auto px-4">
+        <h2 class="text-2xl font-bold text-white mb-6">Monitoring</h2>
+        <p class="text-slate-300 mb-4 leading-relaxed">
+          NodΞRunr continuously monitors your validator's health:
+        </p>
+        <ul class="space-y-2 text-slate-300">
+          <li class="flex items-start gap-3">
+            <span class="text-aval-600 mt-1">▸</span>
+            <span>Block production rate</span>
+          </li>
+          <li class="flex items-start gap-3">
+            <span class="text-aval-600 mt-1">▸</span>
+            <span>Peer connections</span>
+          </li>
+          <li class="flex items-start gap-3">
+            <span class="text-aval-600 mt-1">▸</span>
+            <span>Disk usage, memory, CPU</span>
+          </li>
+          <li class="flex items-start gap-3">
+            <span class="text-aval-600 mt-1">▸</span>
+            <span>Uptime and response time</span>
+          </li>
+        </ul>
+        <p class="text-slate-300 mt-4 leading-relaxed">
+          When an update is available, NodΞRunr can apply it automatically with zero downtime. Alerts are sent via encrypted channels (Telegram, Discord, or email) if intervention is required.
+        </p>
+      </div>
+    </section>
+
+    <!-- Stopping -->
+    <section class="py-16 bg-snow-50">
+      <div class="max-w-3xl mx-auto px-4">
+        <h2 class="text-2xl font-bold text-slate-900 mb-6">Stopping or removing a validator</h2>
+        <div class="space-y-4">
+          <div>
+            <p class="text-slate-700 mb-2">Stop your validator temporarily:</p>
+            <!--CODEPH:5-->
+          </div>
+          <div>
+            <p class="text-slate-700 mb-2">Remove your validator and unstake:</p>
+            <!--CODEPH:6-->
+          </div>
+        </div>
+        <p class="text-slate-500 text-sm mt-4">
+          Your AVAX stake will be returned after the unstaking period (typically 14 days on Avalanche).
+        </p>
+      </div>
+    </section>
+
+    <!-- References -->
+    <section class="py-16 bg-surface-0">
+      <div class="max-w-3xl mx-auto px-4">
+        <h2 class="text-2xl font-bold text-white mb-6">References</h2>
+        <ul class="space-y-3 text-slate-300">
+          <li>
+            <a href="https://docs.layer1.run" target="_blank" rel="noopener noreferrer" class="text-snow-400 underline decoration-snow-400/30 hover:decoration-snow-400">
+              NodΞRunr Documentation
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/abitsuite/noderunr" target="_blank" rel="noopener noreferrer" class="text-snow-400 underline decoration-snow-400/30 hover:decoration-snow-400">
+              NodΞRunr GitHub
+            </a>
+          </li>
+          <li>
+            <a href="https://docs.avax.network/" target="_blank" rel="noopener noreferrer" class="text-snow-400 underline decoration-snow-400/30 hover:decoration-snow-400">
+              Avalanche9000 Validator Guide
+            </a>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="py-16 bg-snow-50">
+      <div class="max-w-2xl mx-auto px-4 text-center">
+        <h2 class="text-2xl font-bold text-slate-900 mb-6">Ready to run a validator?</h2>
+        <div class="flex flex-col sm:flex-row justify-center gap-4">
+          <a href="https://discord.gg/jVytngEWt" target="_blank" rel="noopener noreferrer" class="rounded-full px-6 py-3 text-sm font-semibold bg-aval-600 text-white hover:bg-aval-700 transition">
+            Join our Discord
+          </a>
+          <a href="/" class="rounded-full px-6 py-3 text-sm font-semibold bg-surface-1 border border-white/10 text-white hover:bg-surface-2 transition">
+            Back to Home
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <Footer />
+  </div>
+</Base>
