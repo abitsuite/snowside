@@ -75,7 +75,7 @@ network. Snowside uses ICM to bridge USDC from the C-Chain trust-minimizingly.
 ## NodeRunr
 
 An open-source daemon created by 0xShomari that automates Avalanche L1 node
-deployment, monitoring, and updates. Won a $10,000 retro9000 grant from the
+deployment, monitoring, and updates. Won a [retro9000 grant](https://x.com/AvalancheFDN/status/1932484367324229635?s=20) from the
 Avalanche Foundation. Repository: https://github.com/abitsuite/noderunr
 
 ## Precompile
