@@ -2,9 +2,9 @@
 // Vector figure for Blind Merged Mining flow (section 4).
 //
 // Visual intent: Bitcoin miners on the left include a small data commitment
-// in their coinbase tx. Snowside block producers on the right create blocks
-// and pay BTC fees back to miners. The key takeaway: zero marginal cost for
-// miners, full hashrate security for Snowside.
+// in their coinbase tx. Settlement proposers on the right submit BMM
+// commitments and pay BTC fees back to miners. The key takeaway: zero
+// marginal cost for miners, full hashrate security for Snowside.
 
 import type { Figure } from '../types';
 
@@ -19,8 +19,8 @@ export const bmmFlow: Figure = {
   kind: 'figure',
   caption:
     'Figure: Blind Merged Mining. Bitcoin miners include a compact header ' +
-    'commitment (zero marginal cost) and earn BTC fees from Snowside users. ' +
-    'No additional hardware or software required.',
+    'commitment (zero marginal cost) and earn BTC fees from settlement ' +
+    'proposers. No additional hardware or software required.',
   height: 120,
 
   draw: ({ doc, x, y, width }) => {
@@ -53,7 +53,7 @@ export const bmmFlow: Figure = {
     ctext('Coinbase commitment', leftX + boxW / 2, cy + 8);
     ctext('No Snowside node needed', leftX + boxW / 2, cy + 20);
 
-    // --- Snowside producers box ---
+    // --- Settlement Proposers box ---
     fl(LIGHT);
     dr(SNOW_D);
     doc.setLineWidth(1.2);
@@ -61,12 +61,12 @@ export const bmmFlow: Figure = {
     doc.setFont('NotoSans', 'bold');
     doc.setFontSize(10);
     tx(SNOW_D);
-    ctext('Snowside Producers', rightX + boxW / 2, cy - 6);
+    ctext('Settlement Proposers', rightX + boxW / 2, cy - 6);
     doc.setFont('NotoSans', 'normal');
     doc.setFontSize(8);
     tx(AXIS);
-    ctext('Build + sign blocks', rightX + boxW / 2, cy + 8);
-    ctext('Pay BTC fees', rightX + boxW / 2, cy + 20);
+    ctext('Submit BMM commitments', rightX + boxW / 2, cy + 8);
+    ctext('Pay BTC to miners', rightX + boxW / 2, cy + 20);
 
     // --- arrows ---
     const gapL = leftX + boxW + 6;

@@ -2,8 +2,9 @@
 // Vector figure for validator economics (section 9).
 //
 // Visual intent: show the cost/revenue balance for running a Snowside
-// validator. Low cost (Avalanche9000 subscription ~$10-20/mo) vs revenue
-// (BTC gas fees). NodΞRunr handles all operational overhead.
+// validator. Low cost (Avalanche9000 subscription ~$10-20/mo + BTC bond)
+// vs revenue (Priority Fees + Contract Fees in BTC). NodΞRunr handles all
+// operational overhead.
 
 import type { Figure } from '../types';
 
@@ -17,7 +18,8 @@ export const validatorEconomics: Figure = {
   kind: 'figure',
   caption:
     'Figure: Validator economics. Operational cost is ~$10-20/month via ' +
-    'Avalanche9000 subscription. Revenue comes from BTC gas fees. NodΞRunr ' +
+    'Avalanche9000 subscription plus BTC bond (0.3 BTC minimum, Phase 2+). ' +
+    'Revenue comes from Priority Fees and Contract Fees (BTC). NodΞRunr ' +
     'eliminates manual maintenance, making community-run validation feasible.',
   height: 110,
 
@@ -50,7 +52,7 @@ export const validatorEconomics: Figure = {
     tx(AXIS);
     doc.text('Avalanche9000 subscription', leftX + 12, cy + 4);
     doc.text('~$10-20 / month per validator', leftX + 12, cy + 16);
-    doc.text('AVAX for Primary Network stake', leftX + 12, cy + 28);
+    doc.text('AVAX (Phase 1-2) + 0.3 BTC bond (Phase 2+)', leftX + 12, cy + 28);
 
     // Revenue box
     fl(LIGHT);
@@ -64,8 +66,8 @@ export const validatorEconomics: Figure = {
     doc.setFont('NotoSans', 'normal');
     doc.setFontSize(8);
     tx(AXIS);
-    doc.text('BTC gas fees from transactions', rightX + 12, cy + 4);
-    doc.text('Contract call fees', rightX + 12, cy + 16);
-    doc.text('Permissionless — anyone can run', rightX + 12, cy + 28);
+    doc.text('Priority Fees (BTC, 100% to producer)', rightX + 12, cy + 4);
+    doc.text('Contract Fees (BTC, vesting split)', rightX + 12, cy + 16);
+    doc.text('Permissionless \u2014 anyone can run', rightX + 12, cy + 28);
   },
 };
