@@ -117,7 +117,7 @@ The landing page alternates dark and light sections for visual rhythm. The estab
 ## Footer structure (packages/web)
 - **Sections:** About (`/#about`), Technology (`/#tech`), Value Proposition (`/#value`), Roadmap (`/#roadmap`)
 - **Resources:** Documentation (docs.snowside.network), GitHub (github.com/abitsuite/snowside), Whitepaper (`/whitepaper`), Validators (`/validators`), NodΞRunr (layer1.run), Avalanche (avax.network)
-- **Contact:** Discord (discord.gg/jVytngEWt), X / Twitter (x.com/0xShomari), Email (shomari@abitsuite.com)
+- **Contact:** Discord (discord.gg/jVytngEWt), X / Twitter (x.com/SnowsideNetwork), Email (shomari@abitsuite.com)
 
 ## Heredoc discipline
 When writing files via terminal heredocs (`cat > file << 'EOF'`):

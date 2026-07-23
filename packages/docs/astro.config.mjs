@@ -12,7 +12,7 @@ export default defineConfig({
       description: 'Technical documentation for the eCash sidechain on Avalanche',
       social: [
         { icon: 'github', label: 'GitHub', href: 'https://github.com/abitsuite/snowside' },
-        { icon: "x.com", label: "X", href: 'https://x.com/0xShomari' },
+        { icon: "x.com", label: "X", href: 'https://x.com/SnowsideNetwork' },
       ],
       sidebar: [
         {
