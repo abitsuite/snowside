@@ -146,3 +146,48 @@ When writing files via terminal heredocs (`cat > file << 'EOF'`):
 ## Handoff
 - At the end of each session, update `docs/HANDOFF.md` with the current state and next steps.
 - Include: what was done, what remains, build status, and any known errors.
+
+## Repository Structure (Updated July 2026)
+
+The Snowside monorepo uses language-specific top-level directories:
+
+packages/     — JavaScript/TypeScript (pnpm workspace)
+  web/ Main website (Astro)
+  pitch/ Grant pitch page (Astro)
+  docs/ Documentation site (Astro + Starlight)
+
+go/ — Go packages
+  subnet-evm/   Subnet-EVM fork with BMM coordination precompile
+
+rust/ — Rust packages
+  bmm-bidder/   BMM bidder and settlement monitor
+
+contracts/    — Solidity smart contracts (Foundry)
+  src/
+    interfaces/   Solidity interfaces for precompiles
+    peg/ BTC peg contract (deposits/withdrawals)
+    fees/ Contract Fee distribution
+  test/ Foundry tests
+  script/ Deployment scripts
+
+docs/ — Documentation and handoff notes
+
+### Tooling by Language
+
+| Language | Tool | Workspace Config |
+|----------|--------|------------------------------------|
+| JS/TS | pnpm | pnpm-workspace.yaml (packages/*) |
+| Go | go | go/subnet-evm/go.mod |
+| Rust | cargo | rust/bmm-bidder/Cargo.toml |
+| Solidity | Foundry | contracts/foundry.toml |
+
+### Build Commands by Package
+
+| Package | Build Command |
+|------------|---------------------------------------|
+| web | cd packages/web && pnpm build |
+| pitch | cd packages/pitch && pnpm build |
+| docs | cd packages/docs && pnpm build |
+| subnet-evm | cd go/subnet-evm && make build |
+| bmm-bidder | cd rust/bmm-bidder && cargo build |
+| contracts | cd contracts && forge build |

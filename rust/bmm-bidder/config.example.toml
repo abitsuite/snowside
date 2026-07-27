@@ -1,0 +1,29 @@
+# BMM Bidder Configuration
+
+[snowside]
+# RPC endpoint for the Snowside L1 (Subnet-EVM)
+rpc_url = "http://localhost:9650/ext/bc/snowside/rpc"
+
+# Address of the proposer's account (for collecting escrowed fees)
+proposer_address = "0x0000000000000000000000000000000000000000"
+
+[ecash]
+# RPC endpoint for eCash L1
+rpc_url = "http://localhost:8332"
+
+# eCash sidechain number assigned to Snowside (0-255)
+sidechain_number = 0
+
+# eCash wallet for submitting BMM Requests
+wallet_name = "snowside_bidder"
+
+[bidding]
+# Maximum bid (in sats) willing to pay per BMM Request
+max_bid_sats = 1000
+
+# Minimum aggregate value (in sats) required before submitting a BMM Request
+# (ensures we don't settle for tiny aggregates)
+min_aggregate_sats = 500
+
+# Maximum number of blocks to aggregate before forcing a settlement
+max_blocks_per_aggregate = 100

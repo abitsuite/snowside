@@ -27,9 +27,15 @@ token is BTC — no new tokens, no pre-mine, just Bitcoin security via blind mer
 
 ```
 packages/
-  web/      — Main website (Astro)
-  pitch/    — Grant pitch page (Astro)
-docs/       — Documentation and handoff notes
+  web/ — Main website (Astro)
+  pitch/      — Grant pitch page (Astro)
+  docs/       — Documentation site (Astro + Starlight)
+go/
+  subnet-evm/ — Subnet-EVM fork with BMM coordination precompile (Go)
+rust/
+  bmm-bidder/ — BMM bidder and settlement monitor (Rust)
+contracts/    — Solidity smart contracts (Foundry)
+docs/ — Documentation and handoff notes
 ```
 
 ## Status

@@ -23,3 +23,31 @@ Thumbs.db
 # Logs
 *.log
 npm-debug.log*
+
+# === Rust ===
+rust/**/target/
+rust/**/*.rs.bk
+
+# === Go ===
+go/**/build/
+go/**/*.test
+go/**/*.out
+go/vendor/
+
+# === Foundry / Solidity ===
+contracts/out/
+contracts/cache/
+contracts/broadcast/
+contracts/.gas-snapshot
+contracts/lib/  # Foundry libraries are re-installed with forge install
+
+# === IDE / Editor ===
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# === OS ===
+.DS_Store
+Thumbs.db
