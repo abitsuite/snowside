@@ -2,8 +2,8 @@
 // Vector figure for Snowside's two-layer consensus model (section 8).
 //
 // Visual intent: three horizontal tiers stacked vertically — Instant
-// (Avalanche, ~1-3s), Confirmed (validator consensus, ~2min), Settled
-// (BMM anchor to Bitcoin, ~10-20min). Each tier shows its confirmation time.
+// (Avalanche, ~1-2s), Confirmed (eCash block, ~2min), Settled
+// (BMM anchor to eCash L1, ~10-20min). Each tier shows its confirmation time.
 
 import type { Figure } from '../types';
 
@@ -18,8 +18,8 @@ const AXIS    = [102, 102, 115] as const;
 export const consensusLayers: Figure = {
   kind: 'figure',
   caption:
-    'Figure: Three-tier confirmation model. Instant (Avalanche, ~1-3s), ' +
-    'Confirmed (PoW block, ~2min), Settled (BMM anchor to Bitcoin, ~10-20min). ' +
+    'Figure: Three-tier confirmation model. Instant (Avalanche, ~1-2s), ' +
+    'Confirmed (eCash block, ~2min), Settled (BMM anchor to eCash L1, ~10-20min). ' +
     'Users choose the tier that matches their trust requirement.',
   height: 150,
 
@@ -36,9 +36,9 @@ export const consensusLayers: Figure = {
     const tierX = x + 20;
 
     const tiers = [
-      { label: 'Instant', desc: 'Avalanche consensus — sub-second finality', time: '~1-3s', color: SNOW },
-      { label: 'Confirmed', desc: 'Validator consensus block', time: '~2min', color: PURPLE },
-      { label: 'Settled', desc: 'BMM anchor to Bitcoin L1', time: '~10-20min', color: BTC_ORG },
+      { label: 'Instant', desc: 'Avalanche consensus — sub-2-second finality', time: '~1-2s', color: SNOW },
+      { label: 'Confirmed', desc: 'eCash block confirmation', time: '~2min', color: PURPLE },
+      { label: 'Settled', desc: 'BMM anchor to eCash L1 (1-2 blocks)', time: '~10-20min', color: BTC_ORG },
     ];
 
     tiers.forEach((tier, i) => {

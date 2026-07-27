@@ -2,7 +2,7 @@
 
 import type { WhitepaperMeta } from './types';
 
-export const WHITEPAPER_VERSION = '0.2';
+export const WHITEPAPER_VERSION = '0.3';
 
 export const meta: WhitepaperMeta = {
   brand: 'Snowside',

@@ -2,7 +2,7 @@
 // Vector figure for Snowside's full system architecture (section 3).
 // All coordinates in points (pt), matching the jsPDF doc unit.
 //
-// Visual intent: three horizontal boxes — Bitcoin (orange) → Snowside L1
+// Visual intent: three horizontal boxes — eCash (orange) → Snowside L1
 // (snow-blue/purple) → C-Chain (USDC-blue). Arrows show BMM commitments
 // flowing left-to-right and ICM bridge flowing right-to-left.
 
@@ -20,7 +20,7 @@ const AXIS    = [102, 102, 115] as const;
 export const architectureDiagram: Figure = {
   kind: 'figure',
   caption:
-    'Figure: System architecture. Bitcoin miners secure Snowside via BMM ' +
+    'Figure: System architecture. eCash miners secure Snowside via BMM ' +
     'commitments (left). Avalanche C-Chain provides USDC liquidity via ICM ' +
     'bridge (right). Snowside operates as a sovereign EVM L1 in the center.',
   height: 165,
@@ -43,7 +43,7 @@ export const architectureDiagram: Figure = {
     const rightX = x + 2 * (boxW + gap);
     const cy = boxY + boxH / 2;
 
-    // --- Bitcoin box (left, orange border) ---
+    // --- eCash box (left, orange border) ---
     fl(LIGHT);
     dr(BTC_ORG);
     doc.setLineWidth(1.5);
@@ -51,7 +51,7 @@ export const architectureDiagram: Figure = {
     doc.setFont('NotoSans', 'bold');
     doc.setFontSize(10);
     tx(BTC_ORG);
-    ctext('Bitcoin L1', leftX + boxW / 2, cy - 6);
+    ctext('eCash L1', leftX + boxW / 2, cy - 6);
     doc.setFont('NotoSans', 'normal');
     doc.setFontSize(8);
     tx(AXIS);
@@ -107,7 +107,7 @@ export const architectureDiagram: Figure = {
       ctext(label, (x1 + x2) / 2, ay - 8);
     };
 
-    // --- BMM arrow: Bitcoin → Snowside (top, orange, solid) ---
+    // --- BMM arrow: eCash → Snowside (top, orange, solid) ---
     const yBmm = cy - 16;
     arrow(leftX + boxW + 4, midX - 4, yBmm, BTC_ORG, 'BMM commitment', false);
 

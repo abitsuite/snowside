@@ -1,7 +1,7 @@
 // packages/web/src/data/whitepaper/figures/bmm-flow.ts
 // Vector figure for Blind Merged Mining flow (section 4).
 //
-// Visual intent: Bitcoin miners on the left include a small data commitment
+// Visual intent: eCash miners on the left include a small data commitment
 // in their coinbase tx. Settlement proposers on the right submit BMM
 // commitments and pay BTC fees back to miners. The key takeaway: zero
 // marginal cost for miners, full hashrate security for Snowside.
@@ -18,7 +18,7 @@ const AXIS    = [102, 102, 115] as const;
 export const bmmFlow: Figure = {
   kind: 'figure',
   caption:
-    'Figure: Blind Merged Mining. Bitcoin miners include a compact header ' +
+    'Figure: Blind Merged Mining. eCash miners include a compact header ' +
     'commitment (zero marginal cost) and earn BTC fees from settlement ' +
     'proposers. No additional hardware or software required.',
   height: 120,
@@ -38,7 +38,7 @@ export const bmmFlow: Figure = {
     const rightX = x + width - boxW;
     const cy = boxY + boxH / 2;
 
-    // --- Bitcoin miners box ---
+    // --- eCash miners box ---
     fl(LIGHT);
     dr(BTC_ORG);
     doc.setLineWidth(1.2);
@@ -46,7 +46,7 @@ export const bmmFlow: Figure = {
     doc.setFont('NotoSans', 'bold');
     doc.setFontSize(10);
     tx(BTC_ORG);
-    ctext('Bitcoin Miners', leftX + boxW / 2, cy - 6);
+    ctext('eCash Miners', leftX + boxW / 2, cy - 6);
     doc.setFont('NotoSans', 'normal');
     doc.setFontSize(8);
     tx(AXIS);
