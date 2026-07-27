@@ -4,7 +4,34 @@
 - `packages/web` – Astro static site (landing page + whitepaper + /validators), deployed to Cloudflare Pages via `master`
 - `packages/pitch` – Astro static site (pitch.snowside.network), separate Cloudflare Pages project. **noindex, nofollow** — no links from web to pitch.
 - `packages/docs` – Astro Starlight technical documentation (docs.snowside.network)
-- `packages/l1` – (future) Avalanche L1 code
+- `go/subnet-evm` – Subnet-EVM fork with BMM coordination precompile (Go)
+- `rust/bmm-bidder` – BMM bidder and settlement monitor (Rust)
+- `contracts/` – Solidity smart contracts (Foundry)
+
+## Repository Structure (Updated July 2026)
+
+The Snowside monorepo uses language-specific top-level directories:
+
+packages/     — JavaScript/TypeScript (pnpm workspace)
+  web/ Main website (Astro)
+  pitch/ Grant pitch page (Astro)
+  docs/ Documentation site (Astro + Starlight)
+
+go/ — Go packages
+  subnet-evm/   Subnet-EVM fork with BMM coordination precompile
+
+rust/ — Rust packages
+  bmm-bidder/   BMM bidder and settlement monitor
+
+contracts/    — Solidity smart contracts (Foundry)
+  src/
+    interfaces/   Solidity interfaces for precompiles
+    peg/ BTC peg contract (deposits/withdrawals)
+    fees/ Contract Fee distribution
+  test/ Foundry tests
+  script/ Deployment scripts
+
+docs/ — Documentation and handoff notes
 
 ## Core workflow rules
 **Push to production often.** After every meaningful change, build, commit from the repo root, and push to `master`.
@@ -147,31 +174,6 @@ When writing files via terminal heredocs (`cat > file << 'EOF'`):
 - At the end of each session, update `docs/HANDOFF.md` with the current state and next steps.
 - Include: what was done, what remains, build status, and any known errors.
 
-## Repository Structure (Updated July 2026)
-
-The Snowside monorepo uses language-specific top-level directories:
-
-packages/     — JavaScript/TypeScript (pnpm workspace)
-  web/ Main website (Astro)
-  pitch/ Grant pitch page (Astro)
-  docs/ Documentation site (Astro + Starlight)
-
-go/ — Go packages
-  subnet-evm/   Subnet-EVM fork with BMM coordination precompile
-
-rust/ — Rust packages
-  bmm-bidder/   BMM bidder and settlement monitor
-
-contracts/    — Solidity smart contracts (Foundry)
-  src/
-    interfaces/   Solidity interfaces for precompiles
-    peg/ BTC peg contract (deposits/withdrawals)
-    fees/ Contract Fee distribution
-  test/ Foundry tests
-  script/ Deployment scripts
-
-docs/ — Documentation and handoff notes
-
 ### Tooling by Language
 
 | Language | Tool | Workspace Config |
@@ -188,6 +190,6 @@ docs/ — Documentation and handoff notes
 | web | cd packages/web && pnpm build |
 | pitch | cd packages/pitch && pnpm build |
 | docs | cd packages/docs && pnpm build |
-| subnet-evm | cd go/subnet-evm && make build |
+| subnet-evm | cd go/subnet-evm && ./scripts/build.sh |
 | bmm-bidder | cd rust/bmm-bidder && cargo build |
 | contracts | cd contracts && forge build |

@@ -1,7 +1,7 @@
-# Snowside Handoff — 2026-07-21 (Session 4, Final Update)
+# Snowside Handoff — 2026-07-26 (Session 5, Final Update)
 
 ## Purpose
-Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88. The monorepo at `/Workspace/abitsuite/snowside` includes a landing page (`snowside.network`), a pitch page (`pitch.snowside.network`), and a docs site (`docs.snowside.network`).
+Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88. The monorepo at `/Workspace/abitsuite/snowside` includes a landing page (`snowside.network`), a pitch page (`pitch.snowside.network`), and a docs site (`docs.snowside.network`), alongside the L1 execution layer (`go/subnet-evm`), BMM bidder (`rust/bmm-bidder`), and core contracts (`contracts/`).
 
 ## Monorepo structure
 
@@ -12,132 +12,75 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
     ├── .gitignore
     ├── docs/                 # Session handoffs + meta docs
     │   └── HANDOFF.md
-    └── packages/
-        ├── web/  # Astro static — Landing + Whitepaper v0.3 + /validators (snowside.network)
-        ├── pitch/ # Astro static — Pitch page (pitch.snowside.network) — noindex,nofollow
-        └── docs/ # Astro Starlight — Technical docs (docs.snowside.network)
+    ├── packages/
+    │   ├── web/  # Astro static — Landing + Whitepaper v0.3 + /validators (snowside.network)
+    │   ├── pitch/ # Astro static — Pitch page (pitch.snowside.network) — noindex,nofollow
+    │   └── docs/ # Astro Starlight — Technical docs (docs.snowside.network)
+    ├── go/
+    │   └── subnet-evm/ # Subnet-EVM fork with BMM coordination precompile (Go)
+    ├── rust/
+    │   └── bmm-bidder/ # BMM bidder and settlement monitor (Rust)
+    └── contracts/ # Solidity smart contracts (Foundry)
 
-## Session 4 summary — 2026-07-17 to 2026-07-21
+## Session 5 summary — 2026-07-26
 
-### Task 1: Nav button + Whitepaper link cleanup
-- Changed Nav button from "Read the Proposal" (`href="#proposal"`) to "Read the Whitepaper" (`href="/whitepaper"`)
-- Removed redundant "Whitepaper" text link from Nav
-- Also fixed Hero button: "Read the Proposal" → "Read the Whitepaper"
-
-### Task 2: Team section improvements
-- Changed heading from "Who builds Snowside" to "Who is building Snowside"
-- Added retro9000 SVG logo badge (red triangle "A" + white "retro9000" text on dark badge, linked to grant tweet)
-- Removed false claim: "NodΞRunr is open source and already used by multiple Avalanche L1 teams"
-- Removed false claim: "Direct support from Paul Sztorc (informal collaboration)"
-- Removed "Current status: Applying for a Team1 Mini Grant" paragraph
-- Removed redundant "Avalanche Foundation Grant Recipient" badge (retro9000 logo already conveys this)
-
-### Task 3: Roadmap fix
-- Month 3: "at least 3 community validators" → "5 trusted community validators"
-
-### Task 4: CTA section update
-- "Run a Validator" button linked to new `/validators` page
-- Discord link updated to `https://discord.gg/jVytngEWt`
-- Removed "Read our Team1 Proposal" button
-- Removed pitch deck link (zero links to pitch.snowside.network from web)
-
-### Task 5: /validators page (new)
-- Created `packages/web/src/pages/validators.astro`
-- Full validator onboarding page with alternating dark/light sections
-- Content adapted from existing `packages/docs/src/content/docs/guides/running-a-validator.md`
-- Sections: What is a validator, Prerequisites, 5-step NodΞRunr deployment (install, select template, configure, deploy, verify), Monitoring, Stopping/removing, References, CTA
-- Page-specific CTA with Discord + Back to Home buttons
-
-### Task 6: Footer reorganization
-- Moved Whitepaper from "Sections" to "Resources"
-- Added Validators page to "Resources"
-- Reordered Resources: Documentation first, GitHub second
-- Updated GitHub link from `github.com/nyusternie/layer1run` to `github.com/abitsuite/snowside`
-- Added Discord as first link under "Contact"
-
-### Task 7: Hero title increase
-- "Snowside" title: text-4xl → text-5xl (mobile), md:text-6xl → md:text-7xl (desktop)
-- Subtitle "The eCash Sidechain on Avalanche" unchanged at text-4xl/md:text-6xl
-
-### Task 8: Multi-page Nav link fix
-- Nav hash links changed from `#about` → `/#about`, `#tech` → `/#tech`, `#roadmap` → `/#roadmap`, `#contact` → `/#contact`
-- Logo link changed from `href="#"` to `href="/"`
-- Footer already used `/#` prefixes — no change needed
-- Fixed the bug where clicking Nav links on /validators resulted in `/validators#about` instead of `/#about`
-
-### Task 9: Pitch noindex
-- Added `<meta name="robots" content="noindex, nofollow">` to `packages/pitch/src/layouts/Base.astro`
-- Prevents search engine and AI indexing of the pitch page
-- Combined with zero links from web → pitch page is only reachable via direct URL
-
-### Task 10: Simple Analytics
-- Added Simple Analytics to all 3 packages (web, pitch, docs)
-- Web & Pitch: `<script is:inline async defer src="https://scripts.simpleanalyticscdn.com/latest.js">` + `<noscript>` image in `Base.astro` `<head>`
-- Docs: `head` array in `astro.config.mjs` Starlight config with script + noscript tag objects
-- Standard embed — no site ID required, auto-detects domain
-
-### Task 11: AGENTS.md + HANDOFF.md update (first pass)
-- Added Analytics, Pages, Footer structure, Pitch isolation sections to AGENTS.md
-- Updated file inventory and session history in HANDOFF.md
-
-### Task 12: Whitepaper v0.2 — 6 architectural updates
-- meta.ts: version 0.1 → 0.2
-- content.ts: 417 lines (was ~200), 15 sections preserved, 6 new sub-sections added
-- 3 new figure files created, 2 existing figures updated
-- Refer to prior handoff or git history for detailed v0.2 change list
-
-### Task 13: Whitepaper v0.3 — 20 architectural updates
-- meta.ts: version 0.2 → 0.3
-- content.ts: 481 lines (was 417), 15 sections preserved, 8 new sub-sections added
-- Corrected `Snowball` → `Snowman` terminology throughout (linear-chain variant is Snowman)
-- Corrected `Bitcoin miners/L1` → `eCash miners/L1` throughout (security source is eCash PoW)
-- Added `Rollup-Style Settlement` classification to Architecture Overview
-- Added `Subnet-EVM and Implementation Languages` (Subnet-EVM in Go, bidder in Rust, contracts in Solidity)
-- Added `BMM Coordination Precompile` section (state tracked, 5 functions)
-- Added `BMM Request Format Details` (1+3+1+32+32 byte structure)
-- Added `Merkle Root Aggregation Mechanism` (multiple finalized blocks aggregated to h*)
-- Added `Settlement Failure and Mutable Aggregates` (mutable during pending, no timeout release)
-- Added `Fee Escrow Mechanism` (escrowed at finalization, released on settlement)
-- Added `Sidechain Independence` (up to 256 sidechains, no cross-sidechain competition)
-- Added `BIP300 Operation Support` (M1, M2, M5, M6, M3/M4)
-- Added `Proposer Economics Detail` (Revenue = Escrowed Base Fees, Cost = BMM bid)
-- Added `Fast Withdrawal Service` (instant swap / OTC desk model, centralized, first-party)
-- **Removed Phase 3 / AVAX phase-out** entirely from content & permissionless roadmap figure
-- Updated roadmap to **two-phase model** (Phase 1: Permissioned, Phase 2: Permissionless AVAX + BTC)
-- Added eCash naming confusion disclaimer to Introduction
-- Updated finality estimates to 1-2 seconds ("sub-2-second")
-- Updated Three-Tier Confirmation model (Confirmed = eCash block, Settled = 1-2 eCash blocks)
-- Emphasized Avalanche blocks are FINAL regardless of BMM status
-- Updated 4 figures: architecture-diagram, bmm-flow, consensus-layers, permissionless-roadmap (2-phase)
-- Build verified: 481 lines content.ts, 885 total lines across 6 whitepaper files
-- Committed and pushed to `master` (commit `94e9dcc6`)
+### Task 1: Monorepo Restructuring & Scaffolding
+- System prerequisites verified: Go upgraded from 1.17.12 to 1.23.12, Rust 1.90.0, Node 24.14.0, Foundry 1.7.1.
+- Go upgraded to 1.23.12 due to Subnet-EVM requirements.
+- Created top-level directories: `go/`, `rust/`, `contracts/`.
+- Scafflolded `go/subnet-evm/` from `ava-labs/subnet-evm` (commit hash recorded in `.upstream-commit`).
+- Scafflolded `rust/bmm-bidder/` as a binary crate, added CLI skeleton (`run`, `status`, `submit`), dependencies (`reqwest`, `tokio`, `clap`), and example config.
+- Scafflolded `contracts/` with Foundry. Added `IBMMCoordination.sol` interface, placeholder `Peg.sol` and `FeeDistribution.sol`, configured `foundry.toml`.
+- Updated `.gitignore` to exclude Rust `target/`, Go `build/`, Foundry `out/`, `cache/`, and `lib/`.
+- Committed initial scaffolding (rust + contracts) to `master`.
+- Fixed missing `go/subnet-evm/` directory (initial script omitted `mkdir -p go/subnet-evm`, which was corrected in a follow-up command).
+- Added `go/subnet-evm/README.md`.
+- Determined `go/subnet-evm` uses `Taskfile.yml` and `./scripts/build.sh` instead of a `Makefile` for builds.
 
 ### Build status — all packages pass
 
-| Package | Status | Pages |
-|---------|--------|-------|
-| packages/web | ✅ | index.html, whitepaper/index.html (v0.3), whitepaper.pdf (v0.3), validators/index.html |
-| packages/pitch | ✅ | index.html |
-| packages/docs | ✅ | 13 pages: index + 6 architecture + 3 guides + 2 reference + 404 |
+| Package | Status |
+|---------|--------|
+| packages/web | ✅ |
+| packages/pitch | ✅ |
+| packages/docs | ✅ |
+| go/subnet-evm | ✅ (using ./scripts/build.sh) |
+| rust/bmm-bidder | ✅ |
+| contracts | ✅ |
 
-## Next session: New Session — Continue Orchestration
+## Next session: New Session — Continue L1 Development
 
-The context window will be cleared. The next session begins with continued orchestration of new Snowside features. All AGENTS.md and HANDOFF.md notes are preserved for rapid context recovery.
+The context window will be cleared. The next session begins with implementation of the BMM coordination precompile in `go/subnet-evm/` and expanding the `rust/bmm-bidder` RPC capabilities.
 
 ## Outstanding tasks
+
+### Subnet-EVM precompile implementation (go/subnet-evm/)
+- Study the existing precompile architecture in Subnet-EVM
+- Implement the BMM coordination precompile in Go
+- Add precompile registration in the chain configuration
+- Write unit tests for the precompile
+
+### BMM bidder implementation (rust/bmm-bidder/)
+- Implement eCash RPC client
+- Implement Snowside RPC client (eth_call for precompile reads)
+- Implement BMM Request transaction construction
+- Implement settlement monitoring loop
+- Implement configuration loading
+
+### Smart contract implementation (contracts/)
+- Implement Peg contract (deposit claiming, withdrawal initiation)
+- Implement FeeDistribution contract
+- Write comprehensive Foundry tests
+
+### Local testing network
+- Set up a local Avalanche network with the modified Subnet-EVM
+- Deploy contracts
+- Test BMM coordination end-to-end
 
 ### Image placeholders (still need real images)
 - `Hero.astro` — commented-out hero illustration placeholder
 - `WhyAvalanche.astro` — 6th card is a dashed-border placeholder for architecture diagram
 - `NodeRunr.astro` — surface-1 card placeholder for NodΞRunr dashboard / terminal screenshot
-
-### Cloudflare Pages deployment
-- **packages/web**: Verify CF build passes for v0.3 (may need cache purge for `/whitepaper/` HTML)
-- **packages/pitch**: Create CF Pages project, build command `npm run build`, output `dist/`, root `packages/pitch`
-- **packages/docs**: Create CF Pages project, build command `npm run build`, output `dist/`, root `packages/docs`
-
-### Pitch page dark theme alignment
-- The pitch page section backgrounds have not been audited for the same dark/light alternation pattern applied to web in session 3.
 
 ### Open Whitepaper Questions (from v0.3 plan, items 21-23)
 - Contract Fee: Optional or required? (Currently says "required on EVM calls")
@@ -170,6 +113,21 @@ The context window will be cleared. The next session begins with continued orche
 4. Dual-snowman 88 favicon deployed to all 3 packages
 5. OG image cache-bust (og-image-v2.png)
 6. retro9000 grant link added across 3 packages
+
+### Session 4 (2026-07-17 to 2026-07-21)
+1. Nav button + Whitepaper link cleanup
+2. Team section improvements (retro9000 badge, removed false claims)
+3. Roadmap fix (5 trusted community validators)
+4. CTA section update (Discord, /validators)
+5. /validators page (new)
+6. Footer reorganization
+7. Hero title increase
+8. Multi-page Nav link fix (/# prefixes)
+9. Pitch noindex
+10. Simple Analytics
+11. AGENTS.md + HANDOFF.md update (first pass)
+12. Whitepaper v0.2 — 6 architectural updates
+13. Whitepaper v0.3 — 20 architectural updates (Snowman terminology, Rollup-Style Settlement, BMM precompile details, Two-phase roadmap)
 
 ## Key file inventory
 
@@ -250,6 +208,48 @@ The context window will be cleared. The next session begins with continued orche
             ├── guides/              # 3 pages
             └── reference/            # 2 pages
 
+### go/subnet-evm (Go)
+    go/subnet-evm/
+    ├── README.md
+    ├── .upstream-commit
+    ├── Taskfile.yml
+    ├── scripts/
+    │   └── build.sh                 # Build script (replaces Makefile)
+    ├── go.mod
+    ├── go.sum
+    ├── cmd/
+    ├── contract/
+    ├── contracts/
+    ├── eth/
+    ├── evm/
+    ├── genesis/
+    ├── plugin/
+    └── precompile/
+
+### rust/bmm-bidder (Rust)
+    rust/bmm-bidder/
+    ├── Cargo.toml
+    ├── config.example.toml
+    ├── README.md
+    └── src/
+        └── main.rs                  # CLI skeleton (run, status, submit)
+
+### contracts (Solidity / Foundry)
+    contracts/
+    ├── foundry.toml
+    ├── README.md
+    ├── src/
+    │   ├── interfaces/
+    │   │   └── IBMMCoordination.sol # BMM coordination interface
+    │   ├── peg/
+    │   │   └── Peg.sol              # BIP300 deposit/withdrawal placeholder
+    │   └── fees/
+    │       └── FeeDistribution.sol  # Fee split logic placeholder
+    ├── test/
+    │   └── interfaces/
+    │       └── IBMMCoordination.t.sol
+    └── script/
+
 ## Key learnings (all sessions)
 1. **@tailwindcss/vite** breaks on Cloudflare's rolldown-vite — always use **@tailwindcss/postcss**
 2. **Starlight auto-injects ALL components** in `.md` files — never add import statements
@@ -271,6 +271,8 @@ The context window will be cleared. The next session begins with continued orche
 18. **PDF cache vs HTML cache** — Cloudflare may serve stale HTML for `/whitepaper/` while `/whitepaper.pdf` updates. Cache purge may be required after whitepaper version bumps.
 19. **Mutable Aggregates** — BMM settlement allows proposers to grow their Merkle root payload during pending settlement. No timeout releases fees without successful settlement.
 20. **Two-phase roadmap** — Phase 3 (AVAX phase-out) was removed from the whitepaper as speculative. The roadmap is now a two-phase model: Phase 1 (Permissioned) and Phase 2 (Permissionless with AVAX + BTC).
+21. **Go Versioning** — Subnet-EVM requires Go 1.21+. Ubuntu 22.04 ships with an older Go version; manual installation of Go 1.23.12 was required.
+22. **Subnet-EVM Build Tool** — The upstream Subnet-EVM repo no longer ships a `Makefile`. Build using `./scripts/build.sh` or `task build`.
 
 ---
-*Generated at end of Session 4. Next session: New context window — Continue Orchestration. Maintained per AGENTS.md.*
+*Generated at end of Session 5. Next session: New context window — Continue L1 Development. Maintained per AGENTS.md.*

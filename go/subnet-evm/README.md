@@ -23,7 +23,7 @@ Upstream updates will be applied manually as needed.
 
 ## Build
 
-    make build
+    ./scripts/build.sh
 
 The binary will be output to ./build/.
 
