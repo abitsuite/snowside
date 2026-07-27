@@ -61,12 +61,26 @@ Never leave uncommitted work sitting locally at the end of a session.
 - Never commit `node_modules/` — if accidentally committed, run `git rm -r --cached node_modules`, add `.gitignore`, and amend the unpushed commit.
 
 ## Whitepaper
+- **Current version: v0.3** (meta.ts `WHITEPAPER_VERSION = '0.3'`)
 - PDF generated at build time via `packages/web/src/pages/whitepaper.pdf.ts` (Astro static endpoint using jsPDF).
-- Content lives in `packages/web/src/data/whitepaper/content.ts`.
-- Figures are vector `Figure` objects in `packages/web/src/data/whitepaper/figures/` (modeled on RISCy pattern).
+- Content lives in `packages/web/src/data/whitepaper/content.ts` (15 sections, auto-numbered at render time).
+- Figures are vector `Figure` objects in `packages/web/src/data/whitepaper/figures/` — **9 figures** (modeled on RISCy pattern):
+  - `architecture-diagram.ts` — System architecture (Section 3)
+  - `bmm-flow.ts` — BMM flow: eCash miners ↔ Settlement Proposers (Section 4)
+  - `gas-flow.ts` — BTC gas flow: Users → Producers → Miners (Section 5)
+  - `fee-model.ts` — Three-part fee model with vesting schedule (Section 5) **v0.2**
+  - `role-separation.ts` — Validators vs Settlement Proposers (Section 4) **v0.2**
+  - `icm-bridge.ts` — ICM USDC bridge (Section 6)
+  - `consensus-layers.ts` — Three-tier confirmation model (Section 8)
+  - `validator-economics.ts` — Validator cost/revenue balance (Section 9)
+  - `permissionless-roadmap.ts` — Three-phase validation roadmap (Section 12) **v0.2**
 - Fonts (`NotoSans-Regular/Bold/Italic.ttf`) in `packages/web/src/fonts/`.
 - Viewer page at `/whitepaper` embeds the PDF via `<iframe src="/whitepaper.pdf">`.
 - PDF.js is at `packages/web/public/pdfjs/` for any custom viewer needs.
+- **Consensus terminology (v0.3):** Use "Snowman consensus" when referring to the linear-chain variant. "Snowball" is the broader protocol family.
+- **eCash Terminology (v0.3):** Use "eCash" (not Bitcoin) when referring to miners, hashrate, L1 security source. Snowside is secured by eCash's SHA-256d PoW.
+- **Settlement Model (v0.3):** Classified as "rollup-style settlement". Includes new architecture subsections for Merkle Root Aggregation, Settlement Failure / Mutable Aggregates, Fee Escrow Mechanism, BMM Coordination Precompile, Fast Withdrawal Service, BIP300 Operation Support, Sidechain Independence.
+- **Roadmap (v0.3):** Reduced to a two-phase model (Phase 1: Permissioned, Phase 2: Permissionless with AVAX + BTC). Phase 3 / AVAX phase-out removed as speculative.
 
 ## Favicon
 - All three packages (`web`, `pitch`, `docs`) use the same SVG favicon at `public/favicon.svg`.
@@ -117,12 +131,13 @@ The landing page alternates dark and light sections for visual rhythm. The estab
 ## Footer structure (packages/web)
 - **Sections:** About (`/#about`), Technology (`/#tech`), Value Proposition (`/#value`), Roadmap (`/#roadmap`)
 - **Resources:** Documentation (docs.snowside.network), GitHub (github.com/abitsuite/snowside), Whitepaper (`/whitepaper`), Validators (`/validators`), NodΞRunr (layer1.run), Avalanche (avax.network)
-- **Contact:** Discord (discord.gg/jVytngEWt), X / Twitter (x.com/SnowsideNetwork), Email (shomari@abitsuite.com)
+- **Contact:** Discord (discord.gg/jVytngEWt), X / Twitter (x.com/0xShomari), Email (shomari@abitsuite.com)
 
 ## Heredoc discipline
 When writing files via terminal heredocs (`cat > file << 'EOF'`):
 - Use a unique delimiter like `'EOFLOWN'` instead of `'EOF'` to avoid conflicts with file content.
 - Send ONE file at a time if the file is large (>80 lines), or 2-3 small files with `wc -l` verification at the end.
+- **CRITICAL:** Terminals frequently garble multi-file heredoc pastes. ALWAYS run `wc -l <file>` and `tail -n 15 <file>` to verify the file was written correctly before assuming it failed or re-emitting code.
 - ALWAYS run `wc -l <file>` after writing to verify the line count matches expectation.
 - If a multi-file heredoc paste gets garbled in the terminal, fall back to single-file pastes.
 - **CRITICAL:** If markdown content inside a heredoc contains triple backticks, they will conflict with the outer code block. Use 4-space indented code blocks instead of fenced code blocks inside heredoc content.

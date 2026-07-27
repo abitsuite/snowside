@@ -1,4 +1,4 @@
-# Snowside Handoff — 2026-07-17 (Session 4, Final Update)
+# Snowside Handoff — 2026-07-21 (Session 4, Final Update)
 
 ## Purpose
 Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88. The monorepo at `/Workspace/abitsuite/snowside` includes a landing page (`snowside.network`), a pitch page (`pitch.snowside.network`), and a docs site (`docs.snowside.network`).
@@ -13,11 +13,11 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
     ├── docs/                 # Session handoffs + meta docs
     │   └── HANDOFF.md
     └── packages/
-        ├── web/  # Astro static — Landing + Whitepaper + /validators (snowside.network)
+        ├── web/  # Astro static — Landing + Whitepaper v0.3 + /validators (snowside.network)
         ├── pitch/ # Astro static — Pitch page (pitch.snowside.network) — noindex,nofollow
         └── docs/ # Astro Starlight — Technical docs (docs.snowside.network)
 
-## Session 4 summary — 2026-07-17
+## Session 4 summary — 2026-07-17 to 2026-07-21
 
 ### Task 1: Nav button + Whitepaper link cleanup
 - Changed Nav button from "Read the Proposal" (`href="#proposal"`) to "Read the Whitepaper" (`href="/whitepaper"`)
@@ -76,30 +76,53 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
 - Docs: `head` array in `astro.config.mjs` Starlight config with script + noscript tag objects
 - Standard embed — no site ID required, auto-detects domain
 
-### Task 11: AGENTS.md + HANDOFF.md update
+### Task 11: AGENTS.md + HANDOFF.md update (first pass)
 - Added Analytics, Pages, Footer structure, Pitch isolation sections to AGENTS.md
 - Updated file inventory and session history in HANDOFF.md
+
+### Task 12: Whitepaper v0.2 — 6 architectural updates
+- meta.ts: version 0.1 → 0.2
+- content.ts: 417 lines (was ~200), 15 sections preserved, 6 new sub-sections added
+- 3 new figure files created, 2 existing figures updated
+- Refer to prior handoff or git history for detailed v0.2 change list
+
+### Task 13: Whitepaper v0.3 — 20 architectural updates
+- meta.ts: version 0.2 → 0.3
+- content.ts: 481 lines (was 417), 15 sections preserved, 8 new sub-sections added
+- Corrected `Snowball` → `Snowman` terminology throughout (linear-chain variant is Snowman)
+- Corrected `Bitcoin miners/L1` → `eCash miners/L1` throughout (security source is eCash PoW)
+- Added `Rollup-Style Settlement` classification to Architecture Overview
+- Added `Subnet-EVM and Implementation Languages` (Subnet-EVM in Go, bidder in Rust, contracts in Solidity)
+- Added `BMM Coordination Precompile` section (state tracked, 5 functions)
+- Added `BMM Request Format Details` (1+3+1+32+32 byte structure)
+- Added `Merkle Root Aggregation Mechanism` (multiple finalized blocks aggregated to h*)
+- Added `Settlement Failure and Mutable Aggregates` (mutable during pending, no timeout release)
+- Added `Fee Escrow Mechanism` (escrowed at finalization, released on settlement)
+- Added `Sidechain Independence` (up to 256 sidechains, no cross-sidechain competition)
+- Added `BIP300 Operation Support` (M1, M2, M5, M6, M3/M4)
+- Added `Proposer Economics Detail` (Revenue = Escrowed Base Fees, Cost = BMM bid)
+- Added `Fast Withdrawal Service` (instant swap / OTC desk model, centralized, first-party)
+- **Removed Phase 3 / AVAX phase-out** entirely from content & permissionless roadmap figure
+- Updated roadmap to **two-phase model** (Phase 1: Permissioned, Phase 2: Permissionless AVAX + BTC)
+- Added eCash naming confusion disclaimer to Introduction
+- Updated finality estimates to 1-2 seconds ("sub-2-second")
+- Updated Three-Tier Confirmation model (Confirmed = eCash block, Settled = 1-2 eCash blocks)
+- Emphasized Avalanche blocks are FINAL regardless of BMM status
+- Updated 4 figures: architecture-diagram, bmm-flow, consensus-layers, permissionless-roadmap (2-phase)
+- Build verified: 481 lines content.ts, 885 total lines across 6 whitepaper files
+- Committed and pushed to `master` (commit `94e9dcc6`)
 
 ### Build status — all packages pass
 
 | Package | Status | Pages |
 |---------|--------|-------|
-| packages/web | ✅ | index.html, whitepaper/index.html, whitepaper.pdf, validators/index.html |
+| packages/web | ✅ | index.html, whitepaper/index.html (v0.3), whitepaper.pdf (v0.3), validators/index.html |
 | packages/pitch | ✅ | index.html |
 | packages/docs | ✅ | 13 pages: index + 6 architecture + 3 guides + 2 reference + 404 |
 
-## Next session: Whitepaper edits
+## Next session: New Session — Continue Orchestration
 
-The user's stated next focus is **whitepaper edits**. The whitepaper source lives in:
-- `packages/web/src/data/whitepaper/content.ts` — all section text
-- `packages/web/src/data/whitepaper/types.ts` — types (Figure, Section, etc.)
-- `packages/web/src/data/whitepaper/meta.ts` — metadata
-- `packages/web/src/data/whitepaper/figures/` — 6 vector figure definitions
-- `packages/web/src/pages/whitepaper.pdf.ts` — jsPDF rendering endpoint
-- `packages/web/src/pages/whitepaper.astro` — viewer page (`/whitepaper`)
-- `packages/web/src/fonts/NotoSans-*.ttf` — embedded fonts
-
-Before editing, request the latest `content.ts` and `whitepaper.pdf.ts` sources.
+The context window will be cleared. The next session begins with continued orchestration of new Snowside features. All AGENTS.md and HANDOFF.md notes are preserved for rapid context recovery.
 
 ## Outstanding tasks
 
@@ -109,12 +132,17 @@ Before editing, request the latest `content.ts` and `whitepaper.pdf.ts` sources.
 - `NodeRunr.astro` — surface-1 card placeholder for NodΞRunr dashboard / terminal screenshot
 
 ### Cloudflare Pages deployment
-- **packages/web**: Verify CF build passes
+- **packages/web**: Verify CF build passes for v0.3 (may need cache purge for `/whitepaper/` HTML)
 - **packages/pitch**: Create CF Pages project, build command `npm run build`, output `dist/`, root `packages/pitch`
 - **packages/docs**: Create CF Pages project, build command `npm run build`, output `dist/`, root `packages/docs`
 
 ### Pitch page dark theme alignment
 - The pitch page section backgrounds have not been audited for the same dark/light alternation pattern applied to web in session 3.
+
+### Open Whitepaper Questions (from v0.3 plan, items 21-23)
+- Contract Fee: Optional or required? (Currently says "required on EVM calls")
+- Vesting Schedule: Still intended? (50% → 80% over 18 months)
+- Validator Distribution: 50% equal / 50% proportional still intended? Sybil mitigation plan?
 
 ## Session history (prior sessions)
 
@@ -162,8 +190,8 @@ Before editing, request the latest `content.ts` and `whitepaper.pdf.ts` sources.
         ├── pages/
         │   ├── index.astro          # landing page
         │   ├── whitepaper.astro      # PDF viewer
-        │   ├── whitepaper.pdf.ts     # jsPDF endpoint
-        │   └── validators.astro      # NEW: validator onboarding page
+        │   ├── whitepaper.pdf.ts     # jsPDF endpoint (renders v0.3)
+        │   └── validators.astro      # validator onboarding page
         ├── components/
         │   ├── Nav.astro            # /# hash links, /whitepaper button
         │   ├── Hero.astro           # title text-5xl/7xl, button says "Read the Whitepaper"
@@ -178,9 +206,18 @@ Before editing, request the latest `content.ts` and `whitepaper.pdf.ts` sources.
         │   └── Footer.astro         # Discord in Contact, Docs+GitHub first in Resources
         ├── data/whitepaper/
         │   ├── types.ts
-        │   ├── meta.ts
-        │   ├── content.ts           # ← next session focus
+        │   ├── meta.ts              # WHITEPAPER_VERSION = '0.3'
+        │   ├── content.ts           # 481 lines, 15 sections, v0.3
         │   └── figures/
+        │       ├── architecture-diagram.ts    # Section 3 (v0.3: eCash L1 labels)
+        │       ├── bmm-flow.ts                # Section 4 (v0.3: eCash Miners labels)
+        │       ├── gas-flow.ts                # Section 5
+        │       ├── fee-model.ts               # Section 5 (v0.2)
+        │       ├── role-separation.ts         # Section 4 (v0.2)
+        │       ├── icm-bridge.ts              # Section 6
+        │       ├── consensus-layers.ts        # Section 8 (v0.3: eCash block labels)
+        │       ├── validator-economics.ts     # Section 9 (v0.2 economics)
+        │       └── permissionless-roadmap.ts  # Section 12 (v0.3: 2-phase model)
         └── fonts/
 
 ### packages/pitch (Astro)
@@ -228,6 +265,12 @@ Before editing, request the latest `content.ts` and `whitepaper.pdf.ts` sources.
 12. **Astro `<script is:inline>`** — required for external analytics scripts; without it Astro bundles/processes the tag
 13. **Pitch isolation** — `noindex,nofollow` meta + zero inbound links from web = unreachable to crawlers
 14. **Simple Analytics** — standard embed works across Astro layouts and Starlight head config without modification
+15. **Snowball vs Snowman** — "Snowball" is the broader protocol family; "Snowman" is the linear-chain variant used by Avalanche L1s. Always use "Snowman" for Snowside's consensus.
+16. **eCash vs Bitcoin** — Snowside is secured by eCash's PoW, not Bitcoin's directly. Always refer to "eCash miners" and "eCash L1" unless discussing Bitcoin's broader economic model.
+17. **Terminal heredocs garble** — Multi-file pastes frequently corrupt in the terminal. ALWAYS run `wc -l <file>` and `tail -n 15 <file>` to verify files were written correctly before assuming a failure.
+18. **PDF cache vs HTML cache** — Cloudflare may serve stale HTML for `/whitepaper/` while `/whitepaper.pdf` updates. Cache purge may be required after whitepaper version bumps.
+19. **Mutable Aggregates** — BMM settlement allows proposers to grow their Merkle root payload during pending settlement. No timeout releases fees without successful settlement.
+20. **Two-phase roadmap** — Phase 3 (AVAX phase-out) was removed from the whitepaper as speculative. The roadmap is now a two-phase model: Phase 1 (Permissioned) and Phase 2 (Permissionless with AVAX + BTC).
 
 ---
-*Generated at end of 2026-07-17 Session 4. Next session: Whitepaper edits. Maintained per AGENTS.md.*
+*Generated at end of Session 4. Next session: New context window — Continue Orchestration. Maintained per AGENTS.md.*
