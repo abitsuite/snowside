@@ -4,11 +4,12 @@
 - `packages/web` – Astro static site (landing page + whitepaper + /validators), deployed to Cloudflare Pages via `master`
 - `packages/pitch` – Astro static site (pitch.snowside.network), separate Cloudflare Pages project. **noindex, nofollow** — no links from web to pitch.
 - `packages/docs` – Astro Starlight technical documentation (docs.snowside.network)
+- `packages/explorer` – EVM block explorer (to be added)
 - `go/subnet-evm` – Subnet-EVM fork with BMM coordination precompile (Go)
 - `rust/bmm-bidder` – BMM bidder and settlement monitor (Rust)
 - `contracts/` – Solidity smart contracts (Foundry)
 
-## Repository Structure (Updated July 2026)
+## Repository Structure (Updated August 2026)
 
 The Snowside monorepo uses language-specific top-level directories:
 
@@ -16,6 +17,7 @@ packages/     — JavaScript/TypeScript (pnpm workspace)
   web/ Main website (Astro)
   pitch/ Grant pitch page (Astro)
   docs/ Documentation site (Astro + Starlight)
+  explorer/ EVM block explorer (to be added)
 
 go/ — Go packages
   subnet-evm/   Subnet-EVM fork with BMM coordination precompile
@@ -37,15 +39,103 @@ docs/ — Documentation and handoff notes
 **Push to production often.** After every meaningful change, build, commit from the repo root, and push to `master`.
 Never leave uncommitted work sitting locally at the end of a session.
 
+## CRITICAL: TERMINAL HEREDOC DISCIPLINE
+**NEVER** make the user ask for CLI commands. **ALWAYS** output commands in a single terminal-ready code block.
+**CRITICAL:** If markdown content inside a heredoc contains triple backticks, they will conflict with the outer code block. Use 4-space indented code blocks instead of fenced code blocks inside heredoc content.
+
 ## Build & deploy
-- Web build: `cd packages/web && npm run build` (Astro static, output `dist/`)
-- Pitch build: `cd packages/pitch && npm run build` (Astro static, output `dist/`)
-- Docs build: `cd packages/docs && npm run build` (Astro Starlight, output `dist/`)
-- Root build (all): `pnpm run build` (runs web then pitch)
-- Dev web: `pnpm run dev:web`
-- Dev pitch: `pnpm run dev:pitch`
-- Dev docs: `pnpm --filter packages-docs run dev`
+- Web build:     cd packages/web && pnpm build   # Astro static, output dist/
+- Pitch build:   cd packages/pitch && pnpm build # Astro static, output dist/
+- Docs build:    cd packages/docs && pnpm build  # Astro Starlight, output dist/
+- Root build:    pnpm run build                  # runs web then pitch
+- Dev web:       pnpm run dev:web
+- Dev pitch:     pnpm run dev:pitch
+- Dev docs:      pnpm --filter packages-docs run dev
 - Production URLs: https://snowside.network (web), https://pitch.snowside.network (pitch), https://docs.snowside.network (docs)
+
+## Avalanche L1 Network Infrastructure
+- **VPS:** rpc.snowside.network (Ubuntu 24.04, Nginx reverse proxy)
+- **Nginx Config:** /etc/nginx/sites-available/default on VPS
+- **Cloudflare DNS:** rpc.snowside.network -> VPS IP
+- **Deployment Tool:** Avalanche-CLI (requires letters only for blockchain names, no hyphens/underscores)
+
+### Deployed L1s (Local Network on VPS)
+1. **SnowsideMainnet** (Chain ID: 32904 / 0x8088)
+   - Blockchain ID: 2sDVEVpwW8aNwgY1RMGzmFVXdJ1vyE1qWg3YBK8pGX8iy9iLtJ
+   - Subnet ID: 2951oZXRAym6ThvANrFSCWbiSgh3mrgD5gJkACZbpnoic6Zczf
+   - Local RPC: http://127.0.0.1:9654/ext/bc/2sDVEVpwW8aNwgY1RMGzmFVXdJ1vyE1qWg3YBK8pGX8iy9iLtJ/rpc
+   - Public RPC: https://rpc.snowside.network/mainnet
+2. **SnowsideTestnet** (Chain ID: 33160 / 0x8188)
+   - Blockchain ID: 2PS8J5q5f4PXnwEsxLafFnPuFowprdaZ8EWuZpTF3hyi6SqLhe
+   - Subnet ID: wNWS35thzJy9fGaxtVfPwFKEt2RU2r9fMGA7c5A9XqqSvBCVj
+   - Local RPC: http://127.0.0.1:9656/ext/bc/2PS8J5q5f4PXnwEsxLafFnPuFowprdaZ8EWuZpTF3hyi6SqLhe/rpc
+   - Public RPC: https://rpc.snowside.network/testnet
+3. **SnowsideSignet** (Chain ID: 33352 / 0x8288)
+   - Blockchain ID: 2pwzxirqRyWrgegTjMyLH2s5RhSb8xNkSYt5y4KhLXyAzZ7PMc
+   - Subnet ID: yeEMHr6rnkSvbgoZSc1BxaiMEnVFev4jkMDEmCZvpbZoeeosp
+   - Local RPC: http://127.0.0.1:9658/ext/bc/2pwzxirqRyWrgegTjMyLH2s5RhSb8xNkSYt5y4KhLXyAzZ7PMc/rpc
+   - Public RPC: https://rpc.snowside.network/signet
+
+### L1 Shared Configuration
+- Token Name: ECX Token
+- Token Symbol: ECX
+- Consensus: Proof of Authority (PoA)
+- ICM Messenger Address: 0x253b2784c75e510dD0fF1da844684a1aC0aa5fcf
+- ICM Registry Address: 0xB8e71012d3F55D9EbbFf74376dE180702c1D8A6F
+- PoA Validator Manager: 0x0C0DEbA5E0000000000000000000000000000000
+- Validator Transparent Proxy: 0x0Feedc0de0000000000000000000000000000000
+- Funded account (ewoq): 0x8db97C7cEcE249c2b98bDC0226Cc4C2A57BF52FC (1,000,000 ECX)
+  - Private Key: 56289e99c94b6912bfc12adc093c9b51124f0dc54ac7a766b2bc5ccf558d8027
+
+### Nginx Reverse Proxy Configuration (/etc/nginx/sites-available/default)
+    server {
+        listen 80;
+        listen [::]:80;
+        listen 443 ssl http2;
+        listen [::]:443 ssl http2;
+    
+        server_name rpc.snowside.network;
+    
+        ssl_certificate      /etc/nginx/ssl/server.crt;
+        ssl_certificate_key /etc/nginx/ssl/server.key;
+    
+        access_log /dev/null;
+        error_log /root/error_log;
+    
+        root /var/www/html;
+        index index.html index.htm;
+    
+        location / {
+            try_files $uri $uri/ /index.html;
+        }
+    
+        # Snowside Mainnet (ChainID: 32904)
+        location /mainnet {
+            proxy_pass http://127.0.0.1:9654/ext/bc/2sDVEVpwW8aNwgY1RMGzmFVXdJ1vyE1qWg3YBK8pGX8iy9iLtJ/rpc;
+            proxy_set_header Host 127.0.0.1;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+    
+        # Snowside Testnet (ChainID: 33160)
+        location /testnet {
+            proxy_pass http://127.0.0.1:9656/ext/bc/2PS8J5q5f4PXnwEsxLafFnPuFowprdaZ8EWuZpTF3hyi6SqLhe/rpc;
+            proxy_set_header Host 127.0.0.1;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+    
+        # Snowside Signet (ChainID: 33352)
+        location /signet {
+            proxy_pass http://127.0.0.1:9658/ext/bc/2pwzxirqRyWrgegTjMyLH2s5RhSb8xNkSYt5y4KhLXyAzZ7PMc/rpc;
+            proxy_set_header Host 127.0.0.1;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+    }
 
 ## File conventions
 - All source files must include a comment at the file's path relative to the monorepo root (e.g., `// packages/web/src/components/Hero.astro`).
@@ -159,16 +249,6 @@ The landing page alternates dark and light sections for visual rhythm. The estab
 - **Sections:** About (`/#about`), Technology (`/#tech`), Value Proposition (`/#value`), Roadmap (`/#roadmap`)
 - **Resources:** Documentation (docs.snowside.network), GitHub (github.com/abitsuite/snowside), Whitepaper (`/whitepaper`), Validators (`/validators`), NodΞRunr (layer1.run), Avalanche (avax.network)
 - **Contact:** Discord (discord.gg/jVytngEWt), X / Twitter (x.com/0xShomari), Email (shomari@abitsuite.com)
-
-## Heredoc discipline
-When writing files via terminal heredocs (`cat > file << 'EOF'`):
-- Use a unique delimiter like `'EOFLOWN'` instead of `'EOF'` to avoid conflicts with file content.
-- Send ONE file at a time if the file is large (>80 lines), or 2-3 small files with `wc -l` verification at the end.
-- **CRITICAL:** Terminals frequently garble multi-file heredoc pastes. ALWAYS run `wc -l <file>` and `tail -n 15 <file>` to verify the file was written correctly before assuming it failed or re-emitting code.
-- ALWAYS run `wc -l <file>` after writing to verify the line count matches expectation.
-- If a multi-file heredoc paste gets garbled in the terminal, fall back to single-file pastes.
-- **CRITICAL:** If markdown content inside a heredoc contains triple backticks, they will conflict with the outer code block. Use 4-space indented code blocks instead of fenced code blocks inside heredoc content.
-- Use `cat >> file << 'EOF'` (append) for large files split across pastes; strip the closing 3 lines first with `head -n -3`.
 
 ## Handoff
 - At the end of each session, update `docs/HANDOFF.md` with the current state and next steps.
