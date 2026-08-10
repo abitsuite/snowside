@@ -1,0 +1,14 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-surface-0: #0a0f1a;
+  --color-surface-1: #111827;
+  --color-snow-50: #f8fafc;
+  --color-snow-400: #94a3b8;
+}
+
+body {
+  background-color: var(--color-surface-0);
+  color: var(--color-snow-50);
+  font-family: system-ui, -apple-system, sans-serif;
+}

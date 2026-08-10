@@ -1,0 +1,55 @@
+---
+// packages/explorer/src/pages/index.astro
+import '../styles/global.css';
+
+const rpcUrl = 'https://rpc.snowside.network/mainnet';
+
+const getLatestBlock = async () => {
+  try {
+    const res = await fetch(rpcUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'eth_blockNumber',
+        params: []
+      })
+    });
+    const data = await res.json();
+    return parseInt(data.result, 16); // Convert hex to decimal
+  } catch (err) {
+    console.error('RPC Error:', err);
+    return null;
+  }
+};
+
+const latestBlock = await getLatestBlock();
+---
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Snowside Explorer</title>
+  </head>
+  <body class="min-h-screen flex flex-col items-center justify-center gap-6">
+    <div class="text-center">
+      <h1 class="text-4xl font-bold text-snow-50 mb-2">Snowside Explorer</h1>
+      <p class="text-snow-400">Mainnet L1 Block Explorer</p>
+    </div>
+
+    <div class="bg-surface-1 rounded-lg border border-snow-400/20 p-8 min-w-[300px] text-center">
+      <p class="text-sm text-snow-400 uppercase tracking-wider mb-2">Latest Block</p>
+      {latestBlock !== null ? (
+        <p class="text-5xl font-mono text-snow-50">#{latestBlock}</p>
+      ) : (
+        <p class="text-xl text-rose-400">RPC Unavailable</p>
+      )}
+    </div>
+
+    <a href="https://docs.snowside.network" class="text-sm text-snow-400 hover:text-snow-50 mt-8">
+      Read the Docs →
+    </a>
+  </body>
+</html>
