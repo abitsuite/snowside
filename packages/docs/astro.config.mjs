@@ -36,6 +36,7 @@ export default defineConfig({
           label: 'Guides',
           items: [
             { label: 'Running a Validator', slug: 'guides/running-a-validator' },
+            { label: 'Connect a Web3 Wallet', slug: 'guides/connect-wallet' },
             { label: 'Deploying Contracts', slug: 'guides/deploying-contracts' },
             { label: 'Bridging USDC', slug: 'guides/bridging-usdc' },
           ],
