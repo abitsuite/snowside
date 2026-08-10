@@ -1,0 +1,59 @@
+---
+// packages/explorer/src/components/Search.astro
+interface Props {
+  network?: string;
+}
+const { network = 'mainnet' } = Astro.props;
+---
+<div class="w-full">
+  <form id="search-form" class="flex flex-col gap-2 sm:flex-row">
+    <input
+      id="search-input"
+      type="text"
+      placeholder="Search by Address / Txn Hash / Block Height"
+      class="w-full rounded-lg border border-white/10 bg-surface-1 px-4 py-3 text-sm text-snow-50 placeholder-snow-500 focus:border-aval-600 focus:outline-none focus:ring-1 focus:ring-aval-600"
+      autocomplete="off"
+    />
+    <button
+      type="submit"
+      class="rounded-lg bg-aval-600 px-6 py-3 text-sm font-bold text-white hover:bg-aval-700 transition-colors"
+    >
+      Search
+    </button>
+  </form>
+  <div id="search-error" class="mt-2 hidden rounded-md border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-xs text-rose-400"></div>
+</div>
+
+<script is:inline define:vars={{ network }}>
+  document.getElementById('search-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    const input = document.getElementById('search-input').value.trim();
+    const errorEl = document.getElementById('search-error');
+    errorEl.classList.add('hidden');
+
+    if (!input) return;
+
+    let type = null;
+    // Check if it's a block number (only digits)
+    if (/^\d+$/.test(input)) {
+      type = 'block';
+    }
+    // Check if it's an address (0x + 40 hex chars)
+    else if (/^0x[a-fA-F0-9]{40}$/.test(input)) {
+      type = 'address';
+    }
+    // Check if it's a tx hash (0x + 64 hex chars)
+    else if (/^0x[a-fA-F0-9]{64}$/.test(input)) {
+      type = 'tx';
+    }
+
+    if (type) {
+      // We route directly to the path. 
+      // The _middleware.js ensures this works on subdomains (e.g. /tx/0x... resolves to /testnet/tx/0x... on testnet subdomain)
+      window.location.href = `/${type}/${input}`;
+    } else {
+      errorEl.textContent = 'Invalid search query. Please enter a valid Block Height, Address, or Txn Hash.';
+      errorEl.classList.remove('hidden');
+    }
+  });
+</script>

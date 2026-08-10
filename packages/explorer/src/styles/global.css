@@ -1,85 +1,41 @@
-:root {
+/* packages/explorer/src/styles/global.css */
+@import 'tailwindcss/index.css';
+
+@theme {
+  --color-snow-50:  #f0f7ff;
+  --color-snow-100: #e0f0ff;
+  --color-snow-200: #c8e6f7;
+  --color-snow-300: #a0d0f0;
+  --color-snow-400: #6bb8e0;
+  --color-snow-500: #4a9fc8;
+  --color-snow-600: #2d7da8;
+  --color-snow-700: #1f5e80;
+
+  --color-aval-600: #6b2d5b;
+  --color-aval-700: #562548;
+
+  --color-btc: #f7931a;
+  --color-usdc: #2775ca;
+
   --color-surface-0: #0a0f1a;
-  --color-surface-1: #111827;
-  --color-snow-50: #f8fafc;
-  --color-snow-400: #94a3b8;
-  --color-aval-600: #2563eb;
+  --color-surface-1: #121826;
+  --color-surface-2: #1a2335;
+  --color-surface-3: #222d44;
+
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
+  font-family: var(--font-sans);
   background-color: var(--color-surface-0);
-  color: var(--color-snow-50);
-  font-family: system-ui, -apple-system, sans-serif;
-  margin: 0;
-  min-height: 100vh;
 }
 
-.container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  gap: 1.5rem;
-}
-
-.nav {
-  display: flex;
-  gap: 1rem;
-  background: var(--color-surface-1);
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-}
-
-.nav a {
-  color: var(--color-snow-400);
-  text-decoration: none;
-  font-size: 0.875rem;
-  font-weight: 500;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  transition: color 0.2s;
-}
-
-.nav a:hover {
-  color: var(--color-snow-50);
-}
-
-.card {
-  background-color: var(--color-surface-1);
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  border-radius: 8px;
-  padding: 2rem;
-  min-width: 300px;
-  text-align: center;
-}
-
-.label {
-  font-size: 0.875rem;
-  color: var(--color-snow-400);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 0.5rem;
-}
-
-.value {
-  font-size: 3rem;
-  font-family: monospace;
-  margin: 0;
-}
-
-.text-rose {
-  color: #f43f5e;
-}
-
-.docs-link {
-  font-size: 0.875rem;
-  color: var(--color-snow-400);
-  text-decoration: none;
-  margin-top: 2rem;
-  transition: color 0.2s;
-}
-
-.docs-link:hover {
-  color: var(--color-snow-50);
+::selection {
+  background-color: var(--color-aval-600);
+  color: white;
 }

@@ -1,31 +1,26 @@
-# Snowside Handoff — 2026-08-10 (Session 8, Docs Update & Explorer MVP)
+# Snowside Handoff — 2026-08-10 (Session 9, Explorer UI MVP)
 
 ## Purpose
 Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88. The monorepo at `/Workspace/abitsuite/snowside` includes a landing page (`snowside.network`), a pitch page (`pitch.snowside.network`), docs (`docs.snowside.network`), and a block explorer (`explorer.snowside.network`), alongside the L1 execution layer (`go/subnet-evm`), BMM bidder (`rust/bmm-bidder`), and core contracts (`contracts/`).
 
-## Session 8 summary — 2026-08-10
+## Session 9 summary — 2026-08-10
 
-### Task 1: Documentation Update (Connect Web3 Wallet)
-- Added `guides/connect-wallet.md` to `packages/docs`.
-- Included Mainnet, Testnet, and Signet details (RPC URLs, Chain IDs in Decimal/Hex, Currency Symbol).
-- Added Block Explorer URLs (subdomain-specific).
-- Fixed Markdown table syntax (escaped `|` as `\|` to prevent column breaks).
-- Added page to Starlight sidebar via `astro.config.mjs`.
+### Task 1: Explorer UI Overhaul
+- Scaffolded `Base.astro`, `Header.astro`, `Search.astro`, and `Footer.astro` inside `packages/explorer`.
+- Implemented a functional search bar (Block, Tx, Address regex routing via `is:inline` script).
+- Added Etherscan-style stats grid to the index pages: Latest Block, Gas Price (Gwei), Chain ID, RPC URL.
+- Implemented multi-RPC fetch logic (`eth_blockNumber`, `eth_gasPrice`) using `Promise.all`.
+- Header title now dynamically appends "Testnet" / "Signet" based on the active network.
+- Favicon in the header was enlarged (`h-10 w-10`).
+- Footer text updated to "Powered by Avalanche & eCash." with hyperlinks to both projects.
 
-### Task 2: Package Upgrades & pnpm Fixes
-- Upgraded Astro to `7.2.0` across `packages/web`, `packages/pitch`, `packages/docs`, `packages/explorer`.
-- Fixed pnpm v10 warning by moving `onlyBuiltDependencies` from root `package.json` to `pnpm-workspace.yaml`.
-- **CRITICAL FIX:** Synced `pnpm-lock.yaml` and pushed it. Cloudflare `--frozen-lockfile` was failing because previous commits updated `package.json` but left the lockfile stale. `pnpm-lock.yaml` MUST be committed with dependency changes.
+### Task 2: Tailwind v4 ENOENT Fix
+- Resolved the persistent `ENOENT: no such file or directory, open '.../tailwindcss'` build error in `packages/explorer`.
+- The root cause was Vite/Rolldown's native CSS parser trying to resolve `@import 'tailwindcss'` as a local file before the `@tailwindcss/postcss` plugin could intercept it.
+- **The Fix:** Changed `@import 'tailwindcss';` to `@import 'tailwindcss/index.css';` in `global.css`. This allows Vite to resolve the explicit file path while still feeding it through PostCSS.
 
-### Task 3: Block Explorer MVP (`packages/explorer`)
-- Scaffolded lightweight Astro static site for block exploration.
-- Implemented multi-network support using Astro dynamic routes (`src/pages/[network]/index.astro`).
-- Architecture: Separate subdomains (`explorer.snowside.network`, `explorer-testnet.snowside.network`, `explorer-signet.snowside.network`).
-- Added `functions/_middleware.js` to handle subdomain routing via Cloudflare Pages Functions. The middleware intercepts subdomains and rewrites root `/` to the correct static path (`/testnet/`, `/signet/`).
-- Copied favicon and OG image into `packages/explorer/public`.
-- Updated root `index.astro` to render Mainnet directly at `/` (removed the 301 redirect to `/mainnet/`).
-- Updated navigation links to point directly to the subdomains.
-- Temporarily used raw CSS instead of Tailwind due to a Tailwind v4 `ENOENT` build error during scaffolding.
+### Task 3: Middleware Subdomain Deep Linking
+- Updated `functions/_middleware.js` to correctly map deep links on subdomains to their prefixed static paths (e.g., `explorer-testnet.snowside.network/tx/0x123` -> Astro serves `/testnet/tx/0x123/index.html`).
 
 ## Monorepo structure
 
@@ -61,22 +56,21 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
 | contracts | ✅ |
 | L1 Networks (Mainnet, Testnet, Signet) | ✅ |
 
-## Next session: Explorer UI Overhaul
+## Next session: Bridge UI (`bridge.snowside.network`)
 
-**NEXT-YOU:** Focus exclusively on updating the UI for `packages/explorer`.
-1. **Header/Footer:** Create a shared layout with a Header and Footer matching the `snowside.network` brand (use `packages/web/src/layouts/Base.astro` and Footer/Nav components as reference).
-2. **Navigation:** Add standard block explorer navigation (Blocks, Transactions, Addresses).
-3. **Search Feature:** Implement a basic search bar that can resolve Block Numbers, Tx Hashes, and Address via EVM RPC (can be static JS fetch to the RPC endpoint).
-4. **Tailwind Migration:** Migrate `packages/explorer/src/styles/global.css` back to Tailwind v4 (`@import 'tailwindcss'`) and fix the PostCSS `ENOENT` issue if it persists.
-5. **Action Required on Cloudflare (User):** Ensure `explorer-testnet` and `explorer-signet` CNAMEs are added and bound to the Cloudflare Pages project so the `_middleware.js` subdomain routing works in production.
+**NEXT-YOU:** The goal is to create `packages/bridge`, an Astro static site for BIP-300/301 deposits and withdrawals.
+1. **Scaffold `packages/bridge`:** Use `packages/explorer` as a template for `astro.config.mjs`, `postcss.config.mjs`, `global.css` (MUST use `@import 'tailwindcss/index.css'`), and `Base.astro`. Add it to `pnpm-workspace.yaml`.
+2. **UI Requirements:** Mobile-first dashboard. Users need to navigate between Deposit (BIP-300) and Withdraw (BIP-301) flows.
+3. **Deposit Flow (BIP-300):** Display a P2SH address or instructions for locking funds on the L1. You may need to construct a UI that talks to a backend or smart contract to generate deposit addresses/headers.
+4. **Withdrawal Flow (BIP-301):** Display instructions or a UI for initiating withdrawals. 
+5. **Cloudflare Pages:** Configure `bridge.snowside.network` as a new CF Pages project pointing to `packages/bridge/dist`.
 
 ## Outstanding tasks
 
-### Explorer (`packages/explorer`)
-- Migrate to Tailwind v4.
-- Add Header, Footer, and Navigation.
-- Implement Search functionality (Block/Tx/Address).
-- Display basic block/tx lists.
+### Bridge UI (`packages/bridge`)
+- Scaffold the Astro site.
+- Implement Deposit/Withdrawal dashboards.
+- Integrate with `contracts/peg/Peg.sol` if applicable for UI interaction (needs Web3 wallet connection).
 
 ### Subnet-EVM precompile implementation (go/subnet-evm/)
 - Study the existing precompile architecture in Subnet-EVM
@@ -103,33 +97,34 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
 
 ## Key learnings (all sessions)
 1. **@tailwindcss/vite** breaks on Cloudflare's rolldown-vite — always use **@tailwindcss/postcss**
-2. **Starlight auto-injects ALL components** in `.md` files — never add import statements
-3. **Starlight Item** component is auto-injected for `.md` only, not `.mdx`
-4. **pnpm 10** ignores build scripts for native deps unless approved in `pnpm-workspace.yaml` under `onlyBuiltDependencies`.
-5. **Heredoc + Triple Backticks** conflict — use 4-space indented code blocks or unique delimiters
-6. **Never commit node_modules** — verify `.gitignore` before first `git add -A`
-7. **Favicon dark backdrop required** — white snowmen on transparent SVG vanish in light browser themes
-8. **Two snowmen = "88"** — stacked-circle silhouette naturally reads as "88" for Drivechain ID branding
-9. **Landing page contrast** — alternate dark/light sections; use theme tokens, not raw gray-*
-10. **OG images** — generate externally via AI agent; 1200×630 PNG; use versioned filenames for cache-busting
-11. **Static multi-page hash links** — `#about` resolves to current page; must use `/#about` for cross-page navigation
-12. **Astro `<script is:inline>`** — required for external analytics scripts; without it Astro bundles/processes the tag
-13. **Pitch isolation** — `noindex,nofollow` meta + zero inbound links from web = unreachable to crawlers
-14. **Simple Analytics** — standard embed works across Astro layouts and Starlight head config without modification
-15. **Snowball vs Snowman** — "Snowball" is the broader protocol family; "Snowman" is the linear-chain variant used by Avalanche L1s. Always use "Snowman" for Snowside's consensus.
-16. **eCash vs Bitcoin** — Snowside is secured by eCash's PoW, not Bitcoin's directly. Always refer to "eCash miners" and "eCash L1" unless discussing Bitcoin's broader economic model.
-17. **Terminal heredocs garble** — Multi-file pastes frequently corrupt in the terminal. ALWAYS run `wc -l <file>` and `tail -n 15 <file>` to verify files were written correctly before assuming a failure.
-18. **PDF cache vs HTML cache** — Cloudflare may serve stale HTML for `/whitepaper/` while `/whitepaper.pdf` updates. Cache purge may be required after whitepaper version bumps.
-19. **Mutable Aggregates** — BMM settlement allows proposers to grow their Merkle root payload during pending settlement. No timeout releases fees without successful settlement.
-20. **Two-phase roadmap** — Phase 3 (AVAX phase-out) was removed from the whitepaper as speculative. The roadmap is now a two-phase model: Phase 1 (Permissioned) and Phase 2 (Permissionless with AVAX + BTC).
-21. **Go Versioning** — Subnet-EVM requires Go 1.21+. Ubuntu 22.04 ships with an older Go version; manual installation of Go 1.23.12 was required.
-22. **Subnet-EVM Build Tool** — The upstream Subnet-EVM repo no longer ships a `Makefile`. Build using `./scripts/build.sh` or `task build`.
-23. **AvalancheGo Host Header Security** — AvalancheGo rejects requests where the `Host` header does not match local addresses (DNS rebinding protection). When proxying via Nginx, override `proxy_set_header Host 127.0.0.1` to bypass this security check.
-24. **Avalanche-CLI Naming Convention** — Blockchain specs must use letters only (no hyphens, underscores, numbers). Use PascalCase or camelCase for unique names (e.g., SnowsideTestnet, not snowside-testnet).
-25. **Never make the user ask for CLI commands** — ALWAYS output commands in a single terminal-ready code block. NEVER make the user ask.
-26. **pnpm-lock.yaml sync** — When changing dependencies (e.g., package.json), you MUST explicitly run `git add pnpm-lock.yaml` and commit it. Cloudflare uses `--frozen-lockfile` and will fail if the lockfile is missing or out of date.
-27. **Markdown table pipes** — If a cell needs a literal `|` character, escape it as `\|` to prevent column breaking.
-28. **Cloudflare Pages Subdomains** — You can route multiple subdomains to the same Cloudflare Pages project by adding a `functions/_middleware.js` file. The middleware inspects `request.headers.get('host')` and can rewrite the URL to serve different static files (e.g., `/testnet/index.html`) while keeping the subdomain URL intact in the browser.
+2. **Tailwind v4 ENOENT Fix** — If you see `ENOENT: no such file or directory, open '.../tailwindcss'`, change `@import 'tailwindcss';` to `@import 'tailwindcss/index.css';` in your `global.css`.
+3. **Starlight auto-injects ALL components** in `.md` files — never add import statements
+4. **Starlight Item** component is auto-injected for `.md` only, not `.mdx`
+5. **pnpm 10** ignores build scripts for native deps unless approved in `pnpm-workspace.yaml` under `onlyBuiltDependencies`.
+6. **Heredoc + Triple Backticks** conflict — use 4-space indented code blocks or unique delimiters
+7. **Never commit node_modules** — verify `.gitignore` before first `git add -A`
+8. **Favicon dark backdrop required** — white snowmen on transparent SVG vanish in light browser themes
+9. **Two snowmen = "88"** — stacked-circle silhouette naturally reads as "88" for Drivechain ID branding
+10. **Landing page contrast** — alternate dark/light sections; use theme tokens, not raw gray-*
+11. **OG images** — generate externally via AI agent; 1200×630 PNG; use versioned filenames for cache-busting
+12. **Static multi-page hash links** — `#about` resolves to current page; must use `/#about` for cross-page navigation
+13. **Astro `<script is:inline>`** — required for external analytics scripts; without it Astro bundles/processes the tag
+14. **Pitch isolation** — `noindex,nofollow` meta + zero inbound links from web = unreachable to crawlers
+15. **Simple Analytics** — standard embed works across Astro layouts and Starlight head config without modification
+16. **Snowball vs Snowman** — "Snowball" is the broader protocol family; "Snowman" is the linear-chain variant used by Avalanche L1s. Always use "Snowman" for Snowside's consensus.
+17. **eCash vs Bitcoin** — Snowside is secured by eCash's PoW, not Bitcoin's directly. Always refer to "eCash miners" and "eCash L1" unless discussing Bitcoin's broader economic model.
+18. **Terminal heredocs garble** — Multi-file pastes frequently corrupt in the terminal. ALWAYS run `wc -l <file>` and `tail -n 15 <file>` to verify files were written correctly before assuming a failure.
+19. **PDF cache vs HTML cache** — Cloudflare may serve stale HTML for `/whitepaper/` while `/whitepaper.pdf` updates. Cache purge may be required after whitepaper version bumps.
+20. **Mutable Aggregates** — BMM settlement allows proposers to grow their Merkle root payload during pending settlement. No timeout releases fees without successful settlement.
+21. **Two-phase roadmap** — Phase 3 (AVAX phase-out) was removed from the whitepaper as speculative. The roadmap is now a two-phase model: Phase 1 (Permissioned) and Phase 2 (Permissionless with AVAX + BTC).
+22. **Go Versioning** — Subnet-EVM requires Go 1.21+. Ubuntu 22.04 ships with an older Go version; manual installation of Go 1.23.12 was required.
+23. **Subnet-EVM Build Tool** — The upstream Subnet-EVM repo no longer ships a `Makefile`. Build using `./scripts/build.sh` or `task build`.
+24. **AvalancheGo Host Header Security** — AvalancheGo rejects requests where the `Host` header does not match local addresses (DNS rebinding protection). When proxying via Nginx, override `proxy_set_header Host 127.0.0.1` to bypass this security check.
+25. **Avalanche-CLI Naming Convention** — Blockchain specs must use letters only (no hyphens, underscores, numbers). Use PascalCase or camelCase for unique names (e.g., SnowsideTestnet, not snowside-testnet).
+26. **Never make the user ask for CLI commands** — ALWAYS output commands in a single terminal-ready code block. NEVER make the user ask.
+27. **pnpm-lock.yaml sync** — When changing dependencies (e.g., package.json), you MUST explicitly run `git add pnpm-lock.yaml` and commit it. Cloudflare uses `--frozen-lockfile` and will fail if the lockfile is missing or out of date.
+28. **Markdown table pipes** — If a cell needs a literal `|` character, escape it as `\|` to prevent column breaking.
+29. **Cloudflare Pages Subdomains** — You can route multiple subdomains to the same Cloudflare Pages project by adding a `functions/_middleware.js` file. The middleware inspects `request.headers.get('host')` and can rewrite the URL to serve different static files (e.g., `/testnet/index.html`) while keeping the subdomain URL intact in the browser.
 
 ## Session history (prior sessions)
 
@@ -206,6 +201,12 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
 4. Implemented subdomain routing via `functions/_middleware.js`.
 5. Synced `pnpm-lock.yaml` to fix Cloudflare frozen-lockfile errors.
 6. Removed path redirects, implemented subdomain links in Explorer UI.
+
+### Session 9 (2026-08-10)
+1. Upgraded Explorer UI with Etherscan-style stats, Search bar, Tailwind layout.
+2. Fixed Tailwind v4 ENOENT issue using `@import 'tailwindcss/index.css'`.
+3. Updated Cloudflare middleware to allow deep-link routing on network subdomains.
+4. Updated Header title and Footer text to reflect network/eCash branding.
 
 ## Key file inventory
 
@@ -298,7 +299,7 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
     │   ├── favicon.svg
     │   └── og-image.png
     └── src/
-        ├── styles/global.css        # Raw CSS (temporarily, Tailwind ENOENT fix pending)
+        ├── styles/global.css        # Tailwind v4 config (Fix: @import 'tailwindcss/index.css')
         └── pages/
             ├── index.astro          # Mainnet root
             └── [network]/
@@ -352,4 +353,4 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
     # See "Nginx Configuration" section above for full config
 
 ---
-*Generated at end of Session 8. Next session: Explorer UI (Header, Footer, Search). Maintained per AGENTS.md.*
+*Generated at end of Session 9. Next session: Create `packages/bridge` for BIP300/301 UI. Maintained per AGENTS.md.*

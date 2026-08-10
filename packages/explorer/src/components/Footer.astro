@@ -1,0 +1,20 @@
+---
+// packages/explorer/src/components/Footer.astro
+const year = new Date().getFullYear();
+---
+<footer class="border-t border-white/5 bg-surface-0 px-6 py-8 mt-12">
+  <div class="mx-auto max-w-6xl flex flex-col md:flex-row items-center justify-between gap-4">
+    <a href="/" class="flex items-center gap-2 font-mono text-lg font-bold text-white">
+      <img src="/favicon.svg" alt="Snowside" class="h-6 w-6" />
+      Snowside Explorer
+    </a>
+    <div class="flex items-center gap-6 text-sm text-snow-400">
+      <a href="https://docs.snowside.network" class="hover:text-white transition-colors" target="_blank" rel="noopener noreferrer">Docs</a>
+      <a href="https://github.com/abitsuite/snowside" class="hover:text-white transition-colors" target="_blank" rel="noopener noreferrer">GitHub</a>
+      <a href="https://snowside.network" class="hover:text-white transition-colors">Main Site</a>
+    </div>
+    <div class="font-mono text-xs text-snow-500 text-center md:text-right">
+      © {year} Snowside. Powered by <a href="https://avax.network" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors">Avalanche</a> & <a href="https://e.cash" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors">eCash</a>.
+    </div>
+  </div>
+</footer>

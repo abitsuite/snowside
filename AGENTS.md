@@ -4,7 +4,8 @@
 - `packages/web` – Astro static site (landing page + whitepaper + /validators), deployed to Cloudflare Pages via `master`
 - `packages/pitch` – Astro static site (pitch.snowside.network), separate Cloudflare Pages project. **noindex, nofollow** — no links from web to pitch.
 - `packages/docs` – Astro Starlight technical documentation (docs.snowside.network)
-- `packages/explorer` – EVM block explorer (Astro static site + Cloudflare Pages Functions for subdomain routing). Deployed to Cloudflare Pages. Subdomains: `explorer.snowside.network` (mainnet), `explorer-testnet.snowside.network`, `explorer-signet.snowside.network`.
+- `packages/explorer` – EVM block explorer (Astro static site + Cloudflare Pages Functions). Contains Header (network switcher, search), Footer, Etherscan-style stats cards. Subdomains: `explorer.snowside.network` (mainnet), `explorer-testnet.snowside.network`, `explorer-signet.snowside.network`.
+- `packages/bridge` – (PLANNED FOR NEXT SESSION) Astro static site for BIP-300/301 deposits and withdrawals. Subdomain: `bridge.snowside.network`.
 - `go/subnet-evm` – Subnet-EVM fork with BMM coordination precompile (Go)
 - `rust/bmm-bidder` – BMM bidder and settlement monitor (Rust)
 - `contracts/` – Solidity smart contracts (Foundry)
@@ -162,8 +163,9 @@ Never leave uncommitted work sitting locally at the end of a session.
 ## Pages (packages/explorer)
 - `/` — Mainnet explorer (renders directly at root)
 - `/[network]/index.astro` — Dynamic routes for `/mainnet`, `/testnet`, `/signet`
-- `functions/_middleware.js` — Cloudflare Pages Functions middleware. Intercepts subdomains (`explorer-testnet`, `explorer-signet`) and rewrites root `/` to their respective static paths (`/testnet/`, `/signet/`) without URL redirects.
-- Assets: `public/favicon.svg` (dual-snowman 88), `public/og-image.png` (copied from web).
+- `functions/_middleware.js` — Cloudflare Pages Functions middleware. Intercepts subdomains (`explorer-testnet`, `explorer-signet`) and rewrites root `/` and deep links (e.g. `/tx/0x...`) to their respective static paths (`/testnet/`, `/signet/`) without URL redirects.
+- Layout: `src/layouts/Base.astro`. Components: `Header.astro` (larger favicon, network switcher, dynamic title), `Search.astro` (handles Block/Tx/Address routing), `Footer.astro` (Avalanche & eCash links).
+- Index UI: Etherscan-style stats grid (Latest Block, Gas Price, Chain ID, RPC URL).
 
 ## Analytics — Simple Analytics
 - All 4 packages (web, pitch, docs, explorer) have Simple Analytics installed or available.
@@ -178,8 +180,8 @@ Never leave uncommitted work sitting locally at the end of a session.
 - Each Astro package needs a `postcss.config.mjs` with:
   `export default { plugins: { '@tailwindcss/postcss': {} } };`
 - Remove the `tailwindcss()` Vite plugin from `astro.config.mjs` — PostCSS is auto-detected by Vite.
-- Keep `@import 'tailwindcss'` and `@theme` blocks in `global.css` — the PostCSS plugin processes them identically.
-- **Exception:** `packages/explorer` currently uses raw CSS in `src/styles/global.css` to bypass a Tailwind v4 `ENOENT` issue during early scaffolding. It should be migrated to Tailwind v4 in the next session.
+- **CRITICAL FIX (ENOENT):** In `global.css`, use `@import 'tailwindcss/index.css';` instead of `@import 'tailwindcss';`. Vite/Rolldown's native CSS parser sometimes fails to resolve the package import before the PostCSS plugin runs, causing `ENOENT: no such file or directory, open '.../tailwindcss'`.
+- Keep `@theme` blocks in `global.css` — the PostCSS plugin processes them identically.
 
 ## Starlight (packages/docs)
 - **CRITICAL:** In `.md` files, Starlight auto-injects ALL components (`Steps`, `Card`, `CardGrid`, `Item`, `Tabs`, `LinkCard`, etc.). Do NOT add `import` statements — they render as literal text on the page.
