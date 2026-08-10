@@ -1,0 +1,82 @@
+---
+// packages/bridge/src/components/BridgeWidget.astro
+interface Props {
+  network?: string;
+}
+const { network = 'mainnet' } = Astro.props;
+---
+<div class="w-full rounded-2xl border border-white/10 bg-surface-1 p-6 sm:p-8 shadow-lg">
+  <div class="flex border-b border-white/10 mb-6">
+    <button id="tab-deposit" class="flex-1 py-3 px-4 text-sm font-bold text-white border-b-2 border-aval-600 transition-colors">Deposit (XEC -> Snowside)</button>
+    <button id="tab-withdraw" class="flex-1 py-3 px-4 text-sm font-bold text-snow-400 hover:text-white border-b-2 border-transparent transition-colors">Withdraw (Snowside -> XEC)</button>
+  </div>
+
+  <!-- Deposit Form -->
+  <div id="form-deposit" class="flex flex-col gap-4">
+    <div>
+      <label class="block text-xs uppercase tracking-widest text-snow-400 mb-2">Destination Snowside Address</label>
+      <input type="text" placeholder="0x..." class="w-full rounded-lg border border-white/10 bg-surface-0 px-4 py-3 text-sm text-snow-50 placeholder-snow-500 focus:border-aval-600 focus:outline-none focus:ring-1 focus:ring-aval-600 font-mono" />
+    </div>
+    <div>
+      <label class="block text-xs uppercase tracking-widest text-snow-400 mb-2">Amount (XEC)</label>
+      <input type="number" placeholder="0.00" class="w-full rounded-lg border border-white/10 bg-surface-0 px-4 py-3 text-sm text-snow-50 placeholder-snow-500 focus:border-aval-600 focus:outline-none focus:ring-1 focus:ring-aval-600 font-mono" />
+    </div>
+    <div class="rounded-lg bg-surface-2 p-4 text-xs text-snow-400">
+      <p class="font-bold text-snow-50 mb-2">Instructions:</p>
+      <ol class="list-decimal list-inside space-y-1">
+        <li>Enter your Snowside address and amount.</li>
+        <li>Click "Generate Deposit Address" to get a unique P2SH address.</li>
+        <li>Send your XEC to the generated address.</li>
+        <li>Funds will be credited to your Snowside address after confirmation.</li>
+      </ol>
+    </div>
+    <button class="w-full rounded-lg bg-aval-600 px-6 py-3 text-sm font-bold text-white hover:bg-aval-700 transition-colors">Generate Deposit Address</button>
+  </div>
+
+  <!-- Withdraw Form -->
+  <div id="form-withdraw" class="hidden flex-col gap-4">
+    <div>
+      <label class="block text-xs uppercase tracking-widest text-snow-400 mb-2">Destination eCash Address</label>
+      <input type="text" placeholder="ecash:qz..." class="w-full rounded-lg border border-white/10 bg-surface-0 px-4 py-3 text-sm text-snow-50 placeholder-snow-500 focus:border-aval-600 focus:outline-none focus:ring-1 focus:ring-aval-600 font-mono" />
+    </div>
+    <div>
+      <label class="block text-xs uppercase tracking-widest text-snow-400 mb-2">Amount (XEC)</label>
+      <input type="number" placeholder="0.00" class="w-full rounded-lg border border-white/10 bg-surface-0 px-4 py-3 text-sm text-snow-50 placeholder-snow-500 focus:border-aval-600 focus:outline-none focus:ring-1 focus:ring-aval-600 font-mono" />
+    </div>
+    <div class="rounded-lg bg-surface-2 p-4 text-xs text-snow-400">
+      <p class="font-bold text-snow-50 mb-2">Instructions:</p>
+      <ol class="list-decimal list-inside space-y-1">
+        <li>Ensure you are connected to the Snowside network via your Web3 wallet.</li>
+        <li>Enter your eCash address and the amount to withdraw.</li>
+        <li>Click "Initiate Withdrawal" to trigger the BIP-301 operation.</li>
+        <li>Funds will be sent to your eCash address after the challenge period.</li>
+      </ol>
+    </div>
+    <button class="w-full rounded-lg bg-aval-600 px-6 py-3 text-sm font-bold text-white hover:bg-aval-700 transition-colors">Initiate Withdrawal</button>
+  </div>
+</div>
+
+<script is:inline>
+  const tabDeposit = document.getElementById('tab-deposit');
+  const tabWithdraw = document.getElementById('tab-withdraw');
+  const formDeposit = document.getElementById('form-deposit');
+  const formWithdraw = document.getElementById('form-withdraw');
+
+  function setActiveTab(activeTab, inactiveTab, activeForm, inactiveForm) {
+    activeTab.classList.remove('text-snow-400', 'border-transparent');
+    activeTab.classList.add('text-white', 'border-aval-600');
+    activeTab.classList.add('hover:text-white');
+
+    inactiveTab.classList.remove('text-white', 'border-aval-600');
+    inactiveTab.classList.add('text-snow-400', 'border-transparent');
+
+    activeForm.classList.remove('hidden');
+    activeForm.classList.add('flex');
+
+    inactiveForm.classList.add('hidden');
+    inactiveForm.classList.remove('flex');
+  }
+
+  tabDeposit.addEventListener('click', () => setActiveTab(tabDeposit, tabWithdraw, formDeposit, formWithdraw));
+  tabWithdraw.addEventListener('click', () => setActiveTab(tabWithdraw, tabDeposit, formWithdraw, formDeposit));
+</script>

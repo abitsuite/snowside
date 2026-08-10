@@ -1,0 +1,15 @@
+{
+  "name": "packages-bridge",
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "@tailwindcss/postcss": "4.3.3",
+    "astro": "7.2.0",
+    "tailwindcss": "4.3.2"
+  }
+}

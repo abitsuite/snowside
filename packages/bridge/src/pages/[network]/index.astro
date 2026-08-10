@@ -1,0 +1,25 @@
+---
+// packages/bridge/src/pages/[network]/index.astro
+import Base from '../../layouts/Base.astro';
+import BridgeWidget from '../../components/BridgeWidget.astro';
+
+export function getStaticPaths() {
+  const networks = ['mainnet', 'testnet', 'signet'];
+  return networks.map((network) => ({
+    params: { network },
+    props: { network }
+  }));
+}
+
+const { network } = Astro.props;
+const title = `Snowside Bridge - ${network.charAt(0).toUpperCase() + network.slice(1)}`;
+---
+<Base title={title} network={network}>
+  <div class="flex flex-col items-center py-12 gap-6">
+    <h1 class="text-3xl font-bold text-white text-center">Snowside Bridge</h1>
+    <p class="text-snow-400 capitalize">{network} BIP-300 / BIP-301 Bridge</p>
+    <div class="w-full max-w-2xl mt-4">
+      <BridgeWidget network={network} />
+    </div>
+  </div>
+</Base>

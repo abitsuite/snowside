@@ -1,0 +1,39 @@
+---
+// packages/bridge/src/components/Header.astro
+interface Props {
+  network?: string;
+}
+
+const { network = 'mainnet' } = Astro.props;
+
+const networks = [
+  { label: 'Mainnet', subdomain: 'https://bridge.snowside.network', active: network === 'mainnet' },
+  { label: 'Testnet', subdomain: 'https://bridge-testnet.snowside.network', active: network === 'testnet' },
+  { label: 'Signet', subdomain: 'https://bridge-signet.snowside.network', active: network === 'signet' },
+];
+
+const networkLabel = network !== 'mainnet' ? ` - ${network.charAt(0).toUpperCase() + network.slice(1)}` : '';
+---
+<header class="sticky top-0 z-50 border-b border-white/5 bg-surface-0/90 backdrop-blur">
+  <div class="mx-auto max-w-6xl px-4 py-4">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <a href="/" class="flex items-center gap-2 font-mono text-xl font-bold text-white">
+        <img src="/favicon.svg" alt="Snowside" class="h-10 w-10" />
+        Snowside Bridge{networkLabel}
+      </a>
+      <nav class="flex items-center gap-1 rounded-lg bg-surface-1 p-1 text-xs font-semibold sm:text-sm">
+        {networks.map((net) => (
+          <a
+            href={net.subdomain}
+            class:list={[
+              'rounded-md px-3 py-1.5 transition-colors',
+              net.active ? 'bg-aval-600 text-white' : 'text-snow-400 hover:text-white'
+            ]}
+          >
+            {net.label}
+          </a>
+        ))}
+      </nav>
+    </div>
+  </div>
+</header>
