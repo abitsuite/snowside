@@ -1,4 +1,4 @@
-# Snowside Handoff — 2026-07-26 (Session 5, Final Update)
+# Snowside Handoff — 2026-08-10 (Session 6, Testnet Deployment)
 
 ## Purpose
 Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88. The monorepo at `/Workspace/abitsuite/snowside` includes a landing page (`snowside.network`), a pitch page (`pitch.snowside.network`), and a docs site (`docs.snowside.network`), alongside the L1 execution layer (`go/subnet-evm`), BMM bidder (`rust/bmm-bidder`), and core contracts (`contracts/`).
@@ -11,7 +11,8 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
     ├── pnpm-workspace.yaml   # packages: ['packages/*']
     ├── .gitignore
     ├── docs/                 # Session handoffs + meta docs
-    │   └── HANDOFF.md
+    │   ├── HANDOFF.md
+    │   └── TESTNET-DEPLOYMENT.md
     ├── packages/
     │   ├── web/  # Astro static — Landing + Whitepaper v0.3 + /validators (snowside.network)
     │   ├── pitch/ # Astro static — Pitch page (pitch.snowside.network) — noindex,nofollow
@@ -22,22 +23,40 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
     │   └── bmm-bidder/ # BMM bidder and settlement monitor (Rust)
     └── contracts/ # Solidity smart contracts (Foundry)
 
-## Session 5 summary — 2026-07-26
+## Session 6 summary — 2026-08-10
 
-### Task 1: Monorepo Restructuring & Scaffolding
-- System prerequisites verified: Go upgraded from 1.17.12 to 1.23.12, Rust 1.90.0, Node 24.14.0, Foundry 1.7.1.
-- Go upgraded to 1.23.12 due to Subnet-EVM requirements.
-- Created top-level directories: `go/`, `rust/`, `contracts/`.
-- Scafflolded `go/subnet-evm/` from `ava-labs/subnet-evm` (commit hash recorded in `.upstream-commit`).
-- Scafflolded `rust/bmm-bidder/` as a binary crate, added CLI skeleton (`run`, `status`, `submit`), dependencies (`reqwest`, `tokio`, `clap`), and example config.
-- Scafflolded `contracts/` with Foundry. Added `IBMMCoordination.sol` interface, placeholder `Peg.sol` and `FeeDistribution.sol`, configured `foundry.toml`.
-- Updated `.gitignore` to exclude Rust `target/`, Go `build/`, Foundry `out/`, `cache/`, and `lib/`.
-- Committed initial scaffolding (rust + contracts) to `master`.
-- Fixed missing `go/subnet-evm/` directory (initial script omitted `mkdir -p go/subnet-evm`, which was corrected in a follow-up command).
-- Added `go/subnet-evm/README.md`.
-- Determined `go/subnet-evm` uses `Taskfile.yml` and `./scripts/build.sh` instead of a `Makefile` for builds.
+### Task 1: Testnet Infrastructure Setup
+- VPS provisioned at rpc.snowside.network with Ubuntu 24.04.
+- Avalanche-CLI installed and operational.
+- Nginx reverse proxy configured to route /testnet, /mainnet, /signet to local Avalanche RPC endpoints.
+- Cloudflare DNS configured for rpc.snowside.network pointing to VPS IP.
+- Resolved AvalancheGo "invalid host specified" 403 error by overriding `Host` header to `127.0.0.1` in Nginx proxy config.
+- Resolved HTTP/2 compatibility by adding `http2` to Nginx `listen 443` directives.
 
-### Build status — all packages pass
+### Task 2: SnowsideTestnet L1 Deployment
+- Deployed Snowside Testnet (Chain ID: 33160 / 0x8188) to local network via `avalanche blockchain deploy SnowsideTestnet --local`.
+- Blockchain ID: `2PS8J5q5f4PXnwEsxLafFnPuFowprdaZ8EWuZpTF3hyi6SqLhe`
+- Subnet ID: `wNWS35thzJy9fGaxtVfPwFKEt2RU2r9fMGA7c5A9XqqSvBCVj`
+- VM ID: `dk9HWWWW1YGFGWfkXjDB6qaRh9UFjLAdahZS9qAyXKn5x1GnH`
+- RPC Endpoint (local): `http://127.0.0.1:9656/ext/bc/2PS8J5q5f4PXnwEsxLafFnPuFowprdaZ8EWuZpTF3hyi6SqLhe/rpc`
+- RPC Endpoint (public): `https://rpc.snowside.network/testnet`
+- Token Symbol: `ECX` (Token Name: ECX Token)
+- Consensus: Proof of Authority (PoA)
+- ICM Messenger Address: `0x253b2784c75e510dD0fF1da844684a1aC0aa5fcf`
+- ICM Registry Address: `0xB8e71012d3F55D9EbbFf74376dE180702c1D8A6F`
+- PoA Validator Manager: `0x0C0DEbA5E0000000000000000000000000000000`
+- Validator Transparent Proxy: `0x0Feedc0de0000000000000000000000000000000`
+- Funded account (ewoq): `0x8db97C7cEcE249c2b98bDC0226Cc4C2A57BF52FC` (1,000,000 ECX)
+- Primary nodes: NodeID-7Xhw2mDxuDS44j42TCB6U5579esbSt3Lg (port 9650), NodeID-MFrZFVCXPv5iCn6M9K6XduxGTYp891xXZ (port 9652)
+- L1 node: NodeID-MZ51J52kjmn9T67Fyd2JyTvpQ8vNzAMZ4 (port 9656)
+- Relayer not deployed (sidecar subnet "snowside" does not exist — non-critical for L1 operations).
+
+### Task 3: Remaining Network Specs
+- Mainnet spec created locally (Chain ID: 32904 / 0x8088) — not yet deployed.
+- Signet spec created locally (Chain ID: 33352 / 0x8288) — not yet deployed.
+- Nginx /mainnet and /signet routes currently point to old Blockchain ID (placeholder).
+
+## Build status — all packages pass
 
 | Package | Status |
 |---------|--------|
@@ -48,9 +67,15 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
 | rust/bmm-bidder | ✅ |
 | contracts | ✅ |
 
-## Next session: New Session — Continue L1 Development
+## Next session: Continue L1 Development
 
-The context window will be cleared. The next session begins with implementation of the BMM coordination precompile in `go/subnet-evm/` and expanding the `rust/bmm-bidder` RPC capabilities.
+The Testnet is live and accessible at https://rpc.snowside.network/testnet.
+Next steps include:
+1. BMM coordination precompile implementation in go/subnet-evm/
+2. BMM bidder RPC implementation in rust/bmm-bidder/
+3. Smart contract implementation in contracts/
+4. Deploy Mainnet and Signet specs to local network
+5. Deploy relayer once subnet naming is resolved
 
 ## Outstanding tasks
 
@@ -72,20 +97,47 @@ The context window will be cleared. The next session begins with implementation 
 - Implement FeeDistribution contract
 - Write comprehensive Foundry tests
 
-### Local testing network
-- Set up a local Avalanche network with the modified Subnet-EVM
-- Deploy contracts
-- Test BMM coordination end-to-end
+### Network deployment
+- Deploy Mainnet spec (32904) to local network
+- Deploy Signet spec (33352) to local network
+- Update Nginx routes for /mainnet and /signet with correct Blockchain IDs
+- Deploy relayer using `avalanche interchain relayer deploy`
 
 ### Image placeholders (still need real images)
-- `Hero.astro` — commented-out hero illustration placeholder
-- `WhyAvalanche.astro` — 6th card is a dashed-border placeholder for architecture diagram
-- `NodeRunr.astro` — surface-1 card placeholder for NodΞRunr dashboard / terminal screenshot
+- Hero.astro — commented-out hero illustration placeholder
+- WhyAvalanche.astro — 6th card is a dashed-border placeholder for architecture diagram
+- NodeRunr.astro — surface-1 card placeholder for NodΞRunr dashboard / terminal screenshot
 
 ### Open Whitepaper Questions (from v0.3 plan, items 21-23)
 - Contract Fee: Optional or required? (Currently says "required on EVM calls")
 - Vesting Schedule: Still intended? (50% → 80% over 18 months)
 - Validator Distribution: 50% equal / 50% proportional still intended? Sybil mitigation plan?
+
+## Key learnings (all sessions)
+1. **@tailwindcss/vite** breaks on Cloudflare's rolldown-vite — always use **@tailwindcss/postcss**
+2. **Starlight auto-injects ALL components** in `.md` files — never add import statements
+3. **Starlight Item** component is auto-injected for `.md` only, not `.mdx`
+4. **pnpm 10** ignores build scripts for native deps unless approved in `pnpm.onlyBuiltDependencies`
+5. **Heredoc + triple backticks** conflict — use 4-space indented code blocks or unique delimiters
+6. **Never commit node_modules** — verify `.gitignore` before first `git add -A`
+7. **Favicon dark backdrop required** — white snowmen on transparent SVG vanish in light browser themes
+8. **Two snowmen = "88"** — stacked-circle silhouette naturally reads as "88" for Drivechain ID branding
+9. **Landing page contrast** — alternate dark/light sections; use theme tokens, not raw gray-*
+10. **OG images** — generate externally via AI agent; 1200×630 PNG; use versioned filenames for cache-busting
+11. **Static multi-page hash links** — `#about` resolves to current page; must use `/#about` for cross-page navigation
+12. **Astro `<script is:inline>`** — required for external analytics scripts; without it Astro bundles/processes the tag
+13. **Pitch isolation** — `noindex,nofollow` meta + zero inbound links from web = unreachable to crawlers
+14. **Simple Analytics** — standard embed works across Astro layouts and Starlight head config without modification
+15. **Snowball vs Snowman** — "Snowball" is the broader protocol family; "Snowman" is the linear-chain variant used by Avalanche L1s. Always use "Snowman" for Snowside's consensus.
+16. **eCash vs Bitcoin** — Snowside is secured by eCash's PoW, not Bitcoin's directly. Always refer to "eCash miners" and "eCash L1" unless discussing Bitcoin's broader economic model.
+17. **Terminal heredocs garble** — Multi-file pastes frequently corrupt in the terminal. ALWAYS run `wc -l <file>` and `tail -n 15 <file>` to verify files were written correctly before assuming a failure.
+18. **PDF cache vs HTML cache** — Cloudflare may serve stale HTML for `/whitepaper/` while `/whitepaper.pdf` updates. Cache purge may be required after whitepaper version bumps.
+19. **Mutable Aggregates** — BMM settlement allows proposers to grow their Merkle root payload during pending settlement. No timeout releases fees without successful settlement.
+20. **Two-phase roadmap** — Phase 3 (AVAX phase-out) was removed from the whitepaper as speculative. The roadmap is now a two-phase model: Phase 1 (Permissioned) and Phase 2 (Permissionless with AVAX + BTC).
+21. **Go Versioning** — Subnet-EVM requires Go 1.21+. Ubuntu 22.04 ships with an older Go version; manual installation of Go 1.23.12 was required.
+22. **Subnet-EVM Build Tool** — The upstream Subnet-EVM repo no longer ships a `Makefile`. Build using `./scripts/build.sh` or `task build`.
+23. **AvalancheGo Host Header Security** — AvalancheGo rejects requests where the `Host` header does not match local addresses (DNS rebinding protection). When proxying via Nginx, override `proxy_set_header Host 127.0.0.1` to bypass this security check.
+24. **Avalanche-CLI Naming Convention** — Blockchain specs must use letters only (no hyphens, underscores, numbers). Use PascalCase or camelCase for unique names (e.g., SnowsideTestnet, not snowside-testnet).
 
 ## Session history (prior sessions)
 
@@ -128,6 +180,23 @@ The context window will be cleared. The next session begins with implementation 
 11. AGENTS.md + HANDOFF.md update (first pass)
 12. Whitepaper v0.2 — 6 architectural updates
 13. Whitepaper v0.3 — 20 architectural updates (Snowman terminology, Rollup-Style Settlement, BMM precompile details, Two-phase roadmap)
+
+### Session 5 (2026-07-26)
+1. Monorepo restructuring (go/, rust/, contracts/ top-level dirs)
+2. Subnet-EVM fork scaffolded from ava-labs/subnet-evm
+3. BMM bidder binary crate scaffolded in Rust
+4. Foundry contracts scaffolded with IBMMCoordination interface
+5. Updated build commands to use ./scripts/build.sh for subnet-evm
+6. Created docs/TESTNET-DEPLOYMENT.md with Post-Etna hardware requirements
+
+### Session 6 (2026-08-10)
+1. VPS provisioned and configured with Nginx reverse proxy
+2. Cloudflare DNS configured for rpc.snowside.network
+3. Resolved AvalancheGo DNS rebinding protection (Host header override)
+4. Resolved Nginx HTTP/2 compatibility
+5. Deployed SnowsideTestnet L1 (Chain ID: 33160) to local network
+6. Created Mainnet (32904) and Signet (33352) specs — not yet deployed
+7. Public RPC endpoint verified: https://rpc.snowside.network/testnet
 
 ## Key file inventory
 
@@ -214,7 +283,7 @@ The context window will be cleared. The next session begins with implementation 
     ├── .upstream-commit
     ├── Taskfile.yml
     ├── scripts/
-    │   └── build.sh                 # Build script (replaces Makefile)
+    │   └── build.sh
     ├── go.mod
     ├── go.sum
     ├── cmd/
@@ -250,29 +319,13 @@ The context window will be cleared. The next session begins with implementation 
     │       └── IBMMCoordination.t.sol
     └── script/
 
-## Key learnings (all sessions)
-1. **@tailwindcss/vite** breaks on Cloudflare's rolldown-vite — always use **@tailwindcss/postcss**
-2. **Starlight auto-injects ALL components** in `.md` files — never add import statements
-3. **Starlight Item** component is auto-injected for `.md` only, not `.mdx`
-4. **pnpm 10** ignores build scripts for native deps unless approved in `pnpm.onlyBuiltDependencies`
-5. **Heredoc + triple backticks** conflict — use 4-space indented code blocks or unique delimiters
-6. **Never commit node_modules** — verify `.gitignore` before first `git add -A`
-7. **Favicon dark backdrop required** — white snowmen on transparent SVG vanish in light browser themes
-8. **Two snowmen = "88"** — stacked-circle silhouette naturally reads as "88" for Drivechain ID branding
-9. **Landing page contrast** — alternate dark/light sections; use theme tokens, not raw gray-*
-10. **OG images** — generate externally via AI agent; 1200×630 PNG; use versioned filenames for cache-busting
-11. **Static multi-page hash links** — `#about` resolves to current page; must use `/#about` for cross-page navigation
-12. **Astro `<script is:inline>`** — required for external analytics scripts; without it Astro bundles/processes the tag
-13. **Pitch isolation** — `noindex,nofollow` meta + zero inbound links from web = unreachable to crawlers
-14. **Simple Analytics** — standard embed works across Astro layouts and Starlight head config without modification
-15. **Snowball vs Snowman** — "Snowball" is the broader protocol family; "Snowman" is the linear-chain variant used by Avalanche L1s. Always use "Snowman" for Snowside's consensus.
-16. **eCash vs Bitcoin** — Snowside is secured by eCash's PoW, not Bitcoin's directly. Always refer to "eCash miners" and "eCash L1" unless discussing Bitcoin's broader economic model.
-17. **Terminal heredocs garble** — Multi-file pastes frequently corrupt in the terminal. ALWAYS run `wc -l <file>` and `tail -n 15 <file>` to verify files were written correctly before assuming a failure.
-18. **PDF cache vs HTML cache** — Cloudflare may serve stale HTML for `/whitepaper/` while `/whitepaper.pdf` updates. Cache purge may be required after whitepaper version bumps.
-19. **Mutable Aggregates** — BMM settlement allows proposers to grow their Merkle root payload during pending settlement. No timeout releases fees without successful settlement.
-20. **Two-phase roadmap** — Phase 3 (AVAX phase-out) was removed from the whitepaper as speculative. The roadmap is now a two-phase model: Phase 1 (Permissioned) and Phase 2 (Permissionless with AVAX + BTC).
-21. **Go Versioning** — Subnet-EVM requires Go 1.21+. Ubuntu 22.04 ships with an older Go version; manual installation of Go 1.23.12 was required.
-22. **Subnet-EVM Build Tool** — The upstream Subnet-EVM repo no longer ships a `Makefile`. Build using `./scripts/build.sh` or `task build`.
+### Testnet Deployment
+    docs/TESTNET-DEPLOYMENT.md       # Deployment guide with Post-Etna hardware requirements
+    # VPS: rpc.snowside.network
+    # Chain ID: 33160 (0x8188)
+    # Blockchain ID: 2PS8J5q5f4PXnwEsxLafFnPuFowprdaZ8EWuZpTF3hyi6SqLhe
+    # RPC: https://rpc.snowside.network/testnet
+    # Token: ECX
 
 ---
-*Generated at end of Session 5. Next session: New context window — Continue L1 Development. Maintained per AGENTS.md.*
+*Generated at end of Session 6. Next session: Continue L1 Development (precompile implementation, BMM bidder RPC, smart contracts). Maintained per AGENTS.md.*
