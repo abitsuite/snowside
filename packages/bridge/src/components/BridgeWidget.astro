@@ -6,6 +6,16 @@ interface Props {
 const { network = 'mainnet' } = Astro.props;
 ---
 <div class="w-full rounded-2xl border border-white/10 bg-surface-1 p-6 sm:p-8 shadow-lg">
+  <!-- Network Selection -->
+  <div class="mb-6">
+    <label class="block text-xs uppercase tracking-widest text-snow-400 mb-2">Select Network</label>
+    <select id="network-select" class="w-full rounded-lg border border-white/10 bg-surface-0 px-4 py-3 text-sm text-snow-50 focus:border-aval-600 focus:outline-none focus:ring-1 focus:ring-aval-600 font-mono">
+      <option value="mainnet">Mainnet (Chain ID: 32904)</option>
+      <option value="testnet" selected={network === 'testnet'}>Testnet (Chain ID: 33160)</option>
+      <option value="signet" selected={network === 'signet'}>Signet (Chain ID: 33352)</option>
+    </select>
+  </div>
+
   <div class="flex border-b border-white/10 mb-6">
     <button id="tab-deposit" class="flex-1 py-3 px-4 text-sm font-bold text-white border-b-2 border-aval-600 transition-colors">Deposit (XEC -> Snowside)</button>
     <button id="tab-withdraw" class="flex-1 py-3 px-4 text-sm font-bold text-snow-400 hover:text-white border-b-2 border-transparent transition-colors">Withdraw (Snowside -> XEC)</button>
@@ -15,7 +25,10 @@ const { network = 'mainnet' } = Astro.props;
   <div id="form-deposit" class="flex flex-col gap-4">
     <div>
       <label class="block text-xs uppercase tracking-widest text-snow-400 mb-2">Destination Snowside Address</label>
-      <input type="text" placeholder="0x..." class="w-full rounded-lg border border-white/10 bg-surface-0 px-4 py-3 text-sm text-snow-50 placeholder-snow-500 focus:border-aval-600 focus:outline-none focus:ring-1 focus:ring-aval-600 font-mono" />
+      <div class="flex gap-2">
+        <input id="deposit-dest" type="text" placeholder="0x..." class="w-full rounded-lg border border-white/10 bg-surface-0 px-4 py-3 text-sm text-snow-50 placeholder-snow-500 focus:border-aval-600 focus:outline-none focus:ring-1 focus:ring-aval-600 font-mono" />
+        <button data-target="deposit-dest" class="scanner-btn px-4 py-2 rounded-lg bg-surface-2 text-snow-400 hover:text-white text-sm">Scan</button>
+      </div>
     </div>
     <div>
       <label class="block text-xs uppercase tracking-widest text-snow-400 mb-2">Amount (XEC)</label>
@@ -30,14 +43,24 @@ const { network = 'mainnet' } = Astro.props;
         <li>Funds will be credited to your Snowside address after confirmation.</li>
       </ol>
     </div>
-    <button class="w-full rounded-lg bg-aval-600 px-6 py-3 text-sm font-bold text-white hover:bg-aval-700 transition-colors">Generate Deposit Address</button>
+    <button id="generate-deposit" class="w-full rounded-lg bg-aval-600 px-6 py-3 text-sm font-bold text-white hover:bg-aval-700 transition-colors">Generate Deposit Address</button>
+
+    <!-- Deposit Result (Hidden by default) -->
+    <div id="deposit-result" class="hidden flex-col items-center gap-3 mt-4 border-t border-white/10 pt-6">
+      <p class="text-xs text-snow-400">Send XEC to the address below:</p>
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=ecash:qzdummyaddress123" alt="Deposit QR" class="rounded-lg bg-white p-2 w-48 h-48" />
+      <p class="font-mono text-sm text-white break-all">ecash:qzdummyaddress123</p>
+    </div>
   </div>
 
   <!-- Withdraw Form -->
   <div id="form-withdraw" class="hidden flex-col gap-4">
     <div>
       <label class="block text-xs uppercase tracking-widest text-snow-400 mb-2">Destination eCash Address</label>
-      <input type="text" placeholder="ecash:qz..." class="w-full rounded-lg border border-white/10 bg-surface-0 px-4 py-3 text-sm text-snow-50 placeholder-snow-500 focus:border-aval-600 focus:outline-none focus:ring-1 focus:ring-aval-600 font-mono" />
+      <div class="flex gap-2">
+        <input id="withdraw-dest" type="text" placeholder="ecash:qz..." class="w-full rounded-lg border border-white/10 bg-surface-0 px-4 py-3 text-sm text-snow-50 placeholder-snow-500 focus:border-aval-600 focus:outline-none focus:ring-1 focus:ring-aval-600 font-mono" />
+        <button data-target="withdraw-dest" class="scanner-btn px-4 py-2 rounded-lg bg-surface-2 text-snow-400 hover:text-white text-sm">Scan</button>
+      </div>
     </div>
     <div>
       <label class="block text-xs uppercase tracking-widest text-snow-400 mb-2">Amount (XEC)</label>
@@ -56,7 +79,22 @@ const { network = 'mainnet' } = Astro.props;
   </div>
 </div>
 
+<!-- QR Scanner Modal -->
+<div id="qr-reader-modal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+  <div class="bg-surface-1 rounded-lg p-4 w-full max-w-md">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-lg font-bold text-white">Scan QR Code</h3>
+      <button id="close-scanner" class="text-snow-400 hover:text-white">Close</button>
+    </div>
+    <div id="qr-reader" class="w-full"></div>
+  </div>
+</div>
+
+<!-- External Library for QR Scanning -->
+<script is:inline src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
 <script is:inline>
+  // Tab Switching Logic
   const tabDeposit = document.getElementById('tab-deposit');
   const tabWithdraw = document.getElementById('tab-withdraw');
   const formDeposit = document.getElementById('form-deposit');
@@ -79,4 +117,50 @@ const { network = 'mainnet' } = Astro.props;
 
   tabDeposit.addEventListener('click', () => setActiveTab(tabDeposit, tabWithdraw, formDeposit, formWithdraw));
   tabWithdraw.addEventListener('click', () => setActiveTab(tabWithdraw, tabDeposit, formWithdraw, formDeposit));
+
+  // Deposit Generation UI Logic
+  const generateBtn = document.getElementById('generate-deposit');
+  const depositResult = document.getElementById('deposit-result');
+  generateBtn.addEventListener('click', () => {
+    depositResult.classList.remove('hidden');
+    depositResult.classList.add('flex');
+  });
+
+  // QR Scanner Logic
+  let html5QrCode;
+  const modal = document.getElementById('qr-reader-modal');
+  const closeBtn = document.getElementById('close-scanner');
+  const scannerBtns = document.querySelectorAll('.scanner-btn');
+
+  function startScanner(targetInputId) {
+    modal.classList.remove('hidden');
+    html5QrCode = new Html5Qrcode("qr-reader");
+    html5QrCode.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: { width: 250, height: 250 } },
+      (decodedText) => {
+        document.getElementById(targetInputId).value = decodedText;
+        stopScanner();
+      },
+      (errorMessage) => { /* ignore per-frame errors */ }
+    ).catch(err => console.error("QR Start Error:", err));
+  }
+
+  function stopScanner() {
+    if (html5QrCode) {
+      html5QrCode.stop().then(() => {
+        html5QrCode.clear();
+        modal.classList.add('hidden');
+      }).catch(err => console.error("QR Stop Error:", err));
+    }
+  }
+
+  scannerBtns.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const targetId = e.currentTarget.getAttribute('data-target');
+      startScanner(targetId);
+    });
+  });
+
+  closeBtn.addEventListener('click', stopScanner);
 </script>
