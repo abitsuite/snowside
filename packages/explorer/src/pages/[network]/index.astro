@@ -1,0 +1,73 @@
+---
+import '../styles/global.css';
+
+const networks = {
+  mainnet: 'https://rpc.snowside.network/mainnet',
+  testnet: 'https://rpc.snowside.network/testnet',
+  signet: 'https://rpc.snowside.network/signet'
+};
+
+export function getStaticPaths() {
+  return Object.keys(networks).map(n => ({ params: { network: n } }));
+}
+
+const { network } = Astro.params;
+const rpcUrl = networks[network];
+
+const getLatestBlock = async () => {
+  try {
+    const res = await fetch(rpcUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'eth_blockNumber',
+        params: []
+      })
+    });
+    const data = await res.json();
+    return parseInt(data.result, 16); 
+  } catch (err) {
+    console.error('RPC Error:', err);
+    return null;
+  }
+};
+
+const latestBlock = await getLatestBlock();
+const title = `Snowside Explorer - ${network.charAt(0).toUpperCase() + network.slice(1)}`;
+---
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta property="og:title" content={title} />
+    <meta property="og:image" content="/og-image.png" />
+    <title>{title}</title>
+  </head>
+  <body class="container">
+    <div class="nav">
+      <a href="/mainnet">Mainnet</a>
+      <a href="/testnet">Testnet</a>
+      <a href="/signet">Signet</a>
+    </div>
+
+    <div>
+      <h1 style="font-size: 2.25rem; margin-bottom: 0.5rem; text-align: center;">Snowside Explorer</h1>
+      <p style="color: var(--color-snow-400); text-align: center; text-transform: capitalize;">{network} L1 Block Explorer</p>
+    </div>
+
+    <div class="card">
+      <p class="label">Latest Block</p>
+      {latestBlock !== null ? (
+        <p class="value">#{latestBlock}</p>
+      ) : (
+        <p class="value text-rose">RPC Unavailable</p>
+      )}
+    </div>
+
+    <a href="https://docs.snowside.network" class="docs-link">Read the Docs →</a>
+  </body>
+</html>
