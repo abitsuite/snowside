@@ -1,18 +1,19 @@
 ---
 import '../../styles/global.css';
 
-const networks = {
-  mainnet: 'https://rpc.snowside.network/mainnet',
-  testnet: 'https://rpc.snowside.network/testnet',
-  signet: 'https://rpc.snowside.network/signet'
-};
-
 export function getStaticPaths() {
-  return Object.keys(networks).map(n => ({ params: { network: n } }));
+  const networks = {
+    mainnet: 'https://rpc.snowside.network/mainnet',
+    testnet: 'https://rpc.snowside.network/testnet',
+    signet: 'https://rpc.snowside.network/signet'
+  };
+  return Object.entries(networks).map(([network, rpcUrl]) => ({
+    params: { network },
+    props: { network, rpcUrl }
+  }));
 }
 
-const { network } = Astro.params;
-const rpcUrl = networks[network];
+const { network, rpcUrl } = Astro.props;
 
 const getLatestBlock = async () => {
   try {
