@@ -1,125 +1,38 @@
-# Snowside Handoff — 2026-08-10 (Session 7, Mainnet Deployment & Infrastructure)
+# Snowside Handoff — 2026-08-10 (Session 8, Docs Update & Explorer MVP)
 
 ## Purpose
-Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88. The monorepo at `/Workspace/abitsuite/snowside` includes a landing page (`snowside.network`), a pitch page (`pitch.snowside.network`), and a docs site (`docs.snowside.network`), alongside the L1 execution layer (`go/subnet-evm`), BMM bidder (`rust/bmm-bidder`), and core contracts (`contracts/`).
+Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88. The monorepo at `/Workspace/abitsuite/snowside` includes a landing page (`snowside.network`), a pitch page (`pitch.snowside.network`), docs (`docs.snowside.network`), and a block explorer (`explorer.snowside.network`), alongside the L1 execution layer (`go/subnet-evm`), BMM bidder (`rust/bmm-bidder`), and core contracts (`contracts/`).
 
-## Session 7 summary — 2026-08-10
+## Session 8 summary — 2026-08-10
 
-### Task 1: L1 Network Infrastructure Finalization
-- VPS provisioned at `rpc.snowside.network` with Ubuntu 24.04.
-- Avalanche-CLI installed and operational.
-- Nginx reverse proxy configured to route /mainnet, /testnet, /signet to local Avalanche RPC endpoints.
-- Cloudflare DNS configured for `rpc.snowside.network` pointing to VPS IP.
-- Resolved AvalancheGo "invalid host specified" 403 error by overriding `Host` header to `127.0.0.1` in Nginx proxy config.
-- Resolved HTTP/2 compatibility by adding `http2` to Nginx `listen 443` directives.
-- Removed leftover `snowside` blockchain from local network configuration.
+### Task 1: Documentation Update (Connect Web3 Wallet)
+- Added `guides/connect-wallet.md` to `packages/docs`.
+- Included Mainnet, Testnet, and Signet details (RPC URLs, Chain IDs in Decimal/Hex, Currency Symbol).
+- Added Block Explorer URLs (subdomain-specific).
+- Fixed Markdown table syntax (escaped `|` as `\|` to prevent column breaks).
+- Added page to Starlight sidebar via `astro.config.mjs`.
 
-### Task 2: SnowsideMainnet & SnowsideSignet Deployment
-- Deployed SnowsideMainnet (Chain ID: 32904 / 0x8088) to local network via `avalanche blockchain deploy SnowsideMainnet --local`.
-- Deployed SnowsideSignet (Chain ID: 33352 / 0x8288) to local network via `avalanche blockchain deploy SnowsideSignet --local`.
-- Updated Nginx configuration to route all 3 L1s to public endpoints.
-- Verified all 3 public RPC endpoints return correct Chain IDs:
-  - https://rpc.snowside.network/mainnet -> 0x8088
-  - https://rpc.snowside.network/testnet -> 0x8188
-  - https://rpc.snowside.network/signet -> 0x8288
-- Rabby wallet configured for all 3 networks (Snowside, Snowside Testnet, Snowside Signet) using ECX as currency.
+### Task 2: Package Upgrades & pnpm Fixes
+- Upgraded Astro to `7.2.0` across `packages/web`, `packages/pitch`, `packages/docs`, `packages/explorer`.
+- Fixed pnpm v10 warning by moving `onlyBuiltDependencies` from root `package.json` to `pnpm-workspace.yaml`.
+- **CRITICAL FIX:** Synced `pnpm-lock.yaml` and pushed it. Cloudflare `--frozen-lockfile` was failing because previous commits updated `package.json` but left the lockfile stale. `pnpm-lock.yaml` MUST be committed with dependency changes.
 
-### Deployed L1 Details (Local Network on VPS)
-1. **SnowsideMainnet** (Chain ID: 32904 / 0x8088)
-   - Blockchain ID: `2sDVEVpwW8aNwgY1RMGzmFVXdJ1vyE1qWg3YBK8pGX8iy9iLtJ`
-   - Subnet ID: `2951oZXRAym6ThvANrFSCWbiSgh3mrgD5gJkACZbpnoic6Zczf`
-   - VM ID: `dk9HWWWW1YGB5mZX48ABvu8fq2YTqdByWP7XjL2HnvkNGa5nr`
-   - Local RPC: `http://127.0.0.1:9654/ext/bc/2sDVEVpwW8aNwgY1RMGzmFVXdJ1vyE1qWg3YBK8pGX8iy9iLtJ/rpc`
-   - Public RPC: `https://rpc.snowside.network/mainnet`
-   - L1 Node: `NodeID-JR735wUJ3AAgwB9upf4A78866d6PR6Ptg` (port 9654)
-
-2. **SnowsideTestnet** (Chain ID: 33160 / 0x8188)
-   - Blockchain ID: `2PS8J5q5f4PXnwEsxLafFnPuFowprdaZ8EWuZpTF3hyi6SqLhe`
-   - Subnet ID: `wNWS35thzJy9fGaxtVfPwFKEt2RU2r9fMGA7c5A9XqqSvBCVj`
-   - VM ID: `dk9HWWWW1YGFGWfkXjDB6qaRh9UFjLAdahZS9qAyXKn5x1GnH`
-   - Local RPC: `http://127.0.0.1:9656/ext/bc/2PS8J5q5f4PXnwEsxLafFnPuFowprdaZ8EWuZpTF3hyi6SqLhe/rpc`
-   - Public RPC: `https://rpc.snowside.network/testnet`
-   - L1 Node: `NodeID-MZ51J52kjmn9T67Fyd2JyTvpQ8vNzAMZ4` (port 9656)
-
-3. **SnowsideSignet** (Chain ID: 33352 / 0x8288)
-   - Blockchain ID: `2pwzxirqRyWrgegTjMyLH2s5RhSb8xNkSYt5y4KhLXyAzZ7PMc`
-   - Subnet ID: `yeEMHr6rnkSvbgoZSc1BxaiMEnVFev4jkMDEmCZvpbZoeeosp`
-   - VM ID: `dk9HWWWW1YGEgSsvioryhvwYAqsUitMXq2Ksyahzve3tUapgX`
-   - Local RPC: `http://127.0.0.1:9658/ext/bc/2pwzxirqRyWrgegTjMyLH2s5RhSb8xNkSYt5y4KhLXyAzZ7PMc/rpc`
-   - Public RPC: `https://rpc.snowside.network/signet`
-   - L1 Node: `NodeID-AVuaGGPRCL9xNg3QEY2A8m1UiHGdBXcAY` (port 9658)
-
-### Shared L1 Configuration (all 3 networks)
-- Token Name: ECX Token
-- Token Symbol: ECX
-- Consensus: Proof of Authority (PoA)
-- ICM Messenger Address: `0x253b2784c75e510dD0fF1da844684a1aC0aa5fcf`
-- ICM Registry Address: `0xB8e71012d3F55D9EbbFf74376dE180702c1D8A6F`
-- PoA Validator Manager: `0x0C0DEbA5E0000000000000000000000000000000`
-- Validator Transparent Proxy: `0x0Feedc0de0000000000000000000000000000000`
-- Funded account (ewoq): `0x8db97C7cEcE249c2b98bDC0226Cc4C2A57BF52FC` (1,000,000 ECX)
-  - Private Key: `56289e99c94b6912bfc12adc093c9b51124f0dc54ac7a766b2bc5ccf558d8027`
-- Primary Nodes:
-  - `NodeID-7Xhw2mDxuDS44j42TCB6U5579esbSt3Lg` (port 9650)
-  - `NodeID-MFrZFVCXPv5iCn6M9K6XduxGTYp891xXZ` (port 9652)
-- Relayer not deployed (non-critical for L1 operations)
-
-### Nginx Configuration (/etc/nginx/sites-available/default)
-    server {
-        listen 80;
-        listen [::]:80;
-        listen 443 ssl http2;
-        listen [::]:443 ssl http2;
-    
-        server_name rpc.snowside.network;
-    
-        ssl_certificate      /etc/nginx/ssl/server.crt;
-        ssl_certificate_key /etc/nginx/ssl/server.key;
-    
-        access_log /dev/null;
-        error_log /root/error_log;
-    
-        root /var/www/html;
-        index index.html index.htm;
-    
-        location / {
-            try_files $uri $uri/ /index.html;
-        }
-    
-        # Snowside Mainnet (ChainID: 32904)
-        location /mainnet {
-            proxy_pass http://127.0.0.1:9654/ext/bc/2sDVEVpwW8aNwgY1RMGzmFVXdJ1vyE1qWg3YBK8pGX8iy9iLtJ/rpc;
-            proxy_set_header Host 127.0.0.1;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-        }
-    
-        # Snowside Testnet (ChainID: 33160)
-        location /testnet {
-            proxy_pass http://127.0.0.1:9656/ext/bc/2PS8J5q5f4PXnwEsxLafFnPuFowprdaZ8EWuZpTF3hyi6SqLhe/rpc;
-            proxy_set_header Host 127.0.0.1;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-        }
-    
-        # Snowside Signet (ChainID: 33352)
-        location /signet {
-            proxy_pass http://127.0.0.1:9658/ext/bc/2pwzxirqRyWrgegTjMyLH2s5RhSb8xNkSYt5y4KhLXyAzZ7PMc/rpc;
-            proxy_set_header Host 127.0.0.1;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-        }
-    }
+### Task 3: Block Explorer MVP (`packages/explorer`)
+- Scaffolded lightweight Astro static site for block exploration.
+- Implemented multi-network support using Astro dynamic routes (`src/pages/[network]/index.astro`).
+- Architecture: Separate subdomains (`explorer.snowside.network`, `explorer-testnet.snowside.network`, `explorer-signet.snowside.network`).
+- Added `functions/_middleware.js` to handle subdomain routing via Cloudflare Pages Functions. The middleware intercepts subdomains and rewrites root `/` to the correct static path (`/testnet/`, `/signet/`).
+- Copied favicon and OG image into `packages/explorer/public`.
+- Updated root `index.astro` to render Mainnet directly at `/` (removed the 301 redirect to `/mainnet/`).
+- Updated navigation links to point directly to the subdomains.
+- Temporarily used raw CSS instead of Tailwind due to a Tailwind v4 `ENOENT` build error during scaffolding.
 
 ## Monorepo structure
 
     snowside/
     ├── AGENTS.md
     ├── package.json          # pnpm workspace root
-    ├── pnpm-workspace.yaml   # packages: ['packages/*']
+    ├── pnpm-workspace.yaml   # packages: ['packages/*'], onlyBuiltDependencies: [esbuild, sharp]
     ├── .gitignore
     ├── docs/                 # Session handoffs + meta docs
     │   ├── HANDOFF.md
@@ -127,8 +40,8 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
     ├── packages/
     │   ├── web/  # Astro static — Landing + Whitepaper v0.3 + /validators
     │   ├── pitch/ # Astro static — Pitch page — noindex,nofollow
-    │   ├── docs/ # Astro Starlight — Technical docs
-    │   └── explorer/ # EVM block explorer (TO BE ADDED NEXT SESSION)
+    │   ├── docs/ # Astro Starlight — Technical docs + Wallet Guide
+    │   └── explorer/ # Astro static — Block explorer MVP + CF Pages Functions
     ├── go/
     │   └── subnet-evm/ # Subnet-EVM fork with BMM coordination precompile (Go)
     ├── rust/
@@ -142,29 +55,28 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
 | packages/web | ✅ |
 | packages/pitch | ✅ |
 | packages/docs | ✅ |
+| packages/explorer | ✅ |
 | go/subnet-evm | ✅ (using ./scripts/build.sh) |
 | rust/bmm-bidder | ✅ |
 | contracts | ✅ |
 | L1 Networks (Mainnet, Testnet, Signet) | ✅ |
 
-## Next session: Block Explorer + Documentation Update
+## Next session: Explorer UI Overhaul
 
-1. Add `packages/explorer` — deploy an EVM block explorer for the Snowside networks.
-2. Update `packages/docs` with all network details gathered this session (RPC endpoints, Chain IDs, contract addresses, token info, wallet connection guide).
-3. Continue L1 development (precompile implementation, BMM bidder RPC, smart contracts).
+**NEXT-YOU:** Focus exclusively on updating the UI for `packages/explorer`.
+1. **Header/Footer:** Create a shared layout with a Header and Footer matching the `snowside.network` brand (use `packages/web/src/layouts/Base.astro` and Footer/Nav components as reference).
+2. **Navigation:** Add standard block explorer navigation (Blocks, Transactions, Addresses).
+3. **Search Feature:** Implement a basic search bar that can resolve Block Numbers, Tx Hashes, and Address via EVM RPC (can be static JS fetch to the RPC endpoint).
+4. **Tailwind Migration:** Migrate `packages/explorer/src/styles/global.css` back to Tailwind v4 (`@import 'tailwindcss'`) and fix the PostCSS `ENOENT` issue if it persists.
+5. **Action Required on Cloudflare (User):** Ensure `explorer-testnet` and `explorer-signet` CNAMEs are added and bound to the Cloudflare Pages project so the `_middleware.js` subdomain routing works in production.
 
 ## Outstanding tasks
 
-### Documentation update (packages/docs)
-- Add network connection guide (RPC URLs, Chain IDs, token symbol, MetaMask/Rabby config)
-- Add contract addresses reference (ICM Messenger, ICM Registry, Validator Manager)
-- Add validator setup guide (PoA configuration, local node deployment)
-- Update infrastructure page with VPS/Nginx/Cloudflare details
-
-### Block Explorer (packages/explorer)
-- Research EVM block explorer options (Blockscout, Otterscan, etc.)
-- Deploy explorer for Snowside networks
-- Configure explorer to connect to local RPC endpoints
+### Explorer (`packages/explorer`)
+- Migrate to Tailwind v4.
+- Add Header, Footer, and Navigation.
+- Implement Search functionality (Block/Tx/Address).
+- Display basic block/tx lists.
 
 ### Subnet-EVM precompile implementation (go/subnet-evm/)
 - Study the existing precompile architecture in Subnet-EVM
@@ -184,26 +96,17 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
 - Implement FeeDistribution contract
 - Write comprehensive Foundry tests
 
-### Local testing network
-- Deploy contracts to SnowsideMainnet/Testnet/Signet
-- Test BMM coordination end-to-end
-
 ### Image placeholders (still need real images)
 - Hero.astro — commented-out hero illustration placeholder
 - WhyAvalanche.astro — 6th card is a dashed-border placeholder for architecture diagram
 - NodeRunr.astro — surface-1 card placeholder for NodΞRunr dashboard / terminal screenshot
 
-### Open Whitepaper Questions (from v0.3 plan, items 21-23)
-- Contract Fee: Optional or required? (Currently says "required on EVM calls")
-- Vesting Schedule: Still intended? (50% → 80% over 18 months)
-- Validator Distribution: 50% equal / 50% proportional still intended? Sybil mitigation plan?
-
 ## Key learnings (all sessions)
 1. **@tailwindcss/vite** breaks on Cloudflare's rolldown-vite — always use **@tailwindcss/postcss**
 2. **Starlight auto-injects ALL components** in `.md` files — never add import statements
 3. **Starlight Item** component is auto-injected for `.md` only, not `.mdx`
-4. **pnpm 10** ignores build scripts for native deps unless approved in `pnpm.onlyBuiltDependencies`
-5. **Heredoc + triple backticks** conflict — use 4-space indented code blocks or unique delimiters
+4. **pnpm 10** ignores build scripts for native deps unless approved in `pnpm-workspace.yaml` under `onlyBuiltDependencies`.
+5. **Heredoc + Triple Backticks** conflict — use 4-space indented code blocks or unique delimiters
 6. **Never commit node_modules** — verify `.gitignore` before first `git add -A`
 7. **Favicon dark backdrop required** — white snowmen on transparent SVG vanish in light browser themes
 8. **Two snowmen = "88"** — stacked-circle silhouette naturally reads as "88" for Drivechain ID branding
@@ -224,7 +127,9 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
 23. **AvalancheGo Host Header Security** — AvalancheGo rejects requests where the `Host` header does not match local addresses (DNS rebinding protection). When proxying via Nginx, override `proxy_set_header Host 127.0.0.1` to bypass this security check.
 24. **Avalanche-CLI Naming Convention** — Blockchain specs must use letters only (no hyphens, underscores, numbers). Use PascalCase or camelCase for unique names (e.g., SnowsideTestnet, not snowside-testnet).
 25. **Never make the user ask for CLI commands** — ALWAYS output commands in a single terminal-ready code block. NEVER make the user ask.
-26. **Heredoc + Triple Backticks** — If markdown content inside a heredoc contains triple backticks, they will conflict with the outer code block. Use 4-space indented code blocks instead.
+26. **pnpm-lock.yaml sync** — When changing dependencies (e.g., package.json), you MUST explicitly run `git add pnpm-lock.yaml` and commit it. Cloudflare uses `--frozen-lockfile` and will fail if the lockfile is missing or out of date.
+27. **Markdown table pipes** — If a cell needs a literal `|` character, escape it as `\|` to prevent column breaking.
+28. **Cloudflare Pages Subdomains** — You can route multiple subdomains to the same Cloudflare Pages project by adding a `functions/_middleware.js` file. The middleware inspects `request.headers.get('host')` and can rewrite the URL to serve different static files (e.g., `/testnet/index.html`) while keeping the subdomain URL intact in the browser.
 
 ## Session history (prior sessions)
 
@@ -293,6 +198,14 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
 5. Rabby wallet configured for all 3 networks
 6. Removed leftover `snowside` blockchain from local network
 7. Updated AGENTS.md with network infrastructure details and CLI command discipline rule
+
+### Session 8 (2026-08-10)
+1. Added Web3 wallet connection guide to `packages/docs`.
+2. Fixed pnpm warning (moved config to `pnpm-workspace.yaml`) and upgraded Astro to 7.2.0.
+3. Scaffolded `packages/explorer` block explorer MVP.
+4. Implemented subdomain routing via `functions/_middleware.js`.
+5. Synced `pnpm-lock.yaml` to fix Cloudflare frozen-lockfile errors.
+6. Removed path redirects, implemented subdomain links in Explorer UI.
 
 ## Key file inventory
 
@@ -370,8 +283,26 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
         └── content/docs/
             ├── index.md
             ├── architecture/         # 6 pages
-            ├── guides/              # 3 pages
+            ├── guides/              # 4 pages (running-a-validator, connect-wallet, deploying-contracts, bridging-usdc)
             └── reference/            # 2 pages
+
+### packages/explorer (Astro + CF Pages Functions)
+    packages/explorer/
+    ├── astro.config.mjs
+    ├── postcss.config.mjs
+    ├── package.json
+    ├── tsconfig.json
+    ├── functions/
+    │   └── _middleware.js           # Subdomain routing for explorer-testnet/signet
+    ├── public/
+    │   ├── favicon.svg
+    │   └── og-image.png
+    └── src/
+        ├── styles/global.css        # Raw CSS (temporarily, Tailwind ENOENT fix pending)
+        └── pages/
+            ├── index.astro          # Mainnet root
+            └── [network]/
+                └── index.astro      # Dynamic routes for /mainnet, /testnet, /signet
 
 ### go/subnet-evm (Go)
     go/subnet-evm/
@@ -421,4 +352,4 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
     # See "Nginx Configuration" section above for full config
 
 ---
-*Generated at end of Session 7. Next session: Block Explorer deployment + Documentation update with network details. Maintained per AGENTS.md.*
+*Generated at end of Session 8. Next session: Explorer UI (Header, Footer, Search). Maintained per AGENTS.md.*
