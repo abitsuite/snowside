@@ -1,0 +1,9 @@
+# packages/api/wrangler.toml
+name = "snowside-api"
+main = "src/index.ts"
+compatibility_date = "2024-08-10"
+
+# Route configuration for snowside.network/v1
+routes = [
+  { pattern = "snowside.network/v1*", zone_name = "snowside.network" }
+]

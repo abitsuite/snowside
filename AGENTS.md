@@ -294,3 +294,15 @@ The landing page alternates dark and light sections for visual rhythm. The estab
 | subnet-evm | cd go/subnet-evm && ./scripts/build.sh |
 | bmm-bidder | cd rust/bmm-bidder && cargo build |
 | contracts | cd contracts && forge build |
+
+## API Package (packages/api)
+- **Stack:** Cloudflare Worker (`snowside-api`), Hono, Chanfana (OpenAPI), Zod.
+- **Deployment:** `wrangler deploy` -> `snowside.network/v1*`.
+- **OpenAPI UI:** Served directly at `/v1` (Swagger UI). Spec at `/v1/openapi.json`.
+- **Backend Proxy:** Catch-all proxy forwards requests to Drynet 4 Esplora (`https://esplora.drynet4.drivechain.dev`).
+- **Versions:** `hono@4.5.0`, `chanfana@2.1.0`, `zod@3.23.8`, `wrangler@4.120.0`, `@cloudflare/workers-types@5.20260810.1`.
+
+## Bridge Package (packages/bridge)
+- **Stack:** Astro static site + Tailwind v4 (`@tailwindcss/postcss`).
+- **Features:** Network selector dropdown (Mainnet/Testnet/Signet), HTML5 QR code scanner (`html5-qrcode`), QR code display for deposits (dummy address currently).
+- **Subdomains:** No subdomains used for networks; network selection is handled in-session.

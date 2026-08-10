@@ -1,47 +1,24 @@
-# Snowside Handoff — 2026-08-10 (Session 9, Explorer UI MVP)
+# Snowside Handoff — 2026-08-10 (Session 10, Bridge UI & API Proxy)
 
 ## Purpose
-Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88. The monorepo at `/Workspace/abitsuite/snowside` includes a landing page (`snowside.network`), a pitch page (`pitch.snowside.network`), docs (`docs.snowside.network`), and a block explorer (`explorer.snowside.network`), alongside the L1 execution layer (`go/subnet-evm`), BMM bidder (`rust/bmm-bidder`), and core contracts (`contracts/`).
+Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88. The monorepo at `/Workspace/abitsuite/snowside` includes a landing page (`snowside.network`), a pitch page (`pitch.snowside.network`), docs (`docs.snowside.network`), a block explorer (`explorer.snowside.network`), the API worker (`snowside.network/v1`), the bridge UI (`bridge.snowside.network` WIP), alongside the L1 execution layer (`go/subnet-evm`), BMM bidder (`rust/bmm-bidder`), and core contracts (`contracts/`).
 
-## Session 9 summary — 2026-08-10
+## Session 10 summary — 2026-08-10
 
-### Task 1: Explorer UI Overhaul
-- Scaffolded `Base.astro`, `Header.astro`, `Search.astro`, and `Footer.astro` inside `packages/explorer`.
-- Implemented a functional search bar (Block, Tx, Address regex routing via `is:inline` script).
-- Added Etherscan-style stats grid to the index pages: Latest Block, Gas Price (Gwei), Chain ID, RPC URL.
-- Implemented multi-RPC fetch logic (`eth_blockNumber`, `eth_gasPrice`) using `Promise.all`.
-- Header title now dynamically appends "Testnet" / "Signet" based on the active network.
-- Favicon in the header was enlarged (`h-10 w-10`).
-- Footer text updated to "Powered by Avalanche & eCash." with hyperlinks to both projects.
+### Task 1: Bridge UI Scaffold (`packages/bridge`)
+- Scaffolded `packages/bridge` using `packages/explorer` as a template (Tailwind v4, Astro config).
+- Removed subdomain network links from the header.
+- Implemented a network `<select>` dropdown in the main UI.
+- Added a QR code display for the deposit flow using a dummy address.
+- Integrated `html5-qrcode` library to allow camera scanning for address inputs.
 
-### Task 2: Tailwind v4 ENOENT Fix
-- Resolved the persistent `ENOENT: no such file or directory, open '.../tailwindcss'` build error in `packages/explorer`.
-- The root cause was Vite/Rolldown's native CSS parser trying to resolve `@import 'tailwindcss'` as a local file before the `@tailwindcss/postcss` plugin could intercept it.
-- **The Fix:** Changed `@import 'tailwindcss';` to `@import 'tailwindcss/index.css';` in `global.css`. This allows Vite to resolve the explicit file path while still feeding it through PostCSS.
-
-### Task 3: Middleware Subdomain Deep Linking
-- Updated `functions/_middleware.js` to correctly map deep links on subdomains to their prefixed static paths (e.g., `explorer-testnet.snowside.network/tx/0x123` -> Astro serves `/testnet/tx/0x123/index.html`).
-
-## Monorepo structure
-
-    snowside/
-    ├── AGENTS.md
-    ├── package.json          # pnpm workspace root
-    ├── pnpm-workspace.yaml   # packages: ['packages/*'], onlyBuiltDependencies: [esbuild, sharp]
-    ├── .gitignore
-    ├── docs/                 # Session handoffs + meta docs
-    │   ├── HANDOFF.md
-    │   └── TESTNET-DEPLOYMENT.md
-    ├── packages/
-    │   ├── web/  # Astro static — Landing + Whitepaper v0.3 + /validators
-    │   ├── pitch/ # Astro static — Pitch page — noindex,nofollow
-    │   ├── docs/ # Astro Starlight — Technical docs + Wallet Guide
-    │   └── explorer/ # Astro static — Block explorer MVP + CF Pages Functions
-    ├── go/
-    │   └── subnet-evm/ # Subnet-EVM fork with BMM coordination precompile (Go)
-    ├── rust/
-    │   └── bmm-bidder/ # BMM bidder and settlement monitor (Rust)
-    └── contracts/ # Solidity smart contracts (Foundry)
+### Task 2: API Worker Scaffold (`packages/api`)
+- Created a new Cloudflare Worker package using Hono and Chanfana.
+- Configured OpenAPI UI to serve from the root `/v1` path instead of `/docs`.
+- Implemented a `/v1/status` endpoint with Zod schema for OpenAPI generation.
+- Implemented a raw catch-all proxy for `/v1/*` that forwards to the public Drynet 4 Esplora instance (`https://esplora.drynet4.drivechain.dev`).
+- Upgraded `wrangler` to `4.120.0` and used `@cloudflare/workers-types@5.20260810.1`.
+- Successfully deployed to `snowside.network/v1*`.
 
 ## Build status — all packages pass
 
@@ -51,49 +28,28 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
 | packages/pitch | ✅ |
 | packages/docs | ✅ |
 | packages/explorer | ✅ |
+| packages/api | ✅ (Deployed via wrangler) |
+| packages/bridge | ✅ |
 | go/subnet-evm | ✅ (using ./scripts/build.sh) |
 | rust/bmm-bidder | ✅ |
 | contracts | ✅ |
 | L1 Networks (Mainnet, Testnet, Signet) | ✅ |
 
-## Next session: Bridge UI (`bridge.snowside.network`)
+## Next session: API Schema Expansion & Bridge Integration
 
-**NEXT-YOU:** The goal is to create `packages/bridge`, an Astro static site for BIP-300/301 deposits and withdrawals.
-1. **Scaffold `packages/bridge`:** Use `packages/explorer` as a template for `astro.config.mjs`, `postcss.config.mjs`, `global.css` (MUST use `@import 'tailwindcss/index.css'`), and `Base.astro`. Add it to `pnpm-workspace.yaml`.
-2. **UI Requirements:** Mobile-first dashboard. Users need to navigate between Deposit (BIP-300) and Withdraw (BIP-301) flows.
-3. **Deposit Flow (BIP-300):** Display a P2SH address or instructions for locking funds on the L1. You may need to construct a UI that talks to a backend or smart contract to generate deposit addresses/headers.
-4. **Withdrawal Flow (BIP-301):** Display instructions or a UI for initiating withdrawals. 
-5. **Cloudflare Pages:** Configure `bridge.snowside.network` as a new CF Pages project pointing to `packages/bridge/dist`.
+1. **OpenAPI Schemas for Esplora:**
+   - Replace the raw catch-all proxy in `packages/api/src/index.ts` with explicitly documented Hono routes.
+   - Define Zod schemas for the specific Esplora endpoints needed by the bridge (e.g., `GET /v1/address/:addr`, `GET /v1/tx/:txid`) to provide type-safe responses and auto-generated documentation.
 
-## Outstanding tasks
+2. **Frontend Integration:**
+   - Update `BridgeWidget.astro` to fetch deposit statuses and transaction details from `snowside.network/v1`.
+   - Replace the static dummy QR code with a dynamic one generated from an API call.
 
-### Bridge UI (`packages/bridge`)
-- Scaffold the Astro site.
-- Implement Deposit/Withdrawal dashboards.
-- Integrate with `contracts/peg/Peg.sol` if applicable for UI interaction (needs Web3 wallet connection).
+3. **Wallet Connection:**
+   - Implement the "Connect Wallet" button functionality in `packages/bridge` using Web3 providers (e.g., EIP-6963 standard or standard `ethers.js`/`viem`) to interact with the Snowside EVM L1 for withdrawals.
 
-### Subnet-EVM precompile implementation (go/subnet-evm/)
-- Study the existing precompile architecture in Subnet-EVM
-- Implement the BMM coordination precompile in Go
-- Add precompile registration in the chain configuration
-- Write unit tests for the precompile
-
-### BMM bidder implementation (rust/bmm-bidder/)
-- Implement eCash RPC client
-- Implement Snowside RPC client (eth_call for precompile reads)
-- Implement BMM Request transaction construction
-- Implement settlement monitoring loop
-- Implement configuration loading
-
-### Smart contract implementation (contracts/)
-- Implement Peg contract (deposit claiming, withdrawal initiation)
-- Implement FeeDistribution contract
-- Write comprehensive Foundry tests
-
-### Image placeholders (still need real images)
-- Hero.astro — commented-out hero illustration placeholder
-- WhyAvalanche.astro — 6th card is a dashed-border placeholder for architecture diagram
-- NodeRunr.astro — surface-1 card placeholder for NodΞRunr dashboard / terminal screenshot
+4. **Cloudflare Pages Deployment:**
+   - Scaffold `bridge.snowside.network` as a Cloudflare Pages project pointing to `packages/bridge/dist`.
 
 ## Key learnings (all sessions)
 1. **@tailwindcss/vite** breaks on Cloudflare's rolldown-vite — always use **@tailwindcss/postcss**
@@ -125,6 +81,8 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
 27. **pnpm-lock.yaml sync** — When changing dependencies (e.g., package.json), you MUST explicitly run `git add pnpm-lock.yaml` and commit it. Cloudflare uses `--frozen-lockfile` and will fail if the lockfile is missing or out of date.
 28. **Markdown table pipes** — If a cell needs a literal `|` character, escape it as `\|` to prevent column breaking.
 29. **Cloudflare Pages Subdomains** — You can route multiple subdomains to the same Cloudflare Pages project by adding a `functions/_middleware.js` file. The middleware inspects `request.headers.get('host')` and can rewrite the URL to serve different static files (e.g., `/testnet/index.html`) while keeping the subdomain URL intact in the browser.
+30. **Chanfana v2 Exports** — In `chanfana@2.1.0`, `OpenAPIRouter` is not exported. Use `fromHono` to integrate OpenAPI with a Hono app instance, and call `extendZodWithOpenApi(z)` early in the setup.
+31. **Cloudflare Worker Routes** — A route pattern `snowside.network/v1*` will capture requests to `/v1`, `/v1/`, and `/v1/status` without needing a separate explicit root route.
 
 ## Session history (prior sessions)
 
@@ -207,6 +165,12 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
 2. Fixed Tailwind v4 ENOENT issue using `@import 'tailwindcss/index.css'`.
 3. Updated Cloudflare middleware to allow deep-link routing on network subdomains.
 4. Updated Header title and Footer text to reflect network/eCash branding.
+
+### Session 10 (2026-08-10)
+1. Scaffolded `packages/bridge` UI with network selector, QR display, and QR scanner.
+2. Scaffolded `packages/api` Cloudflare Worker (`snowside-api`) using Hono + Chanfana.
+3. Worker deploys to `snowside.network/v1*`, serving OpenAPI UI at `/v1`.
+4. Configured raw proxy to Drynet 4 Esplora backend.
 
 ## Key file inventory
 
@@ -305,6 +269,37 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
             └── [network]/
                 └── index.astro      # Dynamic routes for /mainnet, /testnet, /signet
 
+### packages/bridge (Astro)
+    packages/bridge/
+    ├── astro.config.mjs
+    ├── postcss.config.mjs
+    ├── package.json
+    ├── tsconfig.json
+    ├── functions/
+    │   └── _middleware.js           # Subdomain routing for bridge-testnet/signet
+    ├── public/
+    │   ├── favicon.svg
+    │   └── og-image.png
+    └── src/
+        ├── styles/global.css        # Tailwind v4 config
+        ├── layouts/Base.astro       # Base layout
+        ├── components/
+        │   ├── Header.astro         # Removed subdomain network links
+        │   ├── Footer.astro
+        │   └── BridgeWidget.astro   # Network selector, QR display, scanner UI
+        └── pages/
+            ├── index.astro          # Mainnet root
+            └── [network]/
+                └── index.astro      # Dynamic routes for /mainnet, /testnet, /signet
+
+### packages/api (Cloudflare Worker + Hono)
+    packages/api/
+    ├── package.json
+    ├── tsconfig.json
+    ├── wrangler.toml                 # Deployed to snowside.network/v1*
+    └── src/
+        └── index.ts                  # Hono + Chanfana, OpenAPI UI at /v1, proxy to Drynet 4
+
 ### go/subnet-evm (Go)
     go/subnet-evm/
     ├── README.md
@@ -349,8 +344,8 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
 
 ### VPS Infrastructure (rpc.snowside.network)
     /etc/nginx/sites-available/default
-    # Contains reverse proxy config for /mainnet, /testnet, /signet
-    # See "Nginx Configuration" section above for full config
+    # Contains reverse proxy config for /mainnet, /testnet, /signet, /v1 (Esplora proxy)
+    # See "Nginx Configuration" section in AGENTS.md for full config
 
 ---
-*Generated at end of Session 9. Next session: Create `packages/bridge` for BIP300/301 UI. Maintained per AGENTS.md.*
+*Generated at end of Session 10. Next session: Expand API schemas and wire Bridge UI. Maintained per AGENTS.md.*
