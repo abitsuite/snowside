@@ -13,7 +13,7 @@ Snowside operates three Avalanche L1 networks. Use the details below to connect 
 | :--- | :--- |
 | Network Name | Snowside Mainnet |
 | RPC URL | `https://rpc.snowside.network/mainnet` |
-| Chain ID | `32904` (Hex: `0x8088`) |
+| Chain ID | `32904` | `0x8088` |
 | Currency Symbol | `ECX` |
 | Block Explorer URL | `https://explorer.snowside.network` |
 
@@ -23,7 +23,7 @@ Snowside operates three Avalanche L1 networks. Use the details below to connect 
 | :--- | :--- |
 | Network Name | Snowside Testnet |
 | RPC URL | `https://rpc.snowside.network/testnet` |
-| Chain ID | `33160` (Hex: `0x8188`) |
+| Chain ID | `33160` | `0x8188` |
 | Currency Symbol | `ECX` |
 | Block Explorer URL | `https://explorer.snowside.network` |
 
@@ -33,7 +33,7 @@ Snowside operates three Avalanche L1 networks. Use the details below to connect 
 | :--- | :--- |
 | Network Name | Snowside Signet |
 | RPC URL | `https://rpc.snowside.network/signet` |
-| Chain ID | `33352` (Hex: `0x8288`) |
+| Chain ID | `33352` | `0x8288` |
 | Currency Symbol | `ECX` |
 | Block Explorer URL | `https://explorer.snowside.network` |
 
