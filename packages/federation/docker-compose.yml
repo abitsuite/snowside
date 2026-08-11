@@ -2,10 +2,11 @@ services:
   federation:
     build: .
     restart: unless-stopped
+    env_file:
+      - .env
     environment:
+      - NODE_ENV=production
       - API_URL=https://snowside.network/v1
-      - FEDERATION_TOKEN=${FEDERATION_TOKEN}
-      - EWOQ_PRIVATE_KEY=${EWOQ_PRIVATE_KEY}
       - MAINNET_RPC=https://rpc.snowside.network/mainnet
       - TESTNET_RPC=https://rpc.snowside.network/testnet
       - SIGNET_RPC=https://rpc.snowside.network/signet
