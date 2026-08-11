@@ -175,6 +175,15 @@ export async function buildSignAndBroadcastWithdrawal(
     return null;
   }
 
+  // Dust limit check (546 sats for P2PKH/P2WPKH outputs)
+  const DUST_LIMIT = 546;
+  if (targetSats < DUST_LIMIT) {
+    console.error(
+      `[withdraw-tx] Amount ${targetSats} sats below dust limit (${DUST_LIMIT} sats). Minimum withdrawal is ${DUST_LIMIT / 100} ECX.`,
+    );
+    return null;
+  }
+
   // Collect UTXOs from funded deposits on the same network
   const allUtxos: { utxo: Utxo; deposit: FundedDeposit }[] = [];
   for (const deposit of fundedDeposits) {
@@ -226,7 +235,7 @@ export async function buildSignAndBroadcastWithdrawal(
 
       if (isSignet) {
         // P2WPKH (segwit): witnessUtxo with P2WPKH script
-        const script = p2wpkh(keyPair.pubkeyHash).script;
+        const script = p2wpkh(keyPair.publicKey).script;
         tx.addInput({
           txid: hex.decode(utxo.txid),
           index: utxo.vout,
@@ -239,7 +248,7 @@ export async function buildSignAndBroadcastWithdrawal(
       } else {
         // P2PKH (eCash): use witnessUtxo to force BIP-143 sighash
         // The script is the P2PKH scriptPubKey
-        const script = p2pkh(keyPair.pubkeyHash).script;
+        const script = p2pkh(keyPair.publicKey).script;
         tx.addInput({
           txid: hex.decode(utxo.txid),
           index: utxo.vout,
