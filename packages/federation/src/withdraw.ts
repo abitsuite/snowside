@@ -8,7 +8,7 @@
  * Uses @scure/btc-signer for transaction construction.
  */
 
-import { Transaction, p2wpkh, p2pkh, NETWORK, TEST_NETWORK} from '@scure/btc-signer';
+import { Transaction, p2wpkh, p2pkh, NETWORK, TEST_NETWORK, Sighash } from '@scure/btc-signer';
 import { hex } from '@scure/base';
 import { HDWallet } from './wallet.js';
 
@@ -287,12 +287,17 @@ export async function buildSignAndBroadcastWithdrawal(
       tx.addOutputAddress(cleanChangeAddr, BigInt(changeSats), getBtcNetwork(network));
     }
 
+    // Determine correct sighash type for the network
+    // Bitcoin (signet): SIGHASH_ALL (0x01)
+    // eCash: SIGHASH_ALL | SIGHASH_FORKID (0x41)
+    const sighashType = network === 'signet' ? Sighash.ALL : (Sighash.ALL | 0x40) as Sighash;
+
     // Sign each input with the correct derived private key
     for (let i = 0; i < selected.length; i++) {
       const { deposit } = selected[i];
       const keyPair = wallet.deriveKeyPair(network, deposit.derivation_index);
       if (!keyPair) continue;
-      tx.sign(keyPair.privateKey, [i]);
+      tx.sign(keyPair.privateKey, [sighashType]);
     }
 
     // Extract raw hex
