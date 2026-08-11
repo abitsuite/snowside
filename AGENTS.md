@@ -115,6 +115,7 @@ Read allowlist status:
 
 Mint native tokens:
    cast send --rpc-url $RPC --private-key $PK 0x0200000000000000000000000000000000000001 "mintNativeCoin(address,uint256)" <recipient> $(cast to-wei 1000)
+   # CRITICAL: Use mintNativeCoin (selector 0x4f5aaaba), NOT mint (selector 0x40c10f19)
 
 Deploy contract (if on DeployerAllowList):
    cast send --rpc-url $RPC --private-key $PK --create 0x60006000f3
@@ -397,14 +398,11 @@ The landing page alternates dark and light sections for visual rhythm.
 - **D1 Database**: `snowside-bridge` (ID: 202053ef-9607-481d-9b73-185734164ea4)
 
 ### Future Architecture (Full BIP-300/301)
-- **bip300301_enforcer** (Rust, on VPS): Watches eCash L1 via ZMQ, validates M5 deposits and M6 withdrawals, exposes gRPC at localhost:50051 — OPTIONAL (custodial MVP first)
-- **Federation service** (Node.js, Docker on VPS bchplease): Polls API for pending deposits, checks Esplora per-network, mints ECX via NativeMinter.mintNativeCoin(), 10s poll interval. Native minting WORKING (tested: 1,337,001 ECX minted on signet).
+- **bip300301_enforcer** (Rust, on VPS): Watches eCash L1 via ZMQ, validates M5 deposits and M6 withdrawals, exposes gRPC at localhost:50051 — NOT YET RUNNING (custodial MVP first)
+- **Federation service** (Node.js + viem, Docker on VPS bchplease): Polls API for pending deposits, derives HD wallet addresses (@scure/bip32 + ecashaddrjs), checks Esplora per-network, mints ECX via NativeMinter.mintNativeCoin(), processes withdrawals via @scure/btc-signer, 10s poll interval. Container name: snowside-federation.
 - **VPS**: bchplease (root@bchplease, Ubuntu 24.04, Docker 29.7.2)
 - **Federation Docker**: `docker compose up -d --build` in /root/snowside/packages/federation
-- **pnpm version**: Pinned to 10.15.1 in Dockerfile (avoids pnpm 11 esbuild build script blocking) — NOT YET RUNNING
-- **Federation service** (Node.js + viem, Docker on VPS bchplease): Polls API for pending deposits, derives HD wallet addresses (bip32 + ecashaddrjs + bitcoinjs-lib), checks Esplora per-network, mints ECX via NativeMinter precompile, 10s poll interval
-- **VPS**: bchplease (root@bchplease, Ubuntu 24.04, Docker 29.7.2)
-- **Federation Docker**: `docker compose up -d --build` in /root/snowside/packages/federation
+- **pnpm version**: Pinned to 10.15.1 in Dockerfile (avoids pnpm 11 esbuild build script blocking)
 - Federation connects to enforcer gRPC instead of polling Esplora
 - Deposits use enforcer `WalletService/CreateNewAddress` (proper P2SH with sidechain commitment)
 - Withdrawals use M3/M4/M6 bundle process (13,150 ACKs over 26,300 blocks ≈ 6 months at 10-min block time)
@@ -422,6 +420,7 @@ The landing page alternates dark and light sections for visual rhythm.
 | GET | /v1/bridge/withdrawals/:address | Public | List withdrawals |
 | POST | /v1/fed/checkin | Bearer token | Federation heartbeat |
 | GET | /v1/fed/deposits/pending | Bearer token | Get pending deposits |
+| GET | /v1/fed/deposits/funded | Bearer token | Get funded deposits (for withdrawal UTXO selection) |
 | PATCH | /v1/fed/deposit/:id | Bearer token | Update deposit status |
 | GET | /v1/fed/withdrawals/pending | Bearer token | Get pending withdrawals |
 | PATCH | /v1/fed/withdraw/:id | Bearer token | Update withdrawal status |
@@ -443,9 +442,12 @@ The landing page alternates dark and light sections for visual rhythm.
 - **drynet4 block time**: 10 minutes (same as Bitcoin) → withdrawal period ≈ 6 months
 - **bip300301_enforcer**: Rust app (github.com/LayerTwo-Labs/bip300301_enforcer), gRPC API, watches L1 via ZMQ
 - **Enforcer RPCs**: ValidatorService/GetSidechains, GetChainInfo, GetChainTip; WalletService/CreateNewAddress, CreateSidechainProposal
-- **Esplora**: https://esplora.drynet4.drivechain.dev (testnet) (eCash block explorer API, proxied via /v1/*)
+- **Esplora (per-network)**:
+  - mainnet: https://esplora.mainnet.drivechain.dev (eCash mainnet, XEC, ecash: addresses)
+  - testnet: https://esplora.drynet4.drivechain.dev (eCash drynet4, XEC, ecash: addresses)
+  - signet: https://esplora.signet.drivechain.info (Bitcoin signet, sBTC, tb1q addresses)
 
-### Deployment Status (End of Session 13)
+### Deployment Status (End of Session 15)
 - ✅ D1 database created (snowside-bridge)
 - ✅ API code written (bridge + federation endpoints + Esplora proxy)
 - ✅ Federation service skeleton written (monitoring + minting logic)
