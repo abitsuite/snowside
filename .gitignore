@@ -52,3 +52,13 @@ contracts/lib/  # Foundry libraries are re-installed with forge install
 .DS_Store
 Thumbs.db
 packages/federation/.federation-token
+
+# Cloudflare Wrangler local state
+.wrangler/
+
+# Federation test files
+packages/federation/src/test-wallet.ts
+
+# Environment files
+.env
+*.env.local
