@@ -3,14 +3,23 @@ import { ethers } from 'ethers';
 const API_URL = process.env.API_URL || 'https://snowside.network/v1';
 const FED_TOKEN = process.env.FEDERATION_TOKEN || 'dev-secret';
 const EWOQ_KEY = process.env.EWOQ_PRIVATE_KEY || '';
-const ESPLORA_URL = process.env.ESPLORA_URL || 'https://esplora.drynet4.drivechain.dev';
 const POLL_MS = parseInt(process.env.POLL_MS || '10000');
 
-// RPC URLs for all three Snowside networks
+// RPC URLs for all three Snowside L2 networks
 const RPC_URLS: Record<string, string> = {
   mainnet: process.env.MAINNET_RPC || 'https://rpc.snowside.network/mainnet',
   testnet: process.env.TESTNET_RPC || 'https://rpc.snowside.network/testnet',
   signet: process.env.SIGNET_RPC || 'https://rpc.snowside.network/signet',
+};
+
+// Esplora URLs for each L1 network
+// mainnet -> eCash mainnet
+// testnet -> eCash drynet4
+// signet -> Bitcoin signet
+const ESPLORA_URLS: Record<string, string> = {
+  mainnet: process.env.MAINNET_ESPLORA || 'https://esplora.mainnet.drivechain.dev',
+  testnet: process.env.TESTNET_ESPLORA || 'https://esplora.drynet4.drivechain.dev',
+  signet: process.env.SIGNET_ESPLORA || 'https://esplora.signet.drivechain.info',
 };
 
 const NATIVE_MINTER = '0x0200000000000000000000000000000000000001';
@@ -44,27 +53,44 @@ function fedHeaders(): Record<string, string> {
   };
 }
 
-// Stub: generate eCash deposit address from deposit ID
-// In production: HD wallet derivation with bip32 + ecashaddrjs
-function generateEcashAddress(depositId: string): string {
+// Generate deposit address for the specified L1 network
+// eCash networks: ecash:qz... (Base58)
+// Bitcoin signet: tb1q... (Bech32)
+// TODO: replace with proper HD wallet derivation (bip32 + ecashaddrjs/bitcoinjs-lib)
+function generateDepositAddress(network: string, depositId: string): string {
   const hex = depositId.replace(/-/g, '');
+  if (network === 'signet') {
+    // Bitcoin signet uses bech32 tb1q addresses
+    return `tb1q${hex.slice(0, 38)}`;
+  }
+  // eCash uses ecash: prefix with Base58
   return `ecash:qz${hex.slice(0, 38)}`;
 }
 
-// Check Esplora for UTXOs on an address
+// Check Esplora for UTXOs on an address (per-network)
 async function checkDeposits(
-  ecashAddr: string
+  network: string,
+  addr: string
 ): Promise<{ txHash: string; sat: number } | null> {
-  const addr = ecashAddr.replace('ecash:', '').replace('bitcoincash:', '');
+  const esploraUrl = ESPLORA_URLS[network];
+  if (!esploraUrl) {
+    console.error(`No Esplora URL for network: ${network}`);
+    return null;
+  }
+  // Strip prefixes for Esplora API
+  const cleanAddr = addr
+    .replace('ecash:', '')
+    .replace('bitcoincash:', '')
+    .replace('tb1', 'tb1'); // bech32 addresses don't have a prefix
   try {
-    const resp = await fetch(`${ESPLORA_URL}/address/${addr}/utxo`);
+    const resp = await fetch(`${esploraUrl}/address/${cleanAddr}/utxo`);
     if (!resp.ok) return null;
     const utxos = (await resp.json()) as Array<{ txid: string; value: number }>;
     if (utxos.length > 0) {
       return { txHash: utxos[0].txid, sat: utxos[0].value };
     }
   } catch (err) {
-    console.error('Esplora error:', err);
+    console.error(`[${network}] Esplora error:`, err);
   }
   return null;
 }
@@ -84,20 +110,17 @@ async function mintEcx(
 }
 
 // Verify a burn transaction on Snowside L2
-// TODO: implement burn verification via NativeMinter or burn contract
 async function verifyBurnTx(
   network: string,
-  burnTxHash: string,
-  expectedAddress: string,
-  expectedAmount: string
+  burnTxHash: string
 ): Promise<boolean> {
   if (!burnTxHash) return false;
   try {
-    const provider = providers[network] || new ethers.JsonRpcProvider(RPC_URLS[network]);
+    const provider =
+      providers[network] || new ethers.JsonRpcProvider(RPC_URLS[network]);
     const tx = await provider.getTransaction(burnTxHash);
     if (!tx) return false;
-    // TODO: parse tx input to verify it's a burn to the correct address for the correct amount
-    // For now, just verify the tx exists
+    // TODO: parse tx input to verify burn to correct address for correct amount
     return true;
   } catch (err) {
     console.error(`Burn verification failed for ${burnTxHash}:`, err);
@@ -118,7 +141,7 @@ async function poll() {
 
     if (!dep.ecash_address) {
       // Assign a deposit address to this deposit
-      const addr = generateEcashAddress(dep.id);
+      const addr = generateDepositAddress(network, dep.id);
       await api(`/fed/deposit/${dep.id}`, {
         method: 'PATCH',
         headers: fedHeaders(),
@@ -126,8 +149,8 @@ async function poll() {
       });
       console.log(`[${network}] Deposit ${dep.id}: assigned ${addr}`);
     } else {
-      // Check Esplora for incoming eCash transaction
-      const tx = await checkDeposits(dep.ecash_address);
+      // Check Esplora for incoming L1 transaction
+      const tx = await checkDeposits(network, dep.ecash_address);
       if (tx) {
         console.log(
           `[${network}] Deposit ${dep.id}: detected ${tx.sat} sats in ${tx.txHash}`
@@ -184,19 +207,13 @@ async function poll() {
     );
 
     if (wd.burn_tx_hash && EWOQ_KEY) {
-      // Verify burn tx on Snowside L2
-      const verified = await verifyBurnTx(
-        network,
-        wd.burn_tx_hash,
-        wd.snowside_address,
-        wd.amount_ecx
-      );
+      const verified = await verifyBurnTx(network, wd.burn_tx_hash);
       if (verified) {
         console.log(
-          `[${network}] Withdrawal ${wd.id}: burn tx verified, TODO: send XEC to ${wd.ecash_address}`
+          `[${network}] Withdrawal ${wd.id}: burn tx verified, TODO: send L1 funds to ${wd.ecash_address}`
         );
-        // TODO: Send XEC from federation eCash wallet to user's eCash address
-        // TODO: Update withdrawal status to 'completed' with ecash_tx_hash
+        // TODO: Send XEC/sBTC from federation wallet to user's L1 address
+        // TODO: Update withdrawal status to 'completed' with L1 tx hash
       } else {
         console.error(
           `[${network}] Withdrawal ${wd.id}: burn tx verification failed`
@@ -213,11 +230,14 @@ async function poll() {
 async function main() {
   console.log('Snowside Federation Service');
   console.log(`  API: ${API_URL}`);
-  console.log('  Networks:');
+  console.log('  L2 Networks (Snowside RPC):');
   for (const [net, rpc] of Object.entries(RPC_URLS)) {
     console.log(`    ${net}: ${rpc}`);
   }
-  console.log(`  Esplora: ${ESPLORA_URL}`);
+  console.log('  L1 Networks (Esplora):');
+  for (const [net, url] of Object.entries(ESPLORA_URLS)) {
+    console.log(`    ${net}: ${url}`);
+  }
   console.log(`  EWOQ key: ${EWOQ_KEY ? 'set' : 'NOT SET'}`);
   console.log(`  Poll interval: ${POLL_MS}ms`);
   console.log('---');
