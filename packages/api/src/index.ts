@@ -529,6 +529,39 @@ openapi.patch(
   ),
 );
 
+// ── GET /v1/fed/deposits/funded ─────────────────────────────────
+
+openapi.get(
+  '/v1/fed/deposits/funded',
+  route(
+    {
+      summary: 'List funded deposits (confirmed/minted with UTXOs) for withdrawal processing',
+      tags: ['Federation'],
+      security: [{ BearerAuth: [] }],
+      responses: {
+        200: {
+          description: 'Array of funded deposits',
+          content: {
+            'application/json': {
+              schema: z.array(DepositSchema),
+            },
+          },
+        },
+        401: {
+          description: 'Unauthorized',
+          content: { 'application/json': { schema: ErrorSchema } },
+        },
+      },
+    },
+    async (c) => {
+      const { results } = await c.env.DB.prepare(
+        "SELECT * FROM deposits WHERE amount_xec IS NOT NULL AND ecash_address IS NOT NULL AND derivation_index IS NOT NULL ORDER BY created_at ASC",
+      ).all();
+      return results;
+    },
+  ),
+);
+
 // ── GET /v1/fed/withdrawals/pending ─────────────────────────────
 
 openapi.get(

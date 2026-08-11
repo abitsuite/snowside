@@ -18,6 +18,10 @@ import {
 } from 'viem';
 import { privateKeyToAccount, type PrivateKeyAccount } from 'viem/accounts';
 import { HDWallet } from './wallet.js';
+import {
+  buildSignAndBroadcastWithdrawal,
+  type FundedDeposit,
+} from './withdraw.js';
 
 // ── Configuration ───────────────────────────────────────────────
 
@@ -380,8 +384,28 @@ async function verifyBurnTx(
 }
 
 /**
+ * Fetch funded deposits (confirmed/minted with UTXOs) from the API.
+ */
+async function fetchFundedDeposits(): Promise<FundedDeposit[]> {
+  try {
+    const resp = await fetch(`${API_URL}/fed/deposits/funded`, {
+      headers: { Authorization: `Bearer ${FEDERATION_TOKEN}` },
+    });
+    if (!resp.ok) {
+      console.error(`[deposits] Failed to fetch funded: ${resp.status}`);
+      return [];
+    }
+    return (await resp.json()) as FundedDeposit[];
+  } catch (err) {
+    console.error('[deposits] Error fetching funded:', err);
+    return [];
+  }
+}
+
+/**
  * Process a pending withdrawal.
- * TODO: Implement L1 transaction sending (requires eCash/Bitcoin wallet signing)
+ * Verifies the burn tx on L2, then builds, signs, and broadcasts an L1
+ * transaction sending XEC/sats from federation UTXOs to the user's address.
  */
 async function processWithdrawal(withdrawal: Withdrawal): Promise<void> {
   if (withdrawal.status !== 'pending') return;
@@ -390,25 +414,89 @@ async function processWithdrawal(withdrawal: Withdrawal): Promise<void> {
     `[withdraw] Processing ${withdrawal.id}: ${withdrawal.amount_ecx} ECX to ${withdrawal.ecash_address}`,
   );
 
-  if (withdrawal.burn_tx_hash && EWOQ_PRIVATE_KEY) {
-    const verified = await verifyBurnTx(
-      withdrawal.network,
-      withdrawal.burn_tx_hash,
-    );
-    if (verified) {
-      console.log(
-        `[withdraw] ${withdrawal.id}: burn tx verified, TODO: send L1 funds to ${withdrawal.ecash_address}`,
-      );
-      // TODO: Send XEC/sBTC from federation wallet to user's L1 address
-      // TODO: Update withdrawal with L1 tx hash and status 'completed'
-    } else {
-      console.error(
-        `[withdraw] ${withdrawal.id}: burn tx verification failed`,
-      );
-    }
-  } else {
+  // Require a burn tx hash (proof the user burned ECX on L2)
+  if (!withdrawal.burn_tx_hash) {
     console.log(`[withdraw] ${withdrawal.id}: no burn tx hash, skipping`);
+    return;
   }
+
+  if (!EWOQ_PRIVATE_KEY) {
+    console.log(`[withdraw] ${withdrawal.id}: no EWOQ key, skipping`);
+    return;
+  }
+
+  // Verify the burn tx on L2
+  const verified = await verifyBurnTx(
+    withdrawal.network,
+    withdrawal.burn_tx_hash,
+  );
+  if (!verified) {
+    console.error(
+      `[withdraw] ${withdrawal.id}: burn tx verification failed`,
+    );
+    return;
+  }
+
+  console.log(
+    `[withdraw] ${withdrawal.id}: burn tx verified, sending L1 funds...`,
+  );
+
+  // Fetch funded deposits (UTXOs we can spend)
+  const fundedDeposits = await fetchFundedDeposits();
+  if (fundedDeposits.length === 0) {
+    console.error(`[withdraw] ${withdrawal.id}: no funded deposits available`);
+    return;
+  }
+
+  // Derive a change address (use a high index to avoid collision)
+  const changeIndex = Math.floor(Date.now() / 1000) % 1000000;
+  const changeAddress = getWallet().deriveDepositAddress(
+    withdrawal.network,
+    changeIndex,
+  );
+
+  // Get the Esplora URL for this network
+  const esploraUrl = ESPLORA_URLS[withdrawal.network];
+  if (!esploraUrl) {
+    console.error(`[withdraw] ${withdrawal.id}: no Esplora URL for ${withdrawal.network}`);
+    return;
+  }
+
+  // Build, sign, and broadcast the withdrawal transaction
+  const l1TxHash = await buildSignAndBroadcastWithdrawal(
+    withdrawal.network,
+    withdrawal,
+    fundedDeposits,
+    esploraUrl,
+    getWallet(),
+    changeAddress,
+  );
+
+  if (!l1TxHash) {
+    console.error(
+      `[withdraw] ${withdrawal.id}: L1 transaction failed`,
+    );
+    return;
+  }
+
+  // Calculate amount_xec if not already set
+  const amountXec =
+    withdrawal.amount_xec ||
+    Number(
+      BigInt(withdrawal.amount_ecx || '0') / BigInt(10) ** BigInt(16),
+    );
+
+  // Update the withdrawal record via API
+  await apiPatch(`/fed/withdraw/${withdrawal.id}`, {
+    status: 'completed',
+    ecash_tx_hash: l1TxHash,
+    amount_xec: amountXec,
+    completed_at: Date.now(),
+  });
+
+  console.log(
+    `[withdraw] ${withdrawal.id}: completed! L1 tx: ${l1TxHash}, amount: ${amountXec} sats`,
+  );
 }
 
 // ── Main loop ───────────────────────────────────────────────────
