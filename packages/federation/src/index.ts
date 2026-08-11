@@ -262,8 +262,6 @@ async function mintEcx(
     const txHash = await client.sendTransaction({
       to: NATIVE_MINTER as `0x${string}`,
       data,
-      chain: null,
-      account: getAccount(),
     });
 
     // Wait for transaction receipt
@@ -333,6 +331,8 @@ async function processDeposit(deposit: Deposit): Promise<void> {
     );
   }
 
+  // Mint ECX (works for both freshly-confirmed and previously-confirmed deposits)
+  console.log(`[mint] Attempting to mint ECX for ${deposit.id} on ${deposit.network}...`);
   const mintTxHash = await mintEcx(
     deposit.network,
     deposit.snowside_address,

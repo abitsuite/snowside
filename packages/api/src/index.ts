@@ -416,7 +416,7 @@ openapi.get(
   '/v1/fed/deposits/pending',
   route(
     {
-      summary: 'List pending deposits for federation processing',
+      summary: 'List pending and confirmed deposits for federation processing',
       tags: ['Federation'],
       security: [{ BearerAuth: [] }],
       responses: {
@@ -436,7 +436,7 @@ openapi.get(
     },
     async (c) => {
       const { results } = await c.env.DB.prepare(
-        "SELECT * FROM deposits WHERE status = 'pending' ORDER BY created_at ASC",
+        "SELECT * FROM deposits WHERE status IN ('pending', 'confirmed') ORDER BY created_at ASC",
       ).all();
       return results;
     },
