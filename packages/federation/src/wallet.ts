@@ -104,4 +104,27 @@ export class HDWallet {
     if (!child.privateKey) return null;
     return Buffer.from(child.privateKey);
   }
+
+  /**
+   * Derive both private and public keys for a given network and index.
+   * Used for building and signing withdrawal transactions.
+   */
+  deriveKeyPair(network: string, index: number): {
+    privateKey: Uint8Array;
+    publicKey: Uint8Array;
+    pubkeyHash: Uint8Array;
+  } | null {
+    const basePath = DERIVATION_PATHS[network];
+    if (!basePath) throw new Error(`Unknown network: ${network}`);
+
+    const child = this.master.derive(`${basePath}${index}`);
+    if (!child.privateKey || !child.publicKey) return null;
+
+    const pubkeyHash = hash160(child.publicKey);
+    return {
+      privateKey: new Uint8Array(child.privateKey),
+      publicKey: new Uint8Array(child.publicKey),
+      pubkeyHash: new Uint8Array(pubkeyHash),
+    };
+  }
 }
