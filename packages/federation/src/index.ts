@@ -262,6 +262,7 @@ async function mintEcx(
     const txHash = await client.sendTransaction({
       to: NATIVE_MINTER as `0x${string}`,
       data,
+      account: getAccount(),
     });
 
     // Wait for transaction receipt
