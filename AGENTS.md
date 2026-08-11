@@ -398,7 +398,7 @@ The landing page alternates dark and light sections for visual rhythm.
 
 ### Future Architecture (Full BIP-300/301)
 - **bip300301_enforcer** (Rust, on VPS): Watches eCash L1 via ZMQ, validates M5 deposits and M6 withdrawals, exposes gRPC at localhost:50051 — NOT YET RUNNING
-- **Federation service** (Node.js, Docker on VPS bchplease): Polls API for pending deposits, checks Esplora per-network, mints ECX via NativeMinter precompile, 10s poll interval
+- **Federation service** (Node.js + viem, Docker on VPS bchplease): Polls API for pending deposits, derives HD wallet addresses (bip32 + ecashaddrjs + bitcoinjs-lib), checks Esplora per-network, mints ECX via NativeMinter precompile, 10s poll interval
 - **VPS**: bchplease (root@bchplease, Ubuntu 24.04, Docker 29.7.2)
 - **Federation Docker**: `docker compose up -d --build` in /root/snowside/packages/federation
 - Federation connects to enforcer gRPC instead of polling Esplora

@@ -52,6 +52,20 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
 - Federation service running, checking in to API every 10 seconds
 - Bridge status endpoint now shows federation_online: true
 
+### Task 6: Docker Compose env_file Fix
+- HD_MNEMONIC was not reaching the Docker container
+- Root cause: docker-compose.yml used `environment: - HD_MNEMONIC=${HD_MNEMONIC}` but HD_MNEMONIC was not listed
+- Fix: switched to `env_file: .env` which passes ALL .env vars to container automatically
+- Removed FEDERATION_TOKEN and EWOQ_PRIVATE_KEY from explicit environment: (now via env_file)
+- Updated .env.example with HD_MNEMONIC documentation
+- VPS restarted with fixed config: HD wallet: set ✓
+
+### Verified: HD Wallet Address Generation Working
+- testnet deposit → ecash:qrq2qc3evqtgfuukdym0ec34vzphuympn5gr2gp9l2 (index 428685)
+- signet deposit → tb1q328cn87d597lnqkpke8cck6d9zy9p9qj79vfvl (index 428696)
+- Both address types generated correctly by HDWallet.deriveDepositAddress()
+- Federation service polls every 10s, assigns addresses within one poll cycle
+
 ### Current State
 - API: Deployed and working at snowside.network/v1*
 - Bridge UI: Deployed to Cloudflare Pages with Connect Wallet
@@ -222,7 +236,7 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
 | Block Explorer | fixed (client-side fetching with 15s auto-refresh) |
 | Bridge API | deployed to snowside.network/v1* |
 | Bridge UI | deployed to CF Pages with Connect Wallet (Rabby) |
-| Federation | running in Docker on VPS bchplease, all 3 networks |
+| Federation | running in Docker on VPS, viem, HD wallet working, all 3 networks |
 | BIP-300/301 | reviewed, custodial MVP running, full integration later |
 
 ## Current Deployment Details (All Three L1s)
@@ -270,11 +284,12 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
    - Add OpenAPI metadata (summary, description, request/response schemas) for each endpoint
    - Redeploy API
 
-2. **Implement proper HD wallet address generation**
-   - Replace stubbed generateDepositAddress() with real bip32 HD derivation
-   - eCash networks: use ecashaddrjs for ecash: qz-prefix addresses
-   - Bitcoin signet: use bitcoinjs-lib for tb1q bech32 addresses
-   - Store HD wallet seed securely (env var or encrypted file on VPS)
+2. **~~Implement proper HD wallet address generation~~** ✅ DONE
+   - HDWallet class with bip32 + ecashaddrjs + bitcoinjs-lib
+   - testnet: ecash:qz... addresses
+   - signet: tb1q... addresses
+   - HD_MNEMONIC passed via env_file in docker-compose
+   - TODO: Use sequential indexes instead of timestamp-based (query max from API)
 
 3. **Update bridge UI for L1 currency differences**
    - mainnet/testnet: show "XEC" as deposit currency, ecash: address format
