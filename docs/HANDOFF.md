@@ -74,11 +74,11 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
 - All three networks supported: mainnet, testnet, signet
 
 ### Known Issues
-- OpenAPI docs only show /v1/status (chanfana); bridge endpoints not registered through chanfana
-- Address generation is stubbed (ecash:qz + depositId hex, tb1q + depositId hex) — needs proper HD wallet
+- ~~OpenAPI docs only show /v1/status~~ FIXED: 10 endpoints registered through chanfana
+- ~~Address generation is stubbed~~ FIXED: HD wallet implemented in packages/federation/src/wallet.ts (@scure/bip32 + ecashaddrjs)
 - Withdrawal processing not implemented (federation logs but does not send L1 funds)
 - Burn verification not implemented (only checks tx exists)
-- Bridge UI does not show L1 currency difference (XEC vs sBTC for signet)
+- ~~Bridge UI does not show L1 currency difference~~ N/A: All 3 networks use XEC (ecash: addresses)
 
 ## Session 14 summary — 2026-08-11
 
@@ -153,11 +153,11 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
 - Version pinning: Enforced via .npmrc
 
 ### Known Issues
-- OpenAPI docs only show /v1/status (chanfana); bridge endpoints not registered through chanfana
-- Address generation is stubbed (ecash:qz + depositId hex, tb1q + depositId hex) — needs proper HD wallet
+- ~~OpenAPI docs only show /v1/status~~ FIXED: 10 endpoints registered through chanfana
+- ~~Address generation is stubbed~~ FIXED: HD wallet implemented in packages/federation/src/wallet.ts (@scure/bip32 + ecashaddrjs)
 - Withdrawal processing not implemented (federation logs but does not send L1 funds)
 - Burn verification not implemented (only checks tx exists)
-- Bridge UI does not show L1 currency difference (XEC vs sBTC for signet)
+- ~~Bridge UI does not show L1 currency difference~~ N/A: All 3 networks use XEC (ecash: addresses)
 
 ## Session 13 summary — 2026-08-10
 
@@ -357,50 +357,38 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
 
 ## Next session priorities (in order)
 
-1. **Register all API endpoints through chanfana**
-   - Currently only /v1/status appears in OpenAPI docs
-   - Migrate /v1/bridge/* and /v1/fed/* from app.get()/app.post() to openapi.get()/openapi.post()
-   - Add OpenAPI metadata (summary, description, request/response schemas) for each endpoint
-   - Redeploy API
+1. **Complete Withdrawal: Send XEC from federation wallet to user's L1 address**
+   - File: packages/federation/src/index.ts, line ~402 (TODO marker)
+   - Current state: verifyBurnTx() exists but only checks tx exists (TODO: parse burn input)
+   - Current state: processWithdrawal() logs but does not send L1 funds
+   - Need: Use HD wallet to derive L1 signing key for federation's deposit UTXOs
+   - Need: Construct + sign eCash transaction (ecashaddrjs + @scure/btc)
+   - Need: Broadcast via Esplora or eCash node
+   - Need: Update withdrawal via PATCH /v1/fed/withdraw/:id with ecash_tx_hash + status='completed'
 
-2. **~~Implement proper HD wallet address generation~~** ✅ DONE
-   - HDWallet class with bip32 + ecashaddrjs + bitcoinjs-lib
-   - testnet: ecash:qz... addresses
-   - signet: tb1q... addresses
-   - HD_MNEMONIC passed via env_file in docker-compose
-   - TODO: Use sequential indexes instead of timestamp-based (query max from API)
+2. **Parse burn tx input to verify burn to correct address for correct amount**
+   - File: packages/federation/src/index.ts, verifyBurnTx() function
+   - Current: only checks tx exists (returns true)
+   - Need: parse tx input data, verify burn amount matches withdrawal.amount_ecx
+   - Need: verify burn destination matches federation's burn address
 
-3. **Update bridge UI for L1 currency differences**
-   - mainnet/testnet: show "XEC" as deposit currency, ecash: address format
-   - signet: show "sBTC" as deposit currency, tb1q address format
-   - Update deposit instructions and QR code labels per network
-   - Add link to appropriate block explorer per network
+3. **End-to-end withdrawal test on signet**
+   - Burn ECX on Snowside L2 (send to 0x0 or burn function)
+   - Verify federation detects burn via /v1/fed/withdrawals/pending
+   - Verify federation sends XEC to user's ecash: address
+   - Verify withdrawal status updates to 'completed'
 
-4. **Test full deposit flow end-to-end**
-   - Create deposit request via bridge UI (all three networks)
-   - Verify federation assigns correct address type per network
-   - Send small amount of XEC/sBTC to deposit address
-   - Verify federation detects UTXO via Esplora
-   - Verify ECX is minted on correct Snowside network
-   - Verify deposit status updates (pending → confirmed → minted)
-
-5. **Implement withdrawal processing**
-   - Verify burn transaction on Snowside L2 (parse tx input, check burn amount)
-   - Send L1 funds from federation wallet to user's address
-   - For eCash: use eCash wallet (ecashaddrjs + bip32)
-   - For Bitcoin signet: use Bitcoin wallet (bitcoinjs-lib)
-   - Update withdrawal status to 'completed' with L1 tx hash
-
-6. **Deploy ICM on Signet** (lower priority)
+4. **Deploy ICM on Signet** (lower priority)
    - Run `avalanche icm deploy` on signet
    - May need non-cloned genesis if cloned genesis causes issues
 
-7. **Future: Full BIP-300/301 Integration** (post-MVP)
+5. **Future: Full BIP-300/301 Integration** (post-MVP)
    - Deploy bip300301_enforcer on VPS (Rust, needs eCash Core with ZMQ)
    - Register Snowside as sidechain slot on eCash Signet (M1/M2)
    - Switch federation from Esplora polling to enforcer gRPC
    - Implement proper M5 deposits and M3/M4/M6 withdrawal bundles
    - Add withdrawal voting progress to bridge UI (ACK count, blocks remaining)
+
 
 ## Key learnings (all sessions)
 1. **@tailwindcss/vite** breaks on Cloudflare's rolldown-vite — always use **@tailwindcss/postcss**

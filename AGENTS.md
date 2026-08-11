@@ -397,7 +397,7 @@ The landing page alternates dark and light sections for visual rhythm.
 - **D1 Database**: `snowside-bridge` (ID: 202053ef-9607-481d-9b73-185734164ea4)
 
 ### Future Architecture (Full BIP-300/301)
-- **bip300301_enforcer** (Rust, on VPS): Watches eCash L1 via ZMQ, validates M5 deposits and M6 withdrawals, exposes gRPC at localhost:50051 — NOT YET RUNNING
+- **bip300301_enforcer** (Rust, on VPS): Watches eCash L1 via ZMQ, validates M5 deposits and M6 withdrawals, exposes gRPC at localhost:50051 — OPTIONAL (custodial MVP first)
 - **Federation service** (Node.js, Docker on VPS bchplease): Polls API for pending deposits, checks Esplora per-network, mints ECX via NativeMinter.mintNativeCoin(), 10s poll interval. Native minting WORKING (tested: 1,337,001 ECX minted on signet).
 - **VPS**: bchplease (root@bchplease, Ubuntu 24.04, Docker 29.7.2)
 - **Federation Docker**: `docker compose up -d --build` in /root/snowside/packages/federation
@@ -434,7 +434,7 @@ The landing page alternates dark and light sections for visual rhythm.
 - **Future BIP-300 fields needed**: sidechain_slot, bundle_hash, ack_count, blocks_remaining, ctip_txid, ctip_vout
 
 ### BIP-300/301 Reference (for future upgrade)
-- **BIP-300**: Hashrate Escrows — deposits/withdrawals via miner voting, OP_DRIVECHAIN opcode
+- **BIP-300**: Hashrate Escrows — deposits/withdrawals via miner voting, OP_DRIVECHAIN opcode — OPTIONAL (custodial XEC model first)
 - **BIP-301**: Blind Merged Mining — miners secure sidechain without running sidechain nodes
 - **M5 (Deposit)**: L1 tx spending CTIP, creating new CTIP with more coins, includes destination L2 address
 - **M6 (Withdrawal)**: L1 tx paying out from CTIP, requires 13,150 miner ACKs over 26,300 blocks
