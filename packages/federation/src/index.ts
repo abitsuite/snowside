@@ -55,7 +55,15 @@ const CHAIN_IDS: Record<string, number> = {
 
 // 1 XEC = 100 satoshis; 1 ECX = 10^18 (18 decimals)
 // Mint amount = satoshis * 10^16 to convert sats → ECX with 18 decimals
-const XEC_TO_ECX_MULTIPLIER = BigInt(10) ** BigInt(16);
+// Network-specific satoshi→ECX conversion
+// signet (Bitcoin): 1 ECX = 1 BTC = 100,000,000 sats → 1 sat = 10^10 wei
+// eCash: 1 ECX = 1 XEC = 100 sats → 1 sat = 10^16 wei
+const SATS_TO_ECX_SIGNET = BigInt(10) ** BigInt(10);
+const SATS_TO_ECX_XEC = BigInt(10) ** BigInt(16);
+
+function satsToEcxMultiplier(network: string): bigint {
+  return network === 'signet' ? SATS_TO_ECX_SIGNET : SATS_TO_ECX_XEC;
+}
 
 // ── Types ───────────────────────────────────────────────────────
 
@@ -65,7 +73,7 @@ interface Deposit {
   snowside_address: string;
   ecash_address: string | null;
   derivation_index: number | null;
-  amount_xec: number | null;
+  amount_sats: number | null;
   amount_ecx: number | null;
   ecash_tx_hash: string | null;
   mint_tx_hash: string | null;
@@ -79,7 +87,7 @@ interface Withdrawal {
   snowside_address: string;
   ecash_address: string;
   amount_ecx: string | null;
-  amount_xec: number | null;
+  amount_sats: number | null;
   burn_tx_hash: string | null;
   ecash_tx_hash: string | null;
   status: string;
@@ -261,7 +269,7 @@ async function mintEcx(
 
   try {
     const client = getWalletClient(network);
-    const amount = BigInt(satAmount) * XEC_TO_ECX_MULTIPLIER;
+    const amount = BigInt(satAmount) * satsToEcxMultiplier(deposit.network);
     const data = encodeMintCall(toAddress, amount);
 
     const txHash = await client.sendTransaction({
@@ -333,7 +341,7 @@ async function processDeposit(deposit: Deposit): Promise<void> {
   if (deposit.status === 'pending') {
     await apiPatch(`/fed/deposit/${deposit.id}`, {
       status: 'confirmed',
-      amount_xec: result.amount,
+      amount_sats: result.amount,
       ecash_tx_hash: result.txHash,
     });
     console.log(
@@ -350,7 +358,7 @@ async function processDeposit(deposit: Deposit): Promise<void> {
   );
 
   if (mintTxHash) {
-    const ecxAmount = Number(BigInt(result.amount) * XEC_TO_ECX_MULTIPLIER);
+    const ecxAmount = Number(BigInt(result.amount) * satsToEcxMultiplier(deposit.network));
     await apiPatch(`/fed/deposit/${deposit.id}`, {
       status: 'minted',
       amount_ecx: ecxAmount,
@@ -480,19 +488,19 @@ async function processWithdrawal(withdrawal: Withdrawal): Promise<void> {
     return;
   }
 
-  // Calculate amount_xec if not already set
-  const amountXec = withdrawal.amount_xec || ecxToSats(withdrawal.amount_ecx);
+  // Calculate amount_sats if not already set
+  const amountSats = withdrawal.amount_sats || ecxToSats(withdrawal.amount_ecx, withdrawal.network);
 
   // Update the withdrawal record via API
   await apiPatch(`/fed/withdraw/${withdrawal.id}`, {
     status: 'completed',
     ecash_tx_hash: l1TxHash,
-    amount_xec: amountXec,
+    amount_sats: amountSats,
     completed_at: Date.now(),
   });
 
   console.log(
-    `[withdraw] ${withdrawal.id}: completed! L1 tx: ${l1TxHash}, amount: ${amountXec} sats`,
+    `[withdraw] ${withdrawal.id}: completed! L1 tx: ${l1TxHash}, amount: ${amountSats} sats`,
   );
 }
 

@@ -494,7 +494,7 @@ openapi.patch(
       const allowed = [
         'ecash_address',
         'derivation_index',
-        'amount_xec',
+        'amount_xec' /* stores sats, not XEC — legacy column name */,
         'amount_ecx',
         'ecash_tx_hash',
         'mint_tx_hash',
@@ -639,7 +639,7 @@ openapi.patch(
     },
     async (c, data) => {
       const body = data.body;
-      const allowed = ['amount_xec', 'ecash_tx_hash', 'status'];
+      const allowed = ['amount_xec' /* stores sats, not XEC — legacy column name */, 'ecash_tx_hash', 'status'];
       const updates: string[] = [];
       const values: any[] = [];
       for (const [key, val] of Object.entries(body)) {

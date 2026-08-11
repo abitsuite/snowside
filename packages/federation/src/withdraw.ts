@@ -41,24 +41,33 @@ export interface WithdrawalRequest {
 
 // 1 ECX = 10^18 (18 decimals), 1 XEC = 100 satoshis
 // sats = ecx / 10^16
-const ECX_TO_SATS_DIVISOR = BigInt(10) ** BigInt(16);
+// Network-specific conversion: 1 ECX pegged to 1 BTC or 1 XEC
+// signet (Bitcoin): 1 ECX = 1 BTC = 100,000,000 sats → divisor = 10^10
+// eCash (mainnet/testnet): 1 ECX = 1 XEC = 100 sats → divisor = 10^16
+const ECX_TO_SATS_SIGNET = BigInt(10) ** BigInt(10);
+const ECX_TO_SATS_XEC = BigInt(10) ** BigInt(16);
 
 /**
  * Convert ECX amount (18 decimals) to satoshis.
  */
-export function ecxToSats(amountEcx: string | number | null): number {
+export function ecxToSats(
+  amountEcx: string | number | null,
+  network: string,
+): number {
   if (!amountEcx) return 0;
   try {
     const str = String(amountEcx);
+    const isSignet = network === 'signet';
     if (str.includes('.')) {
-      // Decimal ECX amount (e.g., "0.1" ECX from UI)
-      // 1 ECX = 100 sats, so multiply by 100
+      // Decimal ECX amount (e.g., "0.1337" ECX from UI)
       const ecxFloat = parseFloat(str);
-      return Math.floor(ecxFloat * 100);
+      const satsPerEcx = isSignet ? 100_000_000 : 100;
+      return Math.floor(ecxFloat * satsPerEcx);
     } else {
-      // Wei integer string (e.g., "1000000000000000000" from federation)
+      // Wei integer string (e.g., "1337000000000000000" from federation)
       const ecx = BigInt(str);
-      return Number(ecx / ECX_TO_SATS_DIVISOR);
+      const divisor = isSignet ? ECX_TO_SATS_SIGNET : ECX_TO_SATS_XEC;
+      return Number(ecx / divisor);
     }
   } catch {
     return 0;
@@ -169,7 +178,7 @@ export async function buildSignAndBroadcastWithdrawal(
 
   // Calculate withdrawal amount in satoshis
   const targetSats =
-    withdrawal.amount_xec || ecxToSats(withdrawal.amount_ecx);
+    withdrawal.amount_xec || ecxToSats(withdrawal.amount_ecx, withdrawal.network);
   if (targetSats <= 0) {
     console.error(`[withdraw-tx] Invalid amount: ${targetSats} sats`);
     return null;
