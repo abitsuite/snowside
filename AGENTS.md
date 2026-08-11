@@ -306,3 +306,6 @@ The landing page alternates dark and light sections for visual rhythm. The estab
 - **Stack:** Astro static site + Tailwind v4 (`@tailwindcss/postcss`).
 - **Features:** Network selector dropdown (Mainnet/Testnet/Signet), HTML5 QR code scanner (`html5-qrcode`), QR code display for deposits (dummy address currently).
 - **Subdomains:** No subdomains used for networks; network selection is handled in-session.
+
+## Terminal heredocs
+- ALWAYS run `wc -l <file>` and `tail -n 15 <file>` after a heredoc to verify correctness. Multi-file pastes garble frequently, but the content is fine.

@@ -349,3 +349,8 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
 
 ---
 *Generated at end of Session 10. Next session: Expand API schemas and wire Bridge UI. Maintained per AGENTS.md.*
+
+## Next session: Precompile Fix and Federation
+1. Recreate Snowside Signet with `contractNativeMinterConfig` and `contractDeployerAllowListConfig`.
+2. Deploy the `federation` Docker service to the VPS.
+3. Hook up the Bridge UI to the federation service.
