@@ -1,4 +1,4 @@
-# Snowside Handoff — 2026-08-11 (Session 15, Withdrawal Implementation + UI Burn Next)
+# Snowside Handoff — 2026-08-11 (Session 15, Custodial Bridge MVP COMPLETE)
 
 ## Purpose
 Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88. The monorepo at `/Workspace/abitsuite/snowside` includes a landing page (`snowside.network`), a pitch page (`pitch.snowside.network`), docs (`docs.snowside.network`), a block explorer (`explorer.snowside.network`), the API worker (`snowside.network/v1`), the bridge UI (`bridge.snowside.network` WIP), alongside the L1 execution layer (`go/subnet-evm`), BMM bidder (`rust/bmm-bidder`), and core contracts (`contracts/`).
@@ -92,6 +92,111 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
 - Withdrawal NOT yet tested with real burn transaction
 - ICM not deployed on signet (failed during L1 creation, needs separate `avalanche icm deploy`)
 
+## Session 15 summary — 2026-08-11
+
+### MILESTONE: Custodial Bridge MVP COMPLETE — Both flows working end-to-end on signet
+
+### Task 1: Withdrawal Implementation (packages/federation/src/withdraw.ts)
+- Created complete withdrawal flow with `@scure/btc-signer@1.6.0`
+- `fetchAddressUtxos()` — fetches UTXOs from Esplora per-network
+- `selectUtxos()` — UTXO selection algorithm (greedy, largest-first)
+- `buildSignAndBroadcastWithdrawalTx()` — builds, signs, broadcasts L1 transaction
+- Supports TWO transaction formats:
+  - eCash (mainnet/testnet): P2PKH inputs with SIGHASH_FORKID (0x41)
+  - Bitcoin signet: P2WPKH inputs with SIGHASH_ALL (0x01)
+- Change output sent to a new HD-derived federation address
+- `sendWithdrawal()` — orchestrator: fetch funded deposits → fetch UTXOs → select → build/sign/broadcast → PATCH withdrawal
+- Fee calculation: 1 sat/byte, minimum 1000 sats
+
+### Task 2: New API Endpoint
+- Added `GET /v1/fed/deposits/funded` — returns all deposits with `ecash_address IS NOT NULL AND amount_sats IS NOT NULL`
+- Used by federation to find UTXOs for withdrawal funding
+- Registered through chanfana (OpenAPI)
+
+### Task 3: Network-Specific ECX↔Sats Conversion (CRITICAL FIX)
+- BUG: Federation used eCash ratio (1 ECX = 1 XEC = 100 sats) for ALL networks including Bitcoin signet
+- FIX: 1 ECX = 1 BTC = 100,000,000 sats on signet (multiplier 10^10, not 10^16)
+- `ecxToSats()` now takes `network` parameter:
+  - signet: `sats = ECX * 100_000_000` (1 ECX = 1 BTC)
+  - eCash: `sats = ECX * 100` (1 ECX = 1 XEC)
+
+### Task 4: DB Schema Rename (amount_xec → amount_sats)
+- The `amount_xec` column stored satoshis, not XEC — misleading name
+- Renamed to `amount_sats` in D1 database (both deposits and withdrawals tables)
+- Updated schema.sql, API code, and federation code to use `amount_sats` everywhere
+- Fixed old deposit record: `amount_ecx = 1.337E+24` (wrong ratio) → `1337000000000000000` (correct: 1.337 ECX in wei)
+
+### Task 5: EWOQ Private Key Fix
+- Wrong key was being used: `0x398c99c94b...`
+- Correct key: `0x56289e99c94b6912bfc12adc093c9b51124f0dc54ac7a766b2bc5ccf558d8027`
+- EWOQ address: `0x8db97C7cEcE249c2b98bDC0226Cc4C2A57BF52FC`
+- EWOQ has NativeMinter admin role and ~999,999 ECX for gas
+
+### Task 6: ECX Balance Fix
+- Old balance: 1,337,001 ECX (minted at wrong 10^16 ratio)
+- User burned ~1,337,000 ECX via Rabby (sent to 0x000000000000000000000000000000000000dEaD)
+- EWOQ re-minted correct amount: 1.337 ECX = 1,337,000,000,000,000,000 wei
+- Current balance after withdrawal test: ~1.972 ECX
+
+### Task 7: Three Critical Bug Fixes in withdraw.ts
+
+**Bug 1: SigHash casing**
+- Export is `SigHash` (capital H), NOT `Sighash`
+- TypeScript error TS2724: '"@scure/btc-signer"' has no exported member named 'Sighash'. Did you mean 'SigHash'?
+- Fix: `import { ..., SigHash } from '@scure/btc-signer'`
+
+**Bug 2: tx.sign() second parameter**
+- `tx.sign(keyPair.privateKey, [i])` passed loop index as `allowedSighash`
+- The second parameter is `allowedSighash: number[]` (sighash type values), NOT input indices
+- Passing `[0]` meant `[SigHash.DEFAULT]` (0x00, Taproot-only) → "No inputs signed" for P2WPKH
+- Fix: `tx.sign(keyPair.privateKey, [SigHash.ALL])` for Bitcoin (0x01)
+- Fix: `tx.sign(keyPair.privateKey, [SigHash.ALL | 0x40])` for eCash (0x41 = SIGHASH_FORKID)
+
+**Bug 3: tx.finalize() missing**
+- After signing, `tx.extract()` threw "Transaction has unfinalized inputs"
+- `@scure/btc-signer` requires explicit finalization before extracting raw bytes
+- Fix: call `tx.finalize()` before `tx.extract()`
+
+### Task 8: Other Fixes
+- `p2wpkh()` / `p2pkh()` expect **publicKey** (33 bytes), NOT **pubkeyHash** (20 bytes)
+- `addOutputAddress()` needs network parameter: `TEST_NETWORK` for signet/testnet, `NETWORK` for mainnet
+- Docker container renamed: `federation-federation-1` → `snowside-federation`
+- 15-minute withdrawal timeout (auto-fail pending withdrawals older than 15 min)
+- 546 sat dust limit check (minimum withdrawal amount)
+- Bridge UI: Burn ECX button, 15-min warning, amount validation
+
+### Task 9: SUCCESSFUL WITHDRAWAL TEST (end-to-end on signet)
+- User burned 0.122333 ECX via Rabby wallet (sent to 0x000...dEaD)
+- Bridge UI submitted withdrawal to API
+- Federation detected pending withdrawal within 10 seconds
+- Burn tx verified on Snowside RPC
+- UTXO selected: 133,700,000 sats (from old deposit, index 439450)
+- Transaction built: 1 input, 2 outputs (12,233,300 sats + 121,465,700 sats change)
+- Signed with P2WPKH + SigHash.ALL ✓
+- Finalized with tx.finalize() ✓
+- Broadcast to signet Esplora ✓
+- **L1 TX: `f6b0f0a943b6caadded84cd4635f334ca8ce92269e376cf0aff54100c579e8ee`**
+- Withdrawal marked completed in API
+- ECX balance decreased correctly: 2.099 → 1.972 ECX (0.122333 burned + 0.00441 gas)
+
+### Current State — CUSTODIAL BRIDGE MVP COMPLETE
+- API: Deployed with 11 chanfana-registered endpoints, D1 migrated (amount_sats)
+- Bridge UI: Deployed to CF Pages with Connect Wallet (Rabby), Burn ECX button, 15-min warning
+- Federation: Running in Docker (snowside-federation) on VPS bchplease
+- HD Wallet: Working (@scure/bip32 + ecashaddrjs)
+- Deposits: ✅ WORKING — full deposit→mint flow verified on signet (tested twice)
+- Withdrawals: ✅ WORKING — full burn→verify→build→sign→broadcast flow verified on signet
+- Funded UTXOs: 121,465,700 sats remaining on signet (after withdrawal)
+- ECX balance: ~1.972 ECX
+- Version pinning: Enforced via .npmrc (save-exact=true)
+
+### Known Issues / Future Work
+- `verifyBurnTx()` only checks tx exists — does NOT parse burn input or verify amount
+- ICM not deployed on signet (failed during L1 creation, needs separate `avalanche icm deploy`)
+- typescript pinned to 5.6.3 (5.5.0 unavailable on npm)
+- eCash (mainnet/testnet) withdrawal path NOT yet tested (only signet tested)
+- Chainlist submission for Mainnet and Testnet NOT yet done
+
 ## Session 14 summary — 2026-08-11
 
 ### Task 1: Deploy Bridge API to Cloudflare
@@ -161,85 +266,6 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
 - Federation: Running in Docker on VPS, polling all three networks
 - D1: Schema applied, test data cleaned
 - All three networks supported: mainnet, testnet, signet
-
-### Known Issues
-- ~~OpenAPI docs only show /v1/status~~ FIXED: 10 endpoints registered through chanfana
-- ~~Address generation is stubbed~~ FIXED: HD wallet implemented in packages/federation/src/wallet.ts (@scure/bip32 + ecashaddrjs)
-- Withdrawal processing not implemented (federation logs but does not send L1 funds)
-- Burn verification not implemented (only checks tx exists)
-- ~~Bridge UI does not show L1 currency difference~~ N/A: All 3 networks use XEC (ecash: addresses)
-
-## Session 14 summary — 2026-08-11
-
-### Task 1: Deploy Bridge API to Cloudflare
-- Fixed duplicate SQL string bug in deposits query
-- Added D1 binding to packages/api/wrangler.toml (binding: DB, database_id: 202053ef-9607-481d-9b73-185734164ea4)
-- Applied D1 schema (meta, deposits, withdrawals tables + indexes) to remote database
-- Generated FEDERATION_TOKEN (openssl rand -hex 32) and set as Cloudflare Worker secret
-- Deployed API to snowside.network/v1* (Cloudflare Worker with Hono + chanfana)
-- All endpoints tested and working: bridge/deposit, bridge/withdraw, bridge/status, fed/checkin, fed/deposits/pending, Esplora proxy
-
-### Task 2: Connect Wallet (Rabby/EIP-1193)
-- Added Connect Wallet button to BridgeWidget.astro
-- Implemented EIP-1193 wallet connection (window.ethereum)
-- Network switching via wallet_switchEthereumChain + wallet_addEthereumChain
-- Auto-fills deposit/withdraw/history addresses from connected wallet
-- Shows wallet balance via eth_getBalance
-- Handles accountsChanged and chainChanged events
-- Network chain IDs: mainnet=32904 (0x8088), testnet=33160 (0x8188), signet=33352 (0x8248)
-- Built bridge (4 pages: index, mainnet, testnet, signet) and deployed to Cloudflare Pages
-
-### Task 3: Federation Service Multi-Network + Docker
-- Rewrote federation service to support all three networks simultaneously
-- Per-network RPC URL caching (providers + wallets)
-- mintEcx() accepts network parameter, selects correct RPC
-- verifyBurnTx() skeleton for future withdrawal processing
-- Created Dockerfile (multi-stage: builder + runtime) and docker-compose.yml
-- Created .dockerignore
-
-### Task 4: Per-Network Esplora URLs
-- Corrected network mapping:
-  - mainnet -> eCash mainnet (esplora.mainnet.drivechain.dev, XEC, ecash: addresses)
-  - testnet -> eCash drynet4 (esplora.drynet4.drivechain.dev, XEC, ecash: addresses)
-  - signet -> Bitcoin signet (esplora.signet.drivechain.info, sBTC, tb1q addresses)
-- Updated federation service with ESPLORA_URLS per-network dictionary
-- generateDepositAddress() generates ecash: or tb1q based on network
-- Updated docker-compose.yml and .env.example with per-network Esplora env vars
-
-### Task 5: Deploy Federation on VPS
-- VPS: bchplease (root@bchplease, Ubuntu 24.04)
-- Installed Docker 29.7.2 on VPS
-- Cloned repo via HTTPS (https://github.com/abitsuite/snowside.git)
-- Created .env with FEDERATION_TOKEN and EWOQ_PRIVATE_KEY
-- Built and started federation service: `docker compose up -d --build`
-- Federation service running, checking in to API every 10 seconds
-
-### Task 6: Fix NativeMinter (CRITICAL FIX)
-- **Bug**: Federation was calling `mint(address,uint256)` (selector 0x40c10f19) — WRONG
-- **Fix**: Changed to `mintNativeCoin(address,uint256)` (selector 0x4f5aaaba) — CORRECT
-- Found correct function name in Avalanche docs: https://build.avax.network/docs/avalanche-l1s/precompiles/native-minter
-- Tested with raw eth_call + sendTransaction: SUCCESS
-- EWOQ account (0x8db97C7cEcE249c2b98bDC0226Cc4C2A57BF52FC) confirmed as admin (readAllowList = 2)
-- Deployed fix to VPS Docker container
-- **RESULT**: User deposited on bridge, federation detected deposit, minted 1,337,001 ECX to user's wallet on Snowside Signet (33352). FULL DEPOSIT→MINT FLOW WORKING!
-
-### Task 7: Docker Build Fixes
-- pnpm 11 blocked esbuild build scripts by default — pinned pnpm to 10.15.1 in Dockerfile
-- tsx was in devDependencies but needed at runtime — moved to dependencies
-- Dockerfile uses `corepack prepare pnpm@10.15.1 --activate` in both builder and runtime stages
-
-### Task 8: Version Pinning
-- Pinned all package.json dependencies to exact versions (removed ^ and ~ prefixes)
-- Created `.npmrc` with `save-exact=true` and `strict-peer-dependencies=true`
-- All future `pnpm add` commands will automatically pin exact versions
-
-### Current State — ALL SYSTEMS WORKING
-- API: Deployed and working at snowside.network/v1*
-- Bridge UI: Deployed to Cloudflare Pages with Connect Wallet (Rabby)
-- Federation: Running in Docker on VPS, polling all three networks
-- Native Minting: WORKING — mintNativeCoin confirmed on signet
-- D1: Schema applied, deposits table has real data
-- Version pinning: Enforced via .npmrc
 
 ### Known Issues
 - ~~OpenAPI docs only show /v1/status~~ FIXED: 10 endpoints registered through chanfana
@@ -446,37 +472,26 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
 
 ## Next session priorities (in order)
 
-1. **Add "Burn ECX" button to Bridge UI (WITHDRAW FROM UI VIA RABBY)**
-   - File: packages/bridge/src/components/BridgeWidget.astro
-   - Current state: Withdraw tab has form fields but NO burn button
-   - User must manually burn ECX and paste burn tx hash — BAD UX
-   - Need: Add "Burn ECX" button next to the "Burn Transaction Hash" input
-   - Implementation:
-     - Use `window.ethereum.request({ method: 'eth_sendTransaction', params: [{ from: walletAddress, to: '0x0000000000000000000000000000000000000000', value: amountWei, gas: '0x5208' }] })`
-     - Convert ECX amount to wei: `BigInt(Math.floor(amount * 1e18)).toString(16)`
-     - On success: auto-fill the `withdraw-burn-tx` input with the returned tx hash
-     - Show "Burning..." state while transaction is pending
-     - Show "Burned ✓" with tx hash link after confirmation
-   - The burn address is 0x0 (zero address) — sending ECX there effectively burns it
-   - After burn, user clicks "Initiate Withdrawal" to submit to API
-   - Build and deploy bridge: `cd packages/bridge && pnpm build && wrangler pages deploy dist`
+1. **Submit Mainnet and Testnet to Chainlist**
+   - Go to https://chainlist.org and submit Snowside networks
+   - Mainnet: Chain ID 267, RPC https://rpc.snowside.network/mainnet, Currency ECX
+   - Testnet: Chain ID 42220, RPC https://rpc.snowside.network/testnet, Currency ECX
+   - Signet: Chain ID 33352, RPC https://rpc.snowside.network/signet, Currency ECX
+   - Provide block explorer URLs if available
+   - This will make it easy for users to add Snowside to Rabby/MetaMask
 
-2. **Test full withdrawal flow end-to-end on signet**
-   - Connect Rabby wallet to bridge UI on signet (chain ID 33352)
-   - Burn small amount of ECX (e.g., 0.001 ECX) via the new Burn button
-   - Verify burn tx hash auto-fills
-   - Enter destination address (tb1q... for signet)
-   - Click "Initiate Withdrawal" to submit to API
-   - Monitor federation logs: `docker logs -f snowside-federation`
-   - Verify federation detects withdrawal, verifies burn tx, sends XEC/BTC
-   - Verify withdrawal status updates to 'completed' with L1 tx hash
-
-3. **Improve verifyBurnTx() to parse burn transaction input**
+2. **Improve verifyBurnTx() to parse burn transaction input**
    - File: packages/federation/src/index.ts, verifyBurnTx() function
    - Current: only checks tx exists (returns true)
    - Need: parse tx input data, verify burn amount matches withdrawal.amount_ecx
-   - Need: verify burn destination is 0x0 (burn address)
-   - Use viem `getTransaction()` to fetch full tx data, verify `to === '0x0'` and `value === amount_ecx`
+   - Need: verify burn destination is dead address (0x000...dEaD)
+   - Use viem `getTransaction()` to fetch full tx data
+
+3. **Test eCash withdrawal path (mainnet or testnet)**
+   - The signet path (P2WPKH + SigHash.ALL) is verified working
+   - The eCash path (P2PKH + SigHash.ALL | 0x40) is coded but NOT yet tested
+   - Need a funded deposit on eCash testnet to test
+   - Verify SIGHASH_FORKID (0x41) works with @scure/btc-signer
 
 4. **Deploy ICM on Signet** (lower priority)
    - Run `avalanche icm deploy` on signet
@@ -549,6 +564,20 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
 56. **Federation service is a client, not a server** — No tunneling or exposed endpoints needed. Federation only makes outbound HTTPS calls to the API, Snowside RPC, and Esplora. Deployed in Docker on VPS bchplease with docker compose.
 57. **Docker on VPS for federation** — Multi-stage Dockerfile (builder with tsc, runtime with node:22-slim). docker-compose.yml with all env vars. .env file with FEDERATION_TOKEN and EWOQ_PRIVATE_KEY. `docker compose up -d --build` to deploy.
 58. **Rabby/EIP-1193 wallet connection** — window.ethereum.request({ method: 'eth_requestAccounts' }), wallet_switchEthereumChain for network switching, wallet_addEthereumChain if chain not in wallet, eth_getBalance for balance. Handle accountsChanged and chainChanged events.
+59. **NativeMinter uses mintNativeCoin, NOT mint** — The Avalanche NativeMinter precompile at 0x0200000000000000000000000000000000000001 uses `mintNativeCoin(address,uint256)` (selector 0x4f5aaaba). The standard `mint(address,uint256)` (selector 0x40c10f19) will fail.
+60. **EWOQ private key** — Correct key: `0x56289e99c94b6912bfc12adc093c9b51124f0dc54ac7a766b2bc5ccf558d8027`. Address: `0x8db97C7cEcE249c2b98bDC0226Cc4C2A57BF52FC`. Has NativeMinter admin role and ~999,999 ECX for gas.
+61. **@scure/btc-signer export is SigHash (capital H)** — NOT `Sighash`. The enum is `SigHash` with members: DEFAULT=0, ALL=1, NONE=2, SINGLE=3, ANYONECANPAY=128. TypeScript will error if you use the wrong casing.
+62. **@scure/btc-signer sign() second parameter** — `sign(privateKey, allowedSighash?: number[])`. The second parameter is an array of ALLOWED SIGHASH TYPES, NOT input indices. Passing `[i]` (loop index) is WRONG. For P2WPKH (Bitcoin), use `[SigHash.ALL]` (0x01). For P2PKH (eCash), use `[SigHash.ALL | 0x40]` (0x41 = SIGHASH_FORKID).
+63. **@scure/btc-signer tx.finalize() required** — After signing all inputs, you MUST call `tx.finalize()` before `tx.extract()`. Without it, extract() throws "Transaction has unfinalized inputs". The library does not auto-finalize.
+64. **@scure/btc-signer p2wpkh/p2pkh expect publicKey** — The `p2wpkh()` and `p2pkh()` functions expect the **publicKey** (33 bytes compressed), NOT the pubkeyHash (20 bytes). They compute the hash internally. Access `.script` on the return value for the output script.
+65. **@scure/btc-signer addOutputAddress needs network** — `tx.addOutputAddress(address, amount, network)` requires the correct network object for bech32 decoding: `TEST_NETWORK` for signet/testnet (prefix 'tb'), `NETWORK` for mainnet (prefix 'bc').
+66. **Network-specific ECX↔sats conversion** — 1 ECX = 1 BTC = 100,000,000 sats on signet (multiplier 10^10). 1 ECX = 1 XEC = 100 sats on eCash (multiplier 10^16). Old code used 10^16 for ALL networks — WRONG for Bitcoin.
+67. **D1 column rename** — `ALTER TABLE ... RENAME COLUMN amount_xec TO amount_sats;` works in D1 (SQLite 3.25+). The column stored satoshis, not XEC — misleading name fixed.
+68. **Burn address for ECX** — Use `0x000000000000000000000000000000000000dEaD` (dead address, 42 chars). Do NOT use short 0x0 (many EVM chains reject sends to 0x0).
+69. **Federation container naming** — Docker Compose names containers as `{project}-{service}-{N}`. To persist a clean name, set `container_name: snowside-federation` in docker-compose.yml.
+70. **First successful withdrawal on signet** — L1 TX `f6b0f0a943b6caadded84cd4635f334ca8ce92269e376cf0aff54100c579e8ee`. Input: 133,700,000 sats (P2WPKH). Output: 12,233,300 sats to user + 121,465,700 sats change. Fee: 1,000 sats. Witness properly formed with signature + pubkey.
+71. **Bridge UI burn button WORKS** — The "Burn ECX" button uses `window.ethereum.request({ method: 'eth_sendTransaction', params: [{ from, to: '0x000...dEaD', value }] })`. After burn, tx hash auto-fills. User clicks "Initiate Withdrawal" to submit to API. Full flow tested and working.
+72. **Federation API token variable name** — The .env file uses `FEDERATION_TOKEN`, NOT `FED_API_KEY`. Load with: `export FEDERATION_TOKEN=$(grep FEDERATION_TOKEN .env | cut -d= -f2)`.
 59. **NativeMinter uses mintNativeCoin, NOT mint** — The Avalanche NativeMinter precompile at 0x0200000000000000000000000000000000000001 uses `mintNativeCoin(address,uint256)` (selector 0x4f5aaaba). The standard `mint(address,uint256)` (selector 0x40c10f19) will fail. Reference: https://build.avax.network/docs/avalanche-l1s/precompiles/native-minter
 60. **EWOQ is NativeMinter admin** — EWOQ account (0x8db97C7cEcE249c2b98bDC0226Cc4C2A57BF52FC) has admin role on NativeMinter (readAllowList = 2). Can mint native tokens without additional setup.
 61. **@scure/btc-signer Transaction API** — Constructor takes 0-1 args (not 2). `p2wpkh()` and `p2pkh()` return `P2Ret` type (access `.script` for the script bytes). `tx.sign()` second arg is `number[]` (array of input indices), not a single number.
@@ -780,4 +809,4 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
     # Testnet: STALE (needs redeploy)
 
 ---
-*Generated at end of Session 15. Withdrawal code complete and verified. Next session: Add "Burn ECX" button to Bridge UI via Rabby wallet (eth_sendTransaction to 0x0), then test full withdrawal flow end-to-end on signet. Federation running in Docker (snowside-federation) on VPS. Maintained per AGENTS.md.*
+*Generated at end of Session 15. CUSTODIAL BRIDGE MVP COMPLETE. Both deposit and withdrawal flows working end-to-end on signet. Next session: submit Mainnet and Testnet to Chainlist, improve burn tx verification, test eCash withdrawal path. Federation running in Docker (snowside-federation) on VPS. Maintained per AGENTS.md.*
