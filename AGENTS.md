@@ -68,6 +68,22 @@ Never leave uncommitted work sitting locally at the end of a session.
 - **Deployment Tool:** Avalanche-CLI (requires letters only for blockchain names, no hyphens/underscores)
 - **Avalanche-CLI Version:** Supports flags: --evm, --evm-chain-id, --evm-token, --proof-of-authority, --validator-manager-owner, --icm, --warp, --latest, --genesis, --force, --test-defaults, --production-defaults
 
+### Precompile Addresses (Confirmed from subnet-evm source)
+
+| Precompile | Address | Config Key |
+|-----------|---------|------------|
+| ContractDeployerAllowList | 0x0200000000000000000000000000000000000000 | contractDeployerAllowListConfig |
+| NativeMinter | 0x0200000000000000000000000000000000000001 | contractNativeMinterConfig |
+| TxAllowList | 0x0200000000000000000000000000000000000002 | txAllowListConfig |
+| FeeManager | 0x0200000000000000000000000000000000000003 | feeManagerConfig |
+| RewardManager | 0x0200000000000000000000000000000000000004 | rewardManagerConfig |
+
+**Source files:**
+- NativeMinter: subnet-evm/precompile/contracts/nativeminter/module.go
+- DeployerAllowList: subnet-evm/precompile/contracts/deployerallowlist/module.go
+
+**AllowList roles:** 0x00 = none, 0x01 = enabled, 0x02 = admin, 0x03 = manager
+
 ### Non-Interactive L1 Deployment with Precompiles
 
 To deploy an L1 non-interactively with custom precompiles (NativeMinter, ContractDeployerAllowList), use the **genesis cloning approach**:
@@ -89,29 +105,42 @@ To deploy an L1 non-interactively with custom precompiles (NativeMinter, Contrac
 **NOTE:** ICM Messenger/Registry contracts may fail to deploy during `blockchain deploy` when using a cloned genesis. The L1, PoA, and precompiles will still work. Deploy ICM separately with `avalanche icm deploy`.
 **NOTE:** Genesis files are stored at ~/.avalanche-cli/subnets/<BlockchainName>/genesis.json (NOT chain.json, which is only the chain config metadata).
 
+### Interacting with Precompiles via cast
+
+Read allowlist status:
+   cast calldata "readAllowList(address)" 0x8db97C7cEcE249c2b98bDC0226Cc4C2A57BF52FC
+   # Then eth_call to the precompile address with that calldata
+
+Mint native tokens:
+   cast send --rpc-url $RPC --private-key $PK 0x0200000000000000000000000000000000000001 "mintNativeCoin(address,uint256)" <recipient> $(cast to-wei 1000)
+
+Deploy contract (if on DeployerAllowList):
+   cast send --rpc-url $RPC --private-key $PK --create 0x60006000f3
+   # 0x60006000f3 = minimal bytecode that returns 0 bytes (creates empty contract)
+
 ### Deployed L1s (Local Network on VPS)
-1. **SnowsideMainnet** (Chain ID: 32904 / 0x8088)
-   - Blockchain ID: 2sDVEVpwW8aNwgY1RMGzmFVXdJ1vyE1qWg3YBK8pGX8iy9iLtJ
-   - Subnet ID: 2951oZXRAym6ThvANrFSCWbiSgh3mrgD5gJkACZbpnoic6Zczf
-   - Local RPC: http://127.0.0.1:9654/ext/bc/2sDVEVpwW8aNwgY1RMGzmFVXdJ1vyE1qWg3YBK8pGX8iy9iLtJ/rpc
-   - Public RPC: https://rpc.snowside.network/mainnet
+1. **SnowsideMainnet** (Chain ID: 32904 / 0x8088) — NEEDS REDEPLOY
+   - Blockchain ID: 2sDVEVpwW8aNwgY1RMGzmFVXdJ1vyE1qWg3YBK8pGX8iy9iLtJ (STALE — was cleaned)
+   - Subnet ID: 2951oZXRAym6ThvANrFSCWbiSgh3mrgD5gJkACZbpnoic6Zczf (STALE)
+   - Public RPC: https://rpc.snowside.network/mainnet (currently 404)
    - Precompiles: Warp only
 
-2. **SnowsideTestnet** (Chain ID: 33160 / 0x8188)
-   - Blockchain ID: 2PS8J5q5f4PXnwEsxLafFnPuFowprdaZ8EWuZpTF3hyi6SqLhe
-   - Subnet ID: wNWS35thzJy9fGaxtVfPwFKEt2RU2r9fMGA7c5A9XqqSvBCVj
-   - Local RPC: http://127.0.0.1:9656/ext/bc/2PS8J5q5f4PXnwEsxLafFnPuFowprdaZ8EWuZpTF3hyi6SqLhe/rpc
-   - Public RPC: https://rpc.snowside.network/testnet
+2. **SnowsideTestnet** (Chain ID: 33160 / 0x8188) — NEEDS REDEPLOY
+   - Blockchain ID: 2PS8J5q5f4PXnwEsxLafFnPuFowprdaZ8EWuZpTF3hyi6SqLhe (STALE — was cleaned)
+   - Subnet ID: wNWS35thzJy9fGaxtVfPwFKEt2RU2r9fMGA7c5A9XqqSvBCVj (STALE)
+   - Public RPC: https://rpc.snowside.network/testnet (currently 502)
    - Precompiles: Warp only
 
-3. **SnowsideSignet** (Chain ID: 33352 / 0x8288) — **REDEPLOYED Session 11**
+3. **SnowsideSignet** (Chain ID: 33352 / 0x8248) — DEPLOYED & VERIFIED Session 11
    - Blockchain ID: 26XsRMLXezgJ1mK8TSVoHsRfBcy6Mwr4kJdKUAfgegb3PH4b5f
    - Subnet ID: 2W9boARgCWL25z6pMFNtkCfNA5v28VGg9PmBgUJfuKndEdhrvw
    - Local RPC: http://127.0.0.1:9654/ext/bc/26XsRMLXezgJ1mK8TSVoHsRfBcy6Mwr4kJdKUAfgegb3PH4b5f/rpc
    - Public RPC: https://rpc.snowside.network/signet
+   - NodeID: NodeID-2QpdUKC81YfKoPwU4kuUA8er5FiNQ3V6w
    - Precompiles: Warp, NativeMinter (admin: ewoq), ContractDeployerAllowList (admin: ewoq)
    - ICM Status: NOT deployed (deploy failed during L1 creation due to cloned genesis; deploy separately with `avalanche icm deploy`)
    - Genesis: Cloned from SnowsideTestnet, patched with chainId 33352 + two precompile configs
+   - Verified: NativeMinter minting works, DeployerAllowList blocks non-allowlisted deploys
 
 ### L1 Shared Configuration
 - Token Name: ECX Token
@@ -123,6 +152,7 @@ To deploy an L1 non-interactively with custom precompiles (NativeMinter, Contrac
 - Validator Transparent Proxy: 0x0Feedc0de0000000000000000000000000000000
 - Funded account (ewoq): 0x8db97C7cEcE249c2b98bDC0226Cc4C2A57BF52FC (1,000,000 ECX)
   - Private Key: 56289e99c94b6912bfc12adc093c9b51124f0dc54ac7a766b2bc5ccf558d8027
+- ICM Deployer: 0x18cD02DB3100cb4382B61329aA2a8cBe4A24B40f (funded with 600 ECX + 1000 minted = ~1590 ECX)
 
 ### Nginx Reverse Proxy Configuration (/etc/nginx/sites-available/default)
     server {
@@ -146,7 +176,7 @@ To deploy an L1 non-interactively with custom precompiles (NativeMinter, Contrac
             try_files $uri $uri/ /index.html;
         }
 
-        # Snowside Mainnet (ChainID: 32904)
+        # Snowside Mainnet (ChainID: 32904) — STALE, needs redeploy
         location /mainnet {
             proxy_pass http://127.0.0.1:9654/ext/bc/2sDVEVpwW8aNwgY1RMGzmFVXdJ1vyE1qWg3YBK8pGX8iy9iLtJ/rpc;
             proxy_set_header Host 127.0.0.1;
@@ -155,7 +185,7 @@ To deploy an L1 non-interactively with custom precompiles (NativeMinter, Contrac
             proxy_set_header X-Forwarded-Proto $scheme;
         }
 
-        # Snowside Testnet (ChainID: 33160)
+        # Snowside Testnet (ChainID: 33160) — STALE, needs redeploy
         location /testnet {
             proxy_pass http://127.0.0.1:9656/ext/bc/2PS8J5q5f4PXnwEsxLafFnPuFowprdaZ8EWuZpTF3hyi6SqLhe/rpc;
             proxy_set_header Host 127.0.0.1;
@@ -173,6 +203,12 @@ To deploy an L1 non-interactively with custom precompiles (NativeMinter, Contrac
             proxy_set_header X-Forwarded-Proto $scheme;
         }
     }
+
+### Block Explorer Issue (Session 11)
+The signet block explorer (explorer-signet.snowside.network) shows block height 7 instead of 11+.
+This is because the explorer was built with the OLD signet Blockchain ID (2pwzxirq...) and needs to be updated with the NEW Blockchain ID (26XsRMLX...).
+The explorer's network config likely has hardcoded Blockchain IDs that need updating for all three networks.
+**FIX:** Update packages/explorer network config with new Blockchain IDs, rebuild, and redeploy to Cloudflare Pages.
 
 ## File conventions
 - All source files must include a comment at the file's path relative to the monorepo root (e.g., `// packages/web/src/components/Hero.astro`).
@@ -200,6 +236,12 @@ To deploy an L1 non-interactively with custom precompiles (NativeMinter, Contrac
 - `functions/_middleware.js` — Cloudflare Pages Functions middleware. Intercepts subdomains (`explorer-testnet`, `explorer-signet`) and rewrites root `/` and deep links (e.g. `/tx/0x...`) to their respective static paths (`/testnet/`, `/signet/`) without URL redirects.
 - Layout: `src/layouts/Base.astro`. Components: `Header.astro` (larger favicon, network switcher, dynamic title), `Search.astro` (handles Block/Tx/Address routing), `Footer.astro` (Avalanche & eCash links).
 - Index UI: Etherscan-style stats grid (Latest Block, Gas Price, Chain ID, RPC URL).
+- **KNOWN ISSUE:** Network config has stale Blockchain IDs from Session 7. Signet shows block 7 instead of 11+ because it is querying the old (dead) Blockchain ID.
+
+## Pages (packages/bridge)
+- `/` — Bridge main page with network selector and QR code display/scanner
+- `/[network]/index.astro` — Dynamic routes for `/mainnet`, `/testnet`, `/signet`
+- `functions/_middleware.js` — Cloudflare Pages Functions middleware for subdomain routing
 
 ## Analytics — Simple Analytics
 - All 4 packages (web, pitch, docs, explorer) have Simple Analytics installed or available.
