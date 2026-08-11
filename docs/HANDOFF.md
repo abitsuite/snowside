@@ -1,7 +1,54 @@
-# Snowside Handoff — 2026-08-10 (Session 12, All L1s Deployed + Explorer Fixed)
+# Snowside Handoff — 2026-08-10 (Session 13, Bridge Scaffolding — Custodial MVP)
 
 ## Purpose
 Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88. The monorepo at `/Workspace/abitsuite/snowside` includes a landing page (`snowside.network`), a pitch page (`pitch.snowside.network`), docs (`docs.snowside.network`), a block explorer (`explorer.snowside.network`), the API worker (`snowside.network/v1`), the bridge UI (`bridge.snowside.network` WIP), alongside the L1 execution layer (`go/subnet-evm`), BMM bidder (`rust/bmm-bidder`), and core contracts (`contracts/`).
+
+## Session 13 summary — 2026-08-10
+
+### Task 1: BIP-300/301 Specification Review
+- Reviewed BIP-300 (Hashrate Escrows), BIP-301 (Blind Merged Mining), and bip300301_enforcer
+- Key findings: current federation model is custodial, not trustless; deposits should be M5 txs to CTIP; withdrawals require 13,150 miner ACKs (~6 months); enforcer provides gRPC API for trustless validation
+- Decision: proceed with custodial MVP now, upgrade to full BIP-300/301 in phases (Signet → Drynet → Mainnet)
+- Documented future upgrade path in AGENTS.md
+
+### Task 2: D1 Database Creation
+- Created `snowside-bridge` D1 database on Cloudflare (ID: 202053ef-9607-481d-9b73-185734164ea4)
+- Wrote schema (packages/api/schema.sql) with tables: meta, deposits, withdrawals
+- Indexes on snowside_address and status for query performance
+
+### Task 3: API Bridge Endpoints
+- Rewrote packages/api/src/index.ts with bridge + federation endpoints
+- Public endpoints: POST /v1/bridge/deposit, GET /v1/bridge/deposit/:id, GET /v1/bridge/deposits/:address, POST /v1/bridge/withdraw, GET /v1/bridge/withdrawals/:address, GET /v1/bridge/status
+- Federation endpoints (Bearer auth): POST /v1/fed/checkin, GET /v1/fed/deposits/pending, PATCH /v1/fed/deposit/:id, GET /v1/fed/withdrawals/pending, PATCH /v1/fed/withdraw/:id
+- Esplora proxy preserved as catch-all (/v1/*)
+- Chanfana OpenAPI docs preserved at /v1
+
+### Task 4: Federation Service Skeleton
+- Wrote packages/federation/src/index.ts with monitoring loop
+- Polls API for pending deposits, generates eCash addresses (stubbed HD derivation)
+- Checks Esplora for UTXOs on deposit addresses
+- Mints ECX on Snowside signet via NativeMinter precompile (0x0200...0001) using ewoq key
+- Withdrawal processing stubbed (not yet implemented)
+- 10-second poll interval, federation check-in heartbeat
+- .env.example created with all required env vars
+
+### Task 5: Bridge UI API Integration
+- Updated packages/bridge/src/components/BridgeWidget.astro with real API calls
+- Deposit flow: POST /v1/bridge/deposit → poll GET /v1/bridge/deposit/:id → show QR + status
+- Withdraw flow: POST /v1/bridge/withdraw → show confirmation
+- Federation status indicator (green/red dot, 15s polling)
+- Transaction history: GET deposits + withdrawals by address
+- QR scanner preserved (html5-qrcode)
+- Network selector with data attribute for current network
+
+### NOT YET DONE (Next Session)
+- wrangler.toml D1 binding not added
+- D1 schema not applied
+- FEDERATION_TOKEN secret not set
+- API not deployed
+- Bridge UI not built/deployed
+- Federation service not running on VPS
+- "Connect Wallet" (Rabby) not implemented
 
 ## Session 12 summary — 2026-08-10
 
@@ -110,6 +157,10 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
 | SnowsideTestnet | deployed, ICM deployed, relayer pending |
 | SnowsideSignet | deployed, precompiles verified, ICM pending |
 | Block Explorer | fixed (client-side fetching with 15s auto-refresh) |
+| Bridge API | code written, D1 created, NOT deployed |
+| Bridge UI | code written (API integration), NOT built/deployed |
+| Federation | skeleton written, NOT running on VPS |
+| BIP-300/301 | reviewed, custodial MVP first, full integration later |
 
 ## Current Deployment Details (All Three L1s)
 
@@ -150,30 +201,49 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
 
 ## Next session priorities (in order)
 
-1. **Bridge UI (bridge.snowside.network) — PRIMARY FOCUS**
-   - Complete the BIP-300/301 deposit and withdrawal flow for eCash (ECX) into Signet
-   - Integrate with the federation service for deposit monitoring
-   - Add QR code display for deposit addresses
-   - Add transaction history and status tracking
-   - Connect to signet RPC for balance queries
+1. **Deploy Bridge API to Cloudflare**
+   - Update packages/api/wrangler.toml with D1 binding (database_id: 202053ef-9607-481d-9b73-185734164ea4, binding: DB)
+   - Apply D1 schema: `pnpm exec wrangler d1 execute snowside-bridge --file=schema.sql --remote`
+   - Set FEDERATION_TOKEN secret: `pnpm exec wrangler secret put FEDERATION_TOKEN`
+   - Deploy: `pnpm exec wrangler deploy`
+   - Test endpoints with curl
 
-2. **Deploy ICM on Signet**
-   - Run `avalanche icm deploy` to deploy ICM Messenger and Registry contracts on signet
-   - If this fails due to the cloned genesis, may need to create signet from scratch (non-cloned) with CLI interactive mode
-   - Verify ICM Messenger and Registry addresses match expected values
+2. **Build & Deploy Bridge UI to Cloudflare Pages**
+   - Build packages/bridge: `pnpm --filter packages-bridge build`
+   - Deploy to Cloudflare Pages (bridge.snowside.network)
+   - Verify API calls work from bridge domain (CORS)
 
-3. **Federation Service**
-   - Deploy the `federation` Docker service to the VPS
-   - Hook up the Bridge UI to the federation service
-   - Monitor BIP-300 deposit confirmations on eCash L1
+3. **Implement "Connect Wallet" with Rabby**
+   - Add wallet connection button using window.ethereum (EIP-1193)
+   - Detect Rabby wallet (window.ethereum.isRabby)
+   - Get user's Snowside address from connected wallet
+   - Auto-fill deposit destination address
+   - For withdrawals: sign burn transaction on Snowside L1
+   - Show wallet balance (ECX) from signet RPC
 
-4. **Contract Deployment**
-   - Deploy peg contract, fee distribution contract, and other Solidity contracts to signet
-   - Test with the verified precompiles (NativeMinter, ContractDeployerAllowList)
+4. **Test Full Deposit/Withdrawal Flow**
+   - Create deposit request via bridge UI
+   - Verify federation service assigns address
+   - Test status polling (pending → confirmed → minted)
+   - Test withdrawal submission
+   - Verify transaction history display
 
-5. **Deploy Relayers**
-   - Deploy ICM relayers for mainnet and testnet with `avalanche interchain relayer deploy`
-   - Enables cross-chain messaging between L1s
+5. **Deploy Federation Service on VPS**
+   - SSH to VPS, clone repo, install deps
+   - Set env vars (API_URL, FEDERATION_TOKEN, SIGNET_RPC, EWOQ_PRIVATE_KEY, ESPLORA_URL)
+   - Run with pm2 or systemd: `pnpm --filter @snowside/federation start`
+   - Verify federation check-in heartbeat on API /v1/bridge/status
+
+6. **Deploy ICM on Signet** (lower priority)
+   - Run `avalanche icm deploy` on signet
+   - May need non-cloned genesis if cloned genesis causes issues
+
+7. **Future: Full BIP-300/301 Integration** (post-MVP)
+   - Deploy bip300301_enforcer on VPS (Rust, needs eCash Core with ZMQ)
+   - Register Snowside as sidechain slot on eCash Signet (M1/M2)
+   - Switch federation from Esplora polling to enforcer gRPC
+   - Implement proper M5 deposits and M3/M4/M6 withdrawal bundles
+   - Add withdrawal voting progress to bridge UI (ACK count, blocks remaining)
 
 ## Key learnings (all sessions)
 1. **@tailwindcss/vite** breaks on Cloudflare's rolldown-vite — always use **@tailwindcss/postcss**
@@ -223,6 +293,11 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
 45. **Deploy command ICM cross-chain prompt** — `blockchain deploy` prompts for ICM Registry addresses of other L1s for cross-chain config. Can Ctrl+C to skip — the L1 deployment is already complete. Relayer deployment can also be skipped.
 46. **ICM deploys at deterministic addresses** — ICM Messenger (0x253b2784c75e510dD0fF1da844684a1aC0aa5fcf) and Registry (0xB8e71012d3F55D9EbbFf74376dE180702c1D8A6F) deploy at the same address on all L1s.
 47. **grep can extract Subnet ID instead of Blockchain ID** — When parsing deploy logs, `grep -oE '2[a-zA-Z0-9]{30,}'` may match the Subnet ID (which also starts with "2") instead of the Blockchain ID. Always verify by checking the full deployment table output.
+48. **BIP-300 deposits are M5 transactions to CTIP** — Not federation addresses. M5 spends the sidechain's CTIP UTXO and creates a new one with more coins. The CTIP is locked with OP_DRIVECHAIN. Current custodial model is temporary.
+49. **BIP-300 withdrawals require 13,150 miner ACKs over 26,300 blocks** — At 10-min block time (drynet4 = same as Bitcoin), this is ~6 months. Not instant. Bridge UI must show voting progress.
+50. **bip300301_enforcer is the trustless bridge** — Rust app watching L1 via ZMQ, gRPC at localhost:50051. Has WalletService/CreateNewAddress and ValidatorService/GetSidechains. NOT yet running. Must be deployed for full BIP-300/301.
+51. **Custodial MVP → Full BIP-300/301 upgrade path** — Phase 1 (current): federation holds keys. Phase 2: register Snowside on Signet + deploy enforcer. Phase 3: Drynet. Phase 4: Mainnet. Schema needs future fields: sidechain_slot, bundle_hash, ack_count, blocks_remaining.
+52. **D1 database snowside-bridge** — ID: 202053ef-9607-481d-9b73-185734164ea4. Binding: DB. Schema at packages/api/schema.sql. wrangler.toml NOT yet updated — next session task.
 
 ## Session history (prior sessions)
 
@@ -447,4 +522,4 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
     # Testnet: STALE (needs redeploy)
 
 ---
-*Generated at end of Session 12. Next session: Bridge UI for eCash deposits/withdrawals into Signet, deploy ICM on signet, federation service. Maintained per AGENTS.md.*
+*Generated at end of Session 13. Next session: Deploy bridge API + UI to Cloudflare, implement Connect Wallet with Rabby, test deposit/withdrawal flow, deploy federation on VPS. Custodial MVP now, full BIP-300/301 later. Maintained per AGENTS.md.*

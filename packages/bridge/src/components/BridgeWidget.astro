@@ -1,19 +1,23 @@
----
-// packages/bridge/src/components/BridgeWidget.astro
 interface Props {
   network?: string;
 }
 const { network = 'mainnet' } = Astro.props;
 ---
+<div id="bridge-config" data-network={network} class="hidden"></div>
+
 <div class="w-full rounded-2xl border border-white/10 bg-surface-1 p-6 sm:p-8 shadow-lg">
-  <!-- Network Selection -->
   <div class="mb-6">
     <label class="block text-xs uppercase tracking-widest text-snow-400 mb-2">Select Network</label>
     <select id="network-select" class="w-full rounded-lg border border-white/10 bg-surface-0 px-4 py-3 text-sm text-snow-50 focus:border-aval-600 focus:outline-none focus:ring-1 focus:ring-aval-600 font-mono">
-      <option value="mainnet">Mainnet (Chain ID: 32904)</option>
+      <option value="mainnet" selected={network === 'mainnet'}>Mainnet (Chain ID: 32904)</option>
       <option value="testnet" selected={network === 'testnet'}>Testnet (Chain ID: 33160)</option>
       <option value="signet" selected={network === 'signet'}>Signet (Chain ID: 33352)</option>
     </select>
+  </div>
+
+  <div id="fed-status" class="mb-4 rounded-lg bg-surface-2 px-4 py-2 text-xs flex items-center gap-2">
+    <span id="fed-dot" class="inline-block w-2 h-2 rounded-full bg-snow-500"></span>
+    <span id="fed-text" class="text-snow-400">Checking federation status...</span>
   </div>
 
   <div class="flex border-b border-white/10 mb-6">
@@ -21,7 +25,6 @@ const { network = 'mainnet' } = Astro.props;
     <button id="tab-withdraw" class="flex-1 py-3 px-4 text-sm font-bold text-snow-400 hover:text-white border-b-2 border-transparent transition-colors">Withdraw (Snowside -> XEC)</button>
   </div>
 
-  <!-- Deposit Form -->
   <div id="form-deposit" class="flex flex-col gap-4">
     <div>
       <label class="block text-xs uppercase tracking-widest text-snow-400 mb-2">Destination Snowside Address</label>
@@ -32,29 +35,36 @@ const { network = 'mainnet' } = Astro.props;
     </div>
     <div>
       <label class="block text-xs uppercase tracking-widest text-snow-400 mb-2">Amount (XEC)</label>
-      <input type="number" placeholder="0.00" class="w-full rounded-lg border border-white/10 bg-surface-0 px-4 py-3 text-sm text-snow-50 placeholder-snow-500 focus:border-aval-600 focus:outline-none focus:ring-1 focus:ring-aval-600 font-mono" />
+      <input id="deposit-amount" type="number" placeholder="0.00" class="w-full rounded-lg border border-white/10 bg-surface-0 px-4 py-3 text-sm text-snow-50 placeholder-snow-500 focus:border-aval-600 focus:outline-none focus:ring-1 focus:ring-aval-600 font-mono" />
     </div>
     <div class="rounded-lg bg-surface-2 p-4 text-xs text-snow-400">
       <p class="font-bold text-snow-50 mb-2">Instructions:</p>
       <ol class="list-decimal list-inside space-y-1">
         <li>Enter your Snowside address and amount.</li>
-        <li>Click "Generate Deposit Address" to get a unique P2SH address.</li>
+        <li>Click "Generate Deposit Address" to get a unique eCash address.</li>
         <li>Send your XEC to the generated address.</li>
-        <li>Funds will be credited to your Snowside address after confirmation.</li>
+        <li>Funds will be minted as ECX on Snowside after confirmation.</li>
       </ol>
     </div>
     <button id="generate-deposit" class="w-full rounded-lg bg-aval-600 px-6 py-3 text-sm font-bold text-white hover:bg-aval-700 transition-colors">Generate Deposit Address</button>
 
-    <!-- Deposit Result (Hidden by default) -->
     <div id="deposit-result" class="hidden flex-col items-center gap-3 mt-4 border-t border-white/10 pt-6">
-      <p class="text-xs text-snow-400">Send XEC to the address below:</p>
-      <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=ecash:qzdummyaddress123" alt="Deposit QR" class="rounded-lg bg-white p-2 w-48 h-48" />
-      <p class="font-mono text-sm text-white break-all">ecash:qzdummyaddress123</p>
+      <div id="deposit-loading" class="text-sm text-snow-400">Generating deposit address...</div>
+      <div id="deposit-qr-wrap" class="hidden flex-col items-center gap-3">
+        <p class="text-xs text-snow-400">Send XEC to the address below:</p>
+        <img id="deposit-qr" src="" alt="Deposit QR" class="rounded-lg bg-white p-2 w-48 h-48" />
+        <p id="deposit-addr" class="font-mono text-sm text-white break-all"></p>
+      </div>
+      <div id="deposit-status" class="hidden rounded-lg px-4 py-2 text-sm font-bold"></div>
+      <div id="deposit-tx-info" class="hidden text-xs text-snow-400 font-mono"></div>
     </div>
   </div>
 
-  <!-- Withdraw Form -->
   <div id="form-withdraw" class="hidden flex-col gap-4">
+    <div>
+      <label class="block text-xs uppercase tracking-widest text-snow-400 mb-2">Snowside Address</label>
+      <input id="withdraw-snowside" type="text" placeholder="0x..." class="w-full rounded-lg border border-white/10 bg-surface-0 px-4 py-3 text-sm text-snow-50 placeholder-snow-500 focus:border-aval-600 focus:outline-none focus:ring-1 focus:ring-aval-600 font-mono" />
+    </div>
     <div>
       <label class="block text-xs uppercase tracking-widest text-snow-400 mb-2">Destination eCash Address</label>
       <div class="flex gap-2">
@@ -63,23 +73,32 @@ const { network = 'mainnet' } = Astro.props;
       </div>
     </div>
     <div>
-      <label class="block text-xs uppercase tracking-widest text-snow-400 mb-2">Amount (XEC)</label>
-      <input type="number" placeholder="0.00" class="w-full rounded-lg border border-white/10 bg-surface-0 px-4 py-3 text-sm text-snow-50 placeholder-snow-500 focus:border-aval-600 focus:outline-none focus:ring-1 focus:ring-aval-600 font-mono" />
+      <label class="block text-xs uppercase tracking-widest text-snow-400 mb-2">Amount (ECX)</label>
+      <input id="withdraw-amount" type="number" placeholder="0.00" class="w-full rounded-lg border border-white/10 bg-surface-0 px-4 py-3 text-sm text-snow-50 placeholder-snow-500 focus:border-aval-600 focus:outline-none focus:ring-1 focus:ring-aval-600 font-mono" />
+    </div>
+    <div>
+      <label class="block text-xs uppercase tracking-widest text-snow-400 mb-2">Burn Transaction Hash (optional)</label>
+      <input id="withdraw-burn-tx" type="text" placeholder="0x..." class="w-full rounded-lg border border-white/10 bg-surface-0 px-4 py-3 text-sm text-snow-50 placeholder-snow-500 focus:border-aval-600 focus:outline-none focus:ring-1 focus:ring-aval-600 font-mono" />
     </div>
     <div class="rounded-lg bg-surface-2 p-4 text-xs text-snow-400">
       <p class="font-bold text-snow-50 mb-2">Instructions:</p>
       <ol class="list-decimal list-inside space-y-1">
-        <li>Ensure you are connected to the Snowside network via your Web3 wallet.</li>
-        <li>Enter your eCash address and the amount to withdraw.</li>
-        <li>Click "Initiate Withdrawal" to trigger the BIP-301 operation.</li>
-        <li>Funds will be sent to your eCash address after the challenge period.</li>
+        <li>Burn your ECX on Snowside L1 using the burn contract.</li>
+        <li>Enter your eCash address and the burn tx hash.</li>
+        <li>The federation will send XEC to your eCash address after verification.</li>
       </ol>
     </div>
-    <button class="w-full rounded-lg bg-aval-600 px-6 py-3 text-sm font-bold text-white hover:bg-aval-700 transition-colors">Initiate Withdrawal</button>
+    <button id="initiate-withdraw" class="w-full rounded-lg bg-aval-600 px-6 py-3 text-sm font-bold text-white hover:bg-aval-700 transition-colors">Initiate Withdrawal</button>
+    <div id="withdraw-result" class="hidden rounded-lg bg-surface-2 px-4 py-3 text-sm text-snow-400"></div>
+  </div>
+
+  <div class="mt-8 border-t border-white/10 pt-6">
+    <h3 class="text-sm font-bold text-white mb-3">Transaction History</h3>
+    <input id="history-address" type="text" placeholder="Enter Snowside address to view history" class="w-full rounded-lg border border-white/10 bg-surface-0 px-4 py-2 text-xs text-snow-50 placeholder-snow-500 focus:border-aval-600 focus:outline-none font-mono mb-3" />
+    <div id="history-list" class="space-y-2"></div>
   </div>
 </div>
 
-<!-- QR Scanner Modal -->
 <div id="qr-reader-modal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
   <div class="bg-surface-1 rounded-lg p-4 w-full max-w-md">
     <div class="flex justify-between items-center mb-4">
@@ -90,77 +109,230 @@ const { network = 'mainnet' } = Astro.props;
   </div>
 </div>
 
-<!-- External Library for QR Scanning -->
 <script is:inline src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
 <script is:inline>
-  // Tab Switching Logic
-  const tabDeposit = document.getElementById('tab-deposit');
-  const tabWithdraw = document.getElementById('tab-withdraw');
-  const formDeposit = document.getElementById('form-deposit');
-  const formWithdraw = document.getElementById('form-withdraw');
+const API_BASE = 'https://snowside.network/v1';
+let currentNetwork = document.getElementById('bridge-config').dataset.network || 'mainnet';
+let depositPollId = null;
 
-  function setActiveTab(activeTab, inactiveTab, activeForm, inactiveForm) {
-    activeTab.classList.remove('text-snow-400', 'border-transparent');
-    activeTab.classList.add('text-white', 'border-aval-600');
-    activeTab.classList.add('hover:text-white');
+async function api(path, init) {
+  const resp = await fetch(`${API_BASE}${path}`, init);
+  return resp.json();
+}
 
-    inactiveTab.classList.remove('text-white', 'border-aval-600');
-    inactiveTab.classList.add('text-snow-400', 'border-transparent');
+function setStatusBadge(el, status) {
+  const colors = {
+    pending: 'bg-surface-2 text-snow-400',
+    confirmed: 'bg-blue-900 text-blue-300',
+    minted: 'bg-green-900 text-green-300',
+    completed: 'bg-green-900 text-green-300',
+    failed: 'bg-red-900 text-red-300',
+  };
+  el.className = `rounded-lg px-4 py-2 text-sm font-bold ${colors[status] || colors.pending}`;
+  el.textContent = `Status: ${status.toUpperCase()}`;
+  el.classList.remove('hidden');
+}
 
-    activeForm.classList.remove('hidden');
-    activeForm.classList.add('flex');
-
-    inactiveForm.classList.add('hidden');
-    inactiveForm.classList.remove('flex');
-  }
-
-  tabDeposit.addEventListener('click', () => setActiveTab(tabDeposit, tabWithdraw, formDeposit, formWithdraw));
-  tabWithdraw.addEventListener('click', () => setActiveTab(tabWithdraw, tabDeposit, formWithdraw, formDeposit));
-
-  // Deposit Generation UI Logic
-  const generateBtn = document.getElementById('generate-deposit');
-  const depositResult = document.getElementById('deposit-result');
-  generateBtn.addEventListener('click', () => {
-    depositResult.classList.remove('hidden');
-    depositResult.classList.add('flex');
-  });
-
-  // QR Scanner Logic
-  let html5QrCode;
-  const modal = document.getElementById('qr-reader-modal');
-  const closeBtn = document.getElementById('close-scanner');
-  const scannerBtns = document.querySelectorAll('.scanner-btn');
-
-  function startScanner(targetInputId) {
-    modal.classList.remove('hidden');
-    html5QrCode = new Html5Qrcode("qr-reader");
-    html5QrCode.start(
-      { facingMode: "environment" },
-      { fps: 10, qrbox: { width: 250, height: 250 } },
-      (decodedText) => {
-        document.getElementById(targetInputId).value = decodedText;
-        stopScanner();
-      },
-      (errorMessage) => { /* ignore per-frame errors */ }
-    ).catch(err => console.error("QR Start Error:", err));
-  }
-
-  function stopScanner() {
-    if (html5QrCode) {
-      html5QrCode.stop().then(() => {
-        html5QrCode.clear();
-        modal.classList.add('hidden');
-      }).catch(err => console.error("QR Stop Error:", err));
+async function checkFedStatus() {
+  try {
+    const data = await api('/bridge/status');
+    const dot = document.getElementById('fed-dot');
+    const text = document.getElementById('fed-text');
+    if (data.federation_online) {
+      dot.className = 'inline-block w-2 h-2 rounded-full bg-green-500';
+      text.textContent = 'Federation: Online';
+      text.className = 'text-green-400';
+    } else {
+      dot.className = 'inline-block w-2 h-2 rounded-full bg-red-500';
+      text.textContent = 'Federation: Offline';
+      text.className = 'text-red-400';
     }
+  } catch {
+    document.getElementById('fed-text').textContent = 'Federation: Unable to check';
   }
+}
+checkFedStatus();
+setInterval(checkFedStatus, 15000);
 
-  scannerBtns.forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const targetId = e.currentTarget.getAttribute('data-target');
-      startScanner(targetId);
+const tabDeposit = document.getElementById('tab-deposit');
+const tabWithdraw = document.getElementById('tab-withdraw');
+const formDeposit = document.getElementById('form-deposit');
+const formWithdraw = document.getElementById('form-withdraw');
+
+function setActiveTab(active, inactive, activeForm, inactiveForm) {
+  active.classList.remove('text-snow-400', 'border-transparent');
+  active.classList.add('text-white', 'border-aval-600');
+  inactive.classList.remove('text-white', 'border-aval-600');
+  inactive.classList.add('text-snow-400', 'border-transparent');
+  activeForm.classList.remove('hidden'); activeForm.classList.add('flex');
+  inactiveForm.classList.add('hidden'); inactiveForm.classList.remove('flex');
+}
+
+tabDeposit.addEventListener('click', () => setActiveTab(tabDeposit, tabWithdraw, formDeposit, formWithdraw));
+tabWithdraw.addEventListener('click', () => setActiveTab(tabWithdraw, tabDeposit, formWithdraw, formDeposit));
+
+document.getElementById('network-select').addEventListener('change', (e) => {
+  currentNetwork = e.target.value;
+});
+
+document.getElementById('generate-deposit').addEventListener('click', async () => {
+  const dest = document.getElementById('deposit-dest').value.trim();
+  if (!dest) { alert('Enter a Snowside address'); return; }
+  const result = document.getElementById('deposit-result');
+  const loading = document.getElementById('deposit-loading');
+  const qrWrap = document.getElementById('deposit-qr-wrap');
+  result.classList.remove('hidden'); result.classList.add('flex');
+  loading.classList.remove('hidden');
+  loading.textContent = 'Generating deposit address...';
+  qrWrap.classList.add('hidden');
+
+  try {
+    const data = await api('/bridge/deposit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ snowsideAddress: dest, network: currentNetwork }),
     });
-  });
+    if (data.id) {
+      loading.textContent = 'Waiting for federation to assign address...';
+      pollDeposit(data.id);
+    }
+  } catch (err) {
+    loading.textContent = 'Error: ' + err.message;
+  }
+});
 
-  closeBtn.addEventListener('click', stopScanner);
+function pollDeposit(depositId) {
+  if (depositPollId) clearInterval(depositPollId);
+  const loading = document.getElementById('deposit-loading');
+  const qrWrap = document.getElementById('deposit-qr-wrap');
+  const qr = document.getElementById('deposit-qr');
+  const addr = document.getElementById('deposit-addr');
+  const statusEl = document.getElementById('deposit-status');
+  const txInfo = document.getElementById('deposit-tx-info');
+
+  depositPollId = setInterval(async () => {
+    try {
+      const data = await api(`/bridge/deposit/${depositId}`);
+      if (data.ecash_address) {
+        loading.classList.add('hidden');
+        qrWrap.classList.remove('hidden'); qrWrap.classList.add('flex');
+        addr.textContent = data.ecash_address;
+        qr.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(data.ecash_address)}`;
+      }
+      if (data.status && data.status !== 'pending') {
+        setStatusBadge(statusEl, data.status);
+        if (data.ecash_tx_hash) {
+          txInfo.textContent = `eCash TX: ${data.ecash_tx_hash}`;
+          txInfo.classList.remove('hidden');
+        }
+        if (data.mint_tx_hash) {
+          txInfo.textContent += `\nMint TX: ${data.mint_tx_hash}`;
+        }
+        if (data.status === 'minted') {
+          clearInterval(depositPollId);
+        }
+      }
+    } catch (err) {
+      console.error('Poll error:', err);
+    }
+  }, 3000);
+}
+
+document.getElementById('initiate-withdraw').addEventListener('click', async () => {
+  const snowsideAddr = document.getElementById('withdraw-snowside').value.trim();
+  const ecashAddr = document.getElementById('withdraw-dest').value.trim();
+  const amount = document.getElementById('withdraw-amount').value;
+  const burnTx = document.getElementById('withdraw-burn-tx').value.trim();
+  if (!snowsideAddr || !ecashAddr || !amount) { alert('Fill in all required fields'); return; }
+  const result = document.getElementById('withdraw-result');
+  result.classList.remove('hidden');
+  result.textContent = 'Submitting...';
+  try {
+    const data = await api('/bridge/withdraw', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        snowsideAddress: snowsideAddr,
+        ecashAddress: ecashAddr,
+        amountEcx: amount,
+        network: currentNetwork,
+        burnTxHash: burnTx || undefined,
+      }),
+    });
+    if (data.id) {
+      result.textContent = `Withdrawal submitted! ID: ${data.id}. Status: ${data.status}. The federation will process your withdrawal after verification.`;
+    }
+  } catch (err) {
+    result.textContent = 'Error: ' + err.message;
+  }
+});
+
+document.getElementById('history-address').addEventListener('input', async (e) => {
+  const addr = e.target.value.trim();
+  if (addr.length < 10) return;
+  const list = document.getElementById('history-list');
+  list.innerHTML = '<p class="text-xs text-snow-400">Loading...</p>';
+  try {
+    const [deposits, withdrawals] = await Promise.all([
+      api(`/bridge/deposits/${addr}`),
+      api(`/bridge/withdrawals/${addr}`),
+    ]);
+    list.innerHTML = '';
+    if (deposits.length === 0 && withdrawals.length === 0) {
+      list.innerHTML = '<p class="text-xs text-snow-500">No transactions found</p>';
+      return;
+    }
+    for (const d of deposits) {
+      const div = document.createElement('div');
+      div.className = 'rounded-lg bg-surface-2 px-3 py-2 text-xs flex justify-between items-center';
+      div.innerHTML = `<span class="text-snow-400">Deposit ${d.amount_xec ? (d.amount_xec / 100).toFixed(2) + ' XEC' : '—'}</span><span class="font-mono ${d.status === 'minted' ? 'text-green-400' : 'text-snow-400'}">${d.status}</span>`;
+      list.appendChild(div);
+    }
+    for (const w of withdrawals) {
+      const div = document.createElement('div');
+      div.className = 'rounded-lg bg-surface-2 px-3 py-2 text-xs flex justify-between items-center';
+      div.innerHTML = `<span class="text-snow-400">Withdraw ${w.amount_ecx ? w.amount_ecx + ' ECX' : '—'}</span><span class="font-mono ${w.status === 'completed' ? 'text-green-400' : 'text-snow-400'}">${w.status}</span>`;
+      list.appendChild(div);
+    }
+  } catch {
+    list.innerHTML = '<p class="text-xs text-red-400">Error loading history</p>';
+  }
+});
+
+let html5QrCode;
+const modal = document.getElementById('qr-reader-modal');
+const closeBtn = document.getElementById('close-scanner');
+const scannerBtns = document.querySelectorAll('.scanner-btn');
+
+function startScanner(targetInputId) {
+  modal.classList.remove('hidden');
+  html5QrCode = new Html5Qrcode("qr-reader");
+  html5QrCode.start(
+    { facingMode: "environment" },
+    { fps: 10, qrbox: { width: 250, height: 250 } },
+    (decodedText) => {
+      document.getElementById(targetInputId).value = decodedText;
+      stopScanner();
+    },
+    () => {}
+  ).catch(err => console.error("QR Start Error:", err));
+}
+
+function stopScanner() {
+  if (html5QrCode) {
+    html5QrCode.stop().then(() => {
+      html5QrCode.clear();
+      modal.classList.add('hidden');
+    }).catch(err => console.error("QR Stop Error:", err));
+  }
+}
+
+scannerBtns.forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    startScanner(e.currentTarget.getAttribute('data-target'));
+  });
+});
+
+closeBtn.addEventListener('click', stopScanner);
 </script>

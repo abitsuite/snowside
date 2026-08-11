@@ -381,3 +381,73 @@ The landing page alternates dark and light sections for visual rhythm.
 - ALWAYS run `wc -l <file>` and `tail -n 15 <file>` after a heredoc to verify correctness. Multi-file pastes garble frequently, but the content is fine.
 - Use `'EOF'` (single-quoted) delimiters to prevent shell expansion inside heredocs.
 - For Python one-liners, use single quotes outside and double quotes inside: `python3 -c '...'`
+
+## Bridge (Custodial MVP — TEMPORARY)
+
+**⚠️ CRITICAL:** The current bridge is a **custodial/federated model**, NOT the full BIP-300/301 trustless peg. This is a temporary implementation that will be replaced with full BIP-300/301 integration in phases:
+1. **Phase 1 (Current):** Custodial federation — federation holds keys, generates deposit addresses, mints ECX manually
+2. **Phase 2:** Register Snowside as sidechain slot on eCash Signet (M1/M2), deploy bip300301_enforcer, switch to enforcer gRPC for deposit addresses and validation
+3. **Phase 3:** Register on eCash Drynet/Testnet
+4. **Phase 4:** Register on eCash Mainnet — full trustless peg with miner-voted withdrawals
+
+### Current Architecture (Custodial MVP)
+- **Federation service** (`packages/federation`): Node.js service, holds HD wallet (stubbed), generates deposit addresses, monitors Esplora for deposits, mints ECX on Snowside via NativeMinter precompile (0x0200...0001)
+- **API** (`packages/api`): Cloudflare Worker with D1 database, REST endpoints for bridge UI + federation auth endpoints
+- **Bridge UI** (`packages/bridge`): Astro static site on Cloudflare Pages, client-side fetch to API, QR codes, deposit/withdraw tabs, transaction history
+- **D1 Database**: `snowside-bridge` (ID: 202053ef-9607-481d-9b73-185734164ea4)
+
+### Future Architecture (Full BIP-300/301)
+- **bip300301_enforcer** (Rust, on VPS): Watches eCash L1 via ZMQ, validates M5 deposits and M6 withdrawals, exposes gRPC at localhost:50051
+- Federation connects to enforcer gRPC instead of polling Esplora
+- Deposits use enforcer `WalletService/CreateNewAddress` (proper P2SH with sidechain commitment)
+- Withdrawals use M3/M4/M6 bundle process (13,150 ACKs over 26,300 blocks ≈ 6 months at 10-min block time)
+- Bridge UI shows withdrawal voting progress (ACK count, blocks remaining)
+- **NOT YET IMPLEMENTED** — enforcer not running, Snowside not registered as sidechain slot
+
+### API Bridge Endpoints
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | /v1/bridge/status | Public | Federation online status |
+| POST | /v1/bridge/deposit | Public | Create deposit request |
+| GET | /v1/bridge/deposit/:id | Public | Get deposit status |
+| GET | /v1/bridge/deposits/:address | Public | List deposits for address |
+| POST | /v1/bridge/withdraw | Public | Submit withdrawal request |
+| GET | /v1/bridge/withdrawals/:address | Public | List withdrawals |
+| POST | /v1/fed/checkin | Bearer token | Federation heartbeat |
+| GET | /v1/fed/deposits/pending | Bearer token | Get pending deposits |
+| PATCH | /v1/fed/deposit/:id | Bearer token | Update deposit status |
+| GET | /v1/fed/withdrawals/pending | Bearer token | Get pending withdrawals |
+| PATCH | /v1/fed/withdraw/:id | Bearer token | Update withdrawal status |
+| ALL | /v1/* | Public | Esplora proxy (catch-all) |
+
+### D1 Schema
+- `meta`: key/value table (federation check-in timestamps)
+- `deposits`: id, network, snowside_address, ecash_address, amount_xec, amount_ecx, status, ecash_tx_hash, mint_tx_hash, timestamps
+- `withdrawals`: id, network, snowside_address, ecash_address, amount_ecx, amount_xec, burn_tx_hash, ecash_tx_hash, status, timestamps
+- **Future BIP-300 fields needed**: sidechain_slot, bundle_hash, ack_count, blocks_remaining, ctip_txid, ctip_vout
+
+### BIP-300/301 Reference (for future upgrade)
+- **BIP-300**: Hashrate Escrows — deposits/withdrawals via miner voting, OP_DRIVECHAIN opcode
+- **BIP-301**: Blind Merged Mining — miners secure sidechain without running sidechain nodes
+- **M5 (Deposit)**: L1 tx spending CTIP, creating new CTIP with more coins, includes destination L2 address
+- **M6 (Withdrawal)**: L1 tx paying out from CTIP, requires 13,150 miner ACKs over 26,300 blocks
+- **CTIP**: Single UTXO per sidechain holding all pegged coins (no UTXO bloat)
+- **Sidechain slots**: Up to 256, each with own CTIP, proposed via M1, activated via M2
+- **drynet4 block time**: 10 minutes (same as Bitcoin) → withdrawal period ≈ 6 months
+- **bip300301_enforcer**: Rust app (github.com/LayerTwo-Labs/bip300301_enforcer), gRPC API, watches L1 via ZMQ
+- **Enforcer RPCs**: ValidatorService/GetSidechains, GetChainInfo, GetChainTip; WalletService/CreateNewAddress, CreateSidechainProposal
+- **Esplora**: https://esplora.drynet4.drivechain.dev (eCash block explorer API, proxied via /v1/*)
+
+### Deployment Status (End of Session 13)
+- ✅ D1 database created (snowside-bridge)
+- ✅ API code written (bridge + federation endpoints + Esplora proxy)
+- ✅ Federation service skeleton written (monitoring + minting logic)
+- ✅ Bridge UI updated (API integration, QR codes, status polling, history)
+- ✅ D1 schema file written (packages/api/schema.sql)
+- ❌ wrangler.toml NOT yet updated with D1 binding
+- ❌ D1 schema NOT yet applied
+- ❌ FEDERATION_TOKEN secret NOT yet set
+- ❌ API NOT yet deployed to Cloudflare
+- ❌ Bridge UI NOT yet built/deployed to Cloudflare Pages
+- ❌ Federation service NOT yet running on VPS
+- ❌ "Connect Wallet" (Rabby) NOT yet implemented
