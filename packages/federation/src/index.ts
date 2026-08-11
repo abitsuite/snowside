@@ -263,6 +263,7 @@ async function mintEcx(
       to: NATIVE_MINTER as `0x${string}`,
       data,
       account: getAccount(),
+      chain: getChain(network),
     });
 
     // Wait for transaction receipt
@@ -282,6 +283,9 @@ async function mintEcx(
     }
   } catch (err) {
     console.error(`[mint] Error minting on ${network}:`, err);
+    if (err && typeof err === 'object') {
+      console.error('[mint] Error details:', JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
+    }
     return null;
   }
 }
