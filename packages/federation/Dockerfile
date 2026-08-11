@@ -3,11 +3,11 @@ FROM node:22-slim AS builder
 
 WORKDIR /app
 
-RUN corepack enable pnpm
+RUN corepack enable && corepack prepare pnpm@10.15.1 --activate
 
 COPY package.json ./
 
-RUN pnpm install --no-frozen-lockfile --config.onlyBuiltDependencies='["esbuild"]'
+RUN pnpm install --no-frozen-lockfile
 
 COPY tsconfig.json ./
 COPY src ./src
@@ -19,11 +19,11 @@ FROM node:22-slim AS runtime
 
 WORKDIR /app
 
-RUN corepack enable pnpm
+RUN corepack enable && corepack prepare pnpm@10.15.1 --activate
 
 COPY package.json ./
 
-RUN pnpm install --prod --no-frozen-lockfile --config.onlyBuiltDependencies='["esbuild"]'
+RUN pnpm install --prod --no-frozen-lockfile
 
 COPY src ./src
 COPY tsconfig.json ./
