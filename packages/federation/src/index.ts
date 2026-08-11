@@ -19,7 +19,7 @@ import {
 import { privateKeyToAccount, type PrivateKeyAccount } from 'viem/accounts';
 import { HDWallet } from './wallet.js';
 import {
-  buildSignAndBroadcastWithdrawal,
+  buildSignAndBroadcastWithdrawal, ecxToSats,
   type FundedDeposit,
 } from './withdraw.js';
 
@@ -83,6 +83,7 @@ interface Withdrawal {
   burn_tx_hash: string | null;
   ecash_tx_hash: string | null;
   status: string;
+  created_at: number;
 }
 
 // ── Chain definitions ───────────────────────────────────────────
@@ -480,11 +481,7 @@ async function processWithdrawal(withdrawal: Withdrawal): Promise<void> {
   }
 
   // Calculate amount_xec if not already set
-  const amountXec =
-    withdrawal.amount_xec ||
-    Number(
-      BigInt(withdrawal.amount_ecx || '0') / BigInt(10) ** BigInt(16),
-    );
+  const amountXec = withdrawal.amount_xec || ecxToSats(withdrawal.amount_ecx);
 
   // Update the withdrawal record via API
   await apiPatch(`/fed/withdraw/${withdrawal.id}`, {
@@ -529,14 +526,31 @@ async function processPendingDeposits(): Promise<void> {
   }
 }
 
+const WITHDRAWAL_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
+
 async function processPendingWithdrawals(): Promise<void> {
   try {
     const withdrawals: Withdrawal[] = await apiGet(
       '/fed/withdrawals/pending',
     );
 
+    const now = Date.now();
+
     for (const withdrawal of withdrawals) {
       try {
+        // Auto-fail withdrawals older than 15 minutes
+        const createdAt = withdrawal.created_at || 0;
+        if (createdAt > 0 && now - createdAt > WITHDRAWAL_TIMEOUT_MS) {
+          const ageMin = Math.floor((now - createdAt) / 60000);
+          console.log(
+            `[withdraw] ${withdrawal.id}: timed out (${ageMin}min old), auto-failing`,
+          );
+          await apiPatch(`/fed/withdraw/${withdrawal.id}`, {
+            status: 'failed',
+            completed_at: now,
+          });
+          continue;
+        }
         await processWithdrawal(withdrawal);
       } catch (err) {
         console.error(`[withdraw] Error processing ${withdrawal.id}:`, err);

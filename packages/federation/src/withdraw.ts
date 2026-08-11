@@ -32,7 +32,7 @@ export interface WithdrawalRequest {
   network: string;
   snowside_address: string;
   ecash_address: string;
-  amount_ecx: string | null;
+  amount_ecx: string | number | null;
   amount_xec: number | null;
   burn_tx_hash: string | null;
   ecash_tx_hash: string | null;
@@ -46,11 +46,20 @@ const ECX_TO_SATS_DIVISOR = BigInt(10) ** BigInt(16);
 /**
  * Convert ECX amount (18 decimals) to satoshis.
  */
-export function ecxToSats(amountEcx: string | null): number {
+export function ecxToSats(amountEcx: string | number | null): number {
   if (!amountEcx) return 0;
   try {
-    const ecx = BigInt(amountEcx);
-    return Number(ecx / ECX_TO_SATS_DIVISOR);
+    const str = String(amountEcx);
+    if (str.includes('.')) {
+      // Decimal ECX amount (e.g., "0.1" ECX from UI)
+      // 1 ECX = 100 sats, so multiply by 100
+      const ecxFloat = parseFloat(str);
+      return Math.floor(ecxFloat * 100);
+    } else {
+      // Wei integer string (e.g., "1000000000000000000" from federation)
+      const ecx = BigInt(str);
+      return Number(ecx / ECX_TO_SATS_DIVISOR);
+    }
   } catch {
     return 0;
   }
