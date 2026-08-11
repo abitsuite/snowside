@@ -470,15 +470,39 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
 - ewoq balance: ~999,998 ECX
 - ICM deployer balance: ~1,590 ECX
 
+
+## Session 15b update — 2026-08-11
+
+### Chainlist Submission (Mainnet + Testnet)
+- Forked DefiLlama/chainlist to https://github.com/abitsuite/chainlist
+- Created PR: https://github.com/DefiLlama/chainlist/pull/3041
+- Added two chain files to `constants/additionalChainRegistry/`:
+  - `chainid-32904.js` — Snowside Mainnet (Chain ID 32904)
+  - `chainid-33160.js` — Snowside Testnet (Chain ID 33160)
+- Chain icon uploaded to Pinata IPFS: `ipfs://bafkreig3ioaoqiyvd3uinf5p5qtvvhhzxbbvb3ukljezanccsrc5mfp62y`
+  - Low-poly snowmen icon (dual snowmen forming 88), 256x256 PNG
+- RPC endpoints: 
+  - Mainnet: https://rpc.snowside.network/mainnet
+  - Testnet: https://rpc.snowside.network/testnet
+- Block explorers:
+  - Mainnet: https://explorer.snowside.network
+  - Testnet: https://explorer-testnet.snowside.network
+- File format: ES module export (`export const data = { ... }`)
+- Chainlist uses IPFS URLs directly in the `"icon"` field
+- PR pending review by DefiLlama maintainers
+
+### Correct Chain IDs (verified via Avalanche CLI)
+- SnowsideMainnet: Chain ID 32904
+- SnowsideTestnet: Chain ID 33160
+- (Signet: Chain ID 33352 — not submitted to Chainlist yet)
+
 ## Next session priorities (in order)
 
-1. **Submit Mainnet and Testnet to Chainlist**
-   - Go to https://chainlist.org and submit Snowside networks
-   - Mainnet: Chain ID 267, RPC https://rpc.snowside.network/mainnet, Currency ECX
-   - Testnet: Chain ID 42220, RPC https://rpc.snowside.network/testnet, Currency ECX
-   - Signet: Chain ID 33352, RPC https://rpc.snowside.network/signet, Currency ECX
-   - Provide block explorer URLs if available
-   - This will make it easy for users to add Snowside to Rabby/MetaMask
+1. **Monitor Chainlist PR #3041 for review feedback**
+   - URL: https://github.com/DefiLlama/chainlist/pull/3041
+   - Maintainers may request changes (icon format, RPC verification, etc.)
+   - Once merged, Snowside will be live on chainlist.org
+   - Consider also submitting Signet (Chain ID 33352) if desired
 
 2. **Improve verifyBurnTx() to parse burn transaction input**
    - File: packages/federation/src/index.ts, verifyBurnTx() function
@@ -809,4 +833,4 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
     # Testnet: STALE (needs redeploy)
 
 ---
-*Generated at end of Session 15. CUSTODIAL BRIDGE MVP COMPLETE. Both deposit and withdrawal flows working end-to-end on signet. Next session: submit Mainnet and Testnet to Chainlist, improve burn tx verification, test eCash withdrawal path. Federation running in Docker (snowside-federation) on VPS. Maintained per AGENTS.md.*
+*Generated at end of Session 15b. CUSTODIAL BRIDGE MVP COMPLETE. Both deposit and withdrawal flows working end-to-end on signet. Chainlist PR #3041 submitted for Mainnet (32904) and Testnet (33160). Next session: monitor PR, improve burn tx verification, test eCash withdrawal path. Federation running in Docker (snowside-federation) on VPS. Maintained per AGENTS.md.*
