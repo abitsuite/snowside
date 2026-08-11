@@ -80,6 +80,85 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
 - Burn verification not implemented (only checks tx exists)
 - Bridge UI does not show L1 currency difference (XEC vs sBTC for signet)
 
+## Session 14 summary — 2026-08-11
+
+### Task 1: Deploy Bridge API to Cloudflare
+- Fixed duplicate SQL string bug in deposits query
+- Added D1 binding to packages/api/wrangler.toml (binding: DB, database_id: 202053ef-9607-481d-9b73-185734164ea4)
+- Applied D1 schema (meta, deposits, withdrawals tables + indexes) to remote database
+- Generated FEDERATION_TOKEN (openssl rand -hex 32) and set as Cloudflare Worker secret
+- Deployed API to snowside.network/v1* (Cloudflare Worker with Hono + chanfana)
+- All endpoints tested and working: bridge/deposit, bridge/withdraw, bridge/status, fed/checkin, fed/deposits/pending, Esplora proxy
+
+### Task 2: Connect Wallet (Rabby/EIP-1193)
+- Added Connect Wallet button to BridgeWidget.astro
+- Implemented EIP-1193 wallet connection (window.ethereum)
+- Network switching via wallet_switchEthereumChain + wallet_addEthereumChain
+- Auto-fills deposit/withdraw/history addresses from connected wallet
+- Shows wallet balance via eth_getBalance
+- Handles accountsChanged and chainChanged events
+- Network chain IDs: mainnet=32904 (0x8088), testnet=33160 (0x8188), signet=33352 (0x8248)
+- Built bridge (4 pages: index, mainnet, testnet, signet) and deployed to Cloudflare Pages
+
+### Task 3: Federation Service Multi-Network + Docker
+- Rewrote federation service to support all three networks simultaneously
+- Per-network RPC URL caching (providers + wallets)
+- mintEcx() accepts network parameter, selects correct RPC
+- verifyBurnTx() skeleton for future withdrawal processing
+- Created Dockerfile (multi-stage: builder + runtime) and docker-compose.yml
+- Created .dockerignore
+
+### Task 4: Per-Network Esplora URLs
+- Corrected network mapping:
+  - mainnet -> eCash mainnet (esplora.mainnet.drivechain.dev, XEC, ecash: addresses)
+  - testnet -> eCash drynet4 (esplora.drynet4.drivechain.dev, XEC, ecash: addresses)
+  - signet -> Bitcoin signet (esplora.signet.drivechain.info, sBTC, tb1q addresses)
+- Updated federation service with ESPLORA_URLS per-network dictionary
+- generateDepositAddress() generates ecash: or tb1q based on network
+- Updated docker-compose.yml and .env.example with per-network Esplora env vars
+
+### Task 5: Deploy Federation on VPS
+- VPS: bchplease (root@bchplease, Ubuntu 24.04)
+- Installed Docker 29.7.2 on VPS
+- Cloned repo via HTTPS (https://github.com/abitsuite/snowside.git)
+- Created .env with FEDERATION_TOKEN and EWOQ_PRIVATE_KEY
+- Built and started federation service: `docker compose up -d --build`
+- Federation service running, checking in to API every 10 seconds
+
+### Task 6: Fix NativeMinter (CRITICAL FIX)
+- **Bug**: Federation was calling `mint(address,uint256)` (selector 0x40c10f19) — WRONG
+- **Fix**: Changed to `mintNativeCoin(address,uint256)` (selector 0x4f5aaaba) — CORRECT
+- Found correct function name in Avalanche docs: https://build.avax.network/docs/avalanche-l1s/precompiles/native-minter
+- Tested with raw eth_call + sendTransaction: SUCCESS
+- EWOQ account (0x8db97C7cEcE249c2b98bDC0226Cc4C2A57BF52FC) confirmed as admin (readAllowList = 2)
+- Deployed fix to VPS Docker container
+- **RESULT**: User deposited on bridge, federation detected deposit, minted 1,337,001 ECX to user's wallet on Snowside Signet (33352). FULL DEPOSIT→MINT FLOW WORKING!
+
+### Task 7: Docker Build Fixes
+- pnpm 11 blocked esbuild build scripts by default — pinned pnpm to 10.15.1 in Dockerfile
+- tsx was in devDependencies but needed at runtime — moved to dependencies
+- Dockerfile uses `corepack prepare pnpm@10.15.1 --activate` in both builder and runtime stages
+
+### Task 8: Version Pinning
+- Pinned all package.json dependencies to exact versions (removed ^ and ~ prefixes)
+- Created `.npmrc` with `save-exact=true` and `strict-peer-dependencies=true`
+- All future `pnpm add` commands will automatically pin exact versions
+
+### Current State — ALL SYSTEMS WORKING
+- API: Deployed and working at snowside.network/v1*
+- Bridge UI: Deployed to Cloudflare Pages with Connect Wallet (Rabby)
+- Federation: Running in Docker on VPS, polling all three networks
+- Native Minting: WORKING — mintNativeCoin confirmed on signet
+- D1: Schema applied, deposits table has real data
+- Version pinning: Enforced via .npmrc
+
+### Known Issues
+- OpenAPI docs only show /v1/status (chanfana); bridge endpoints not registered through chanfana
+- Address generation is stubbed (ecash:qz + depositId hex, tb1q + depositId hex) — needs proper HD wallet
+- Withdrawal processing not implemented (federation logs but does not send L1 funds)
+- Burn verification not implemented (only checks tx exists)
+- Bridge UI does not show L1 currency difference (XEC vs sBTC for signet)
+
 ## Session 13 summary — 2026-08-10
 
 ### Task 1: BIP-300/301 Specification Review
