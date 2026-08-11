@@ -301,6 +301,7 @@ export async function buildSignAndBroadcastWithdrawal(
     }
 
     // Extract raw hex
+    tx.finalize();
     const rawTx = tx.extract();
     const rawHex = hex.encode(rawTx);
 
