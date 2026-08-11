@@ -1,32 +1,33 @@
-# ── Builder: compile TypeScript ─────────────────────────────────
+# ── Builder stage: compile TypeScript ──────────────────────────
 FROM node:22-slim AS builder
+
 WORKDIR /app
 
-# Enable pnpm via corepack (built into Node 22, no global install needed)
 RUN corepack enable pnpm
 
-# Copy package.json first (enables Docker layer caching)
 COPY package.json ./
 
-# pnpm is much faster than npm (parallel downloads, content-addressable store)
-RUN pnpm install --no-frozen-lockfile
+# pnpm 11 blocks build scripts by default; esbuild needs its postinstall
+RUN pnpm install --no-frozen-lockfile --config.onlyBuiltDependencies='["esbuild"]'
 
 COPY tsconfig.json ./
-COPY src/ src/
+COPY src ./src
 
-# Compile TypeScript
-RUN pnpm exec tsc
+RUN pnpm exec tsc --noEmit
 
-# ── Runtime: production only ────────────────────────────────────
-FROM node:22-slim
+# ── Runtime stage: production deps + compiled JS ───────────────
+FROM node:22-slim AS runtime
+
 WORKDIR /app
 
 RUN corepack enable pnpm
 
 COPY package.json ./
-RUN pnpm install --prod --no-frozen-lockfile
 
-# Copy compiled output from builder
-COPY --from=builder /app/dist/ dist/
+RUN pnpm install --prod --no-frozen-lockfile --config.onlyBuiltDependencies='["esbuild"]'
 
-CMD ["node", "dist/index.js"]
+COPY src ./src
+COPY tsconfig.json ./
+
+# Run with tsx (TypeScript executor) since we need runtime compilation
+CMD ["pnpm", "exec", "tsx", "src/index.ts"]
