@@ -8,9 +8,16 @@
  * Uses @scure/btc-signer for transaction construction.
  */
 
-import { Transaction, p2wpkh, p2pkh } from '@scure/btc-signer';
+import { Transaction, p2wpkh, p2pkh, NETWORK, TEST_NETWORK} from '@scure/btc-signer';
 import { hex } from '@scure/base';
 import { HDWallet } from './wallet.js';
+
+// Get @scure/btc-signer network object for address decoding
+// signet/testnet use TEST_NETWORK (bech32 prefix 'tb')
+// mainnet uses NETWORK (bech32 prefix 'bc')
+function getBtcNetwork(network: string): typeof NETWORK {
+  return network === 'signet' || network === 'testnet' ? TEST_NETWORK : NETWORK;
+}
 
 export interface Utxo {
   txid: string;
@@ -272,12 +279,12 @@ export async function buildSignAndBroadcastWithdrawal(
 
     // Add output to user's withdrawal address
     const cleanOutAddr = cleanAddress(withdrawal.ecash_address);
-    tx.addOutputAddress(cleanOutAddr, BigInt(targetSats));
+    tx.addOutputAddress(cleanOutAddr, BigInt(targetSats), getBtcNetwork(network));
 
     // Add change output (if change > dust)
     if (changeSats > 546) {
       const cleanChangeAddr = cleanAddress(changeAddress);
-      tx.addOutputAddress(cleanChangeAddr, BigInt(changeSats));
+      tx.addOutputAddress(cleanChangeAddr, BigInt(changeSats), getBtcNetwork(network));
     }
 
     // Sign each input with the correct derived private key
