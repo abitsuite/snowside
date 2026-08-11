@@ -51,3 +51,4 @@ contracts/lib/  # Foundry libraries are re-installed with forge install
 # === OS ===
 .DS_Store
 Thumbs.db
+packages/federation/.federation-token

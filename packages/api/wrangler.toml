@@ -7,3 +7,9 @@ compatibility_date = "2024-08-10"
 routes = [
   { pattern = "snowside.network/v1*", zone_name = "snowside.network" }
 ]
+
+
+[[d1_databases]]
+binding = "DB"
+database_name = "snowside-bridge"
+database_id = "202053ef-9607-481d-9b73-185734164ea4"

@@ -1,3 +1,4 @@
+---
 interface Props {
   network?: string;
 }
@@ -18,6 +19,20 @@ const { network = 'mainnet' } = Astro.props;
   <div id="fed-status" class="mb-4 rounded-lg bg-surface-2 px-4 py-2 text-xs flex items-center gap-2">
     <span id="fed-dot" class="inline-block w-2 h-2 rounded-full bg-snow-500"></span>
     <span id="fed-text" class="text-snow-400">Checking federation status...</span>
+  </div>
+
+
+  <div id="wallet-section" class="mb-4 flex items-center justify-between gap-3">
+    <button id="connect-wallet" class="rounded-lg bg-aval-600 px-4 py-2 text-sm font-bold text-white hover:bg-aval-700 transition-colors">
+      Connect Wallet
+    </button>
+    <div id="wallet-info" class="hidden flex-1 flex items-center justify-end gap-3">
+      <div class="flex flex-col items-end">
+        <span id="wallet-address" class="font-mono text-xs text-snow-400"></span>
+        <span id="wallet-balance" class="font-mono text-xs text-aval-400"></span>
+      </div>
+      <button id="disconnect-wallet" class="text-xs text-snow-500 hover:text-white">Disconnect</button>
+    </div>
   </div>
 
   <div class="flex border-b border-white/10 mb-6">
@@ -116,6 +131,148 @@ const API_BASE = 'https://snowside.network/v1';
 let currentNetwork = document.getElementById('bridge-config').dataset.network || 'mainnet';
 let depositPollId = null;
 
+// --- Wallet Connection (Rabby / EIP-1193) ---
+let walletAddress = null;
+let walletChainId = null;
+
+const NETWORK_CONFIG = {
+  mainnet: { chainId: '0x8088', chainIdDec: 32904, rpc: 'https://rpc.snowside.network/mainnet', explorer: 'https://explorer.snowside.network' },
+  testnet: { chainId: '0x8188', chainIdDec: 33160, rpc: 'https://rpc.snowside.network/testnet', explorer: 'https://explorer.snowside.network' },
+  signet: { chainId: '0x8248', chainIdDec: 33352, rpc: 'https://rpc.snowside.network/signet', explorer: 'https://explorer.snowside.network' },
+};
+
+async function connectWallet() {
+  if (typeof window.ethereum === 'undefined') {
+    alert('No wallet found. Please install Rabby wallet from rabby.io');
+    return;
+  }
+  try {
+    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+    walletAddress = accounts[0];
+    walletChainId = await window.ethereum.request({ method: 'eth_chainId' });
+    updateWalletUI();
+    autoFillAddresses();
+    await switchNetwork(currentNetwork);
+    await updateBalance();
+    loadHistory(walletAddress);
+  } catch (err) {
+    console.error('Wallet connect error:', err);
+    alert('Failed to connect wallet: ' + err.message);
+  }
+}
+
+function disconnectWallet() {
+  walletAddress = null;
+  walletChainId = null;
+  document.getElementById('connect-wallet').classList.remove('hidden');
+  document.getElementById('wallet-info').classList.add('hidden');
+  document.getElementById('wallet-info').classList.remove('flex');
+  document.getElementById('deposit-dest').value = '';
+  document.getElementById('withdraw-snowside').value = '';
+  document.getElementById('history-address').value = '';
+  document.getElementById('history-list').innerHTML = '';
+}
+
+function updateWalletUI() {
+  const connectBtn = document.getElementById('connect-wallet');
+  const info = document.getElementById('wallet-info');
+  const addrEl = document.getElementById('wallet-address');
+
+  if (walletAddress) {
+    connectBtn.classList.add('hidden');
+    info.classList.remove('hidden');
+    info.classList.add('flex');
+    addrEl.textContent = walletAddress.slice(0, 6) + '...' + walletAddress.slice(-4);
+  } else {
+    connectBtn.classList.remove('hidden');
+    info.classList.add('hidden');
+    info.classList.remove('flex');
+  }
+}
+
+function autoFillAddresses() {
+  if (walletAddress) {
+    document.getElementById('deposit-dest').value = walletAddress;
+    document.getElementById('withdraw-snowside').value = walletAddress;
+    document.getElementById('history-address').value = walletAddress;
+  }
+}
+
+async function switchNetwork(network) {
+  const config = NETWORK_CONFIG[network];
+  if (!config || !window.ethereum) return;
+
+  try {
+    await window.ethereum.request({
+      method: 'wallet_switchEthereumChain',
+      params: [{ chainId: config.chainId }],
+    });
+    walletChainId = config.chainId;
+  } catch (switchError) {
+    if (switchError.code === 4902) {
+      try {
+        await window.ethereum.request({
+          method: 'wallet_addEthereumChain',
+          params: [{
+            chainId: config.chainId,
+            chainName: 'Snowside ' + network,
+            nativeCurrency: { name: 'ECX', symbol: 'ECX', decimals: 18 },
+            rpcUrls: [config.rpc],
+            blockExplorerUrls: [config.explorer],
+          }],
+        });
+        walletChainId = config.chainId;
+      } catch (addError) {
+        console.error('Failed to add network:', addError);
+      }
+    } else {
+      console.error('Failed to switch network:', switchError);
+    }
+  }
+}
+
+async function updateBalance() {
+  if (!walletAddress || !window.ethereum) return;
+  try {
+    const balance = await window.ethereum.request({
+      method: 'eth_getBalance',
+      params: [walletAddress, 'latest'],
+    });
+    const balanceWei = BigInt(balance);
+    const balanceEth = Number(balanceWei) / 1e18;
+    document.getElementById('wallet-balance').textContent = balanceEth.toFixed(4) + ' ECX';
+  } catch (err) {
+    console.error('Balance error:', err);
+    document.getElementById('wallet-balance').textContent = 'Balance: N/A';
+  }
+}
+
+function loadHistory(addr) {
+  document.getElementById('history-address').value = addr;
+  document.getElementById('history-address').dispatchEvent(new Event('input'));
+}
+
+document.getElementById('connect-wallet').addEventListener('click', connectWallet);
+document.getElementById('disconnect-wallet').addEventListener('click', disconnectWallet);
+
+if (typeof window.ethereum !== 'undefined') {
+  window.ethereum.on('accountsChanged', (accounts) => {
+    if (accounts.length === 0) {
+      disconnectWallet();
+    } else {
+      walletAddress = accounts[0];
+      updateWalletUI();
+      autoFillAddresses();
+      updateBalance();
+    }
+  });
+
+  window.ethereum.on('chainChanged', () => {
+    updateBalance();
+  });
+}
+
+
 async function api(path, init) {
   const resp = await fetch(`${API_BASE}${path}`, init);
   return resp.json();
@@ -174,6 +331,9 @@ tabWithdraw.addEventListener('click', () => setActiveTab(tabWithdraw, tabDeposit
 
 document.getElementById('network-select').addEventListener('change', (e) => {
   currentNetwork = e.target.value;
+  if (walletAddress) {
+    switchNetwork(currentNetwork).then(() => updateBalance());
+  }
 });
 
 document.getElementById('generate-deposit').addEventListener('click', async () => {
