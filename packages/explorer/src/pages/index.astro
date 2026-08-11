@@ -1,6 +1,7 @@
 ---
 // packages/explorer/src/pages/index.astro
 import Base from '../layouts/Base.astro';
+import ExplorerDashboard from '../components/ExplorerDashboard.astro';
 
 const network = 'mainnet';
 const rpcUrl = 'https://rpc.snowside.network/mainnet';
@@ -8,92 +9,5 @@ const chainId = 32904;
 const title = 'Snowside Explorer - Mainnet';
 ---
 <Base title={title} network={network}>
-  <div class="flex flex-col items-center justify-center py-12 gap-6">
-    <h1 class="text-3xl font-bold text-white">Snowside Explorer</h1>
-    <p class="text-snow-400 capitalize">{network} L1 Block Explorer</p>
-
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full max-w-4xl mt-4">
-      <div class="rounded-xl border border-white/10 bg-surface-1 p-6 text-center">
-        <p class="text-xs uppercase tracking-widest text-snow-400 mb-2">Latest Block</p>
-        <p id="latest-block" class="text-2xl font-mono text-white">Loading...</p>
-      </div>
-
-      <div class="rounded-xl border border-white/10 bg-surface-1 p-6 text-center">
-        <p class="text-xs uppercase tracking-widest text-snow-400 mb-2">Gas Price</p>
-        <p id="gas-price" class="text-2xl font-mono text-white">Loading...</p>
-      </div>
-
-      <div class="rounded-xl border border-white/10 bg-surface-1 p-6 text-center">
-        <p class="text-xs uppercase tracking-widest text-snow-400 mb-2">Chain ID</p>
-        <p class="text-2xl font-mono text-white">{chainId}</p>
-      </div>
-
-      <div class="rounded-xl border border-white/10 bg-surface-1 p-6 text-center">
-        <p class="text-xs uppercase tracking-widest text-snow-400 mb-2">RPC URL</p>
-        <p class="text-base font-mono text-white break-all">rpc.snowside.network</p>
-      </div>
-    </div>
-
-    <a href="https://docs.snowside.network" class="text-sm text-snow-400 hover:text-white transition-colors mt-4" target="_blank" rel="noopener noreferrer">
-      Read the Docs →
-    </a>
-  </div>
+  <ExplorerDashboard network={network} rpcUrl={rpcUrl} chainId={chainId} />
 </Base>
-
-<script define:vars={{ rpcUrl }}>
-  async function loadNetworkData() {
-    const blockEl = document.getElementById('latest-block');
-    const gasEl = document.getElementById('gas-price');
-
-    try {
-      const [blockRes, gasRes] = await Promise.all([
-        fetch(rpcUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_blockNumber', params: [] })
-        }),
-        fetch(rpcUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ jsonrpc: '2.0', id: 2, method: 'eth_gasPrice', params: [] })
-        })
-      ]);
-
-      const blockData = await blockRes.json();
-      const gasData = await gasRes.json();
-
-      if (blockData.result) {
-        const blockNum = parseInt(blockData.result, 16);
-        blockEl.textContent = '#' + blockNum;
-        blockEl.classList.remove('text-white');
-        blockEl.classList.add('text-snow-400');
-      } else {
-        blockEl.textContent = 'RPC Unavailable';
-        blockEl.classList.remove('text-white');
-        blockEl.classList.add('text-rose-500');
-      }
-
-      if (gasData.result) {
-        const gasGwei = parseInt(gasData.result, 16) / 1e9;
-        gasEl.textContent = gasGwei.toFixed(2) + ' Gwei';
-        gasEl.classList.remove('text-white');
-        gasEl.classList.add('text-snow-400');
-      } else {
-        gasEl.textContent = 'N/A';
-        gasEl.classList.remove('text-white');
-        gasEl.classList.add('text-rose-500');
-      }
-    } catch (err) {
-      console.error('RPC Error:', err);
-      blockEl.textContent = 'RPC Unavailable';
-      blockEl.classList.remove('text-white');
-      blockEl.classList.add('text-rose-500');
-      gasEl.textContent = 'N/A';
-      gasEl.classList.remove('text-white');
-      gasEl.classList.add('text-rose-500');
-    }
-  }
-
-  loadNetworkData();
-  setInterval(loadNetworkData, 15000);
-</script>

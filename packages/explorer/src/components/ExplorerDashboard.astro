@@ -1,0 +1,326 @@
+---
+// packages/explorer/src/components/ExplorerDashboard.astro
+const { network, rpcUrl, chainId } = Astro.props;
+const networkLabel = network.charAt(0).toUpperCase() + network.slice(1);
+const chainIdHex = '0x' + chainId.toString(16);
+---
+<div class="max-w-6xl mx-auto px-4 py-6">
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-white">Snowside Explorer</h1>
+      <p class="text-sm text-snow-400 capitalize">{network} L1 Block Explorer</p>
+    </div>
+    <div class="flex items-center gap-2">
+      <span id="status-dot" class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+      <span id="status-text" class="text-xs text-slate-500">Connecting...</span>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+    <div class="rounded-xl border border-white/10 bg-surface-1 p-4">
+      <div class="flex items-center gap-2 mb-2">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-snow-400"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+        <p class="text-xs uppercase tracking-widest text-snow-400">Latest Block</p>
+      </div>
+      <p id="stat-latest-block" class="text-2xl font-mono text-white">—</p>
+      <p id="stat-latest-block-age" class="text-xs text-slate-500 mt-1"></p>
+    </div>
+
+    <div class="rounded-xl border border-white/10 bg-surface-1 p-4">
+      <div class="flex items-center gap-2 mb-2">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-snow-400"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+        <p class="text-xs uppercase tracking-widest text-snow-400">Gas Price</p>
+      </div>
+      <p id="stat-gas-price" class="text-2xl font-mono text-white">—</p>
+      <p class="text-xs text-slate-500 mt-1">per gas unit</p>
+    </div>
+
+    <div class="rounded-xl border border-white/10 bg-surface-1 p-4">
+      <div class="flex items-center gap-2 mb-2">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-snow-400"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        <p class="text-xs uppercase tracking-widest text-snow-400">Chain ID</p>
+      </div>
+      <p class="text-2xl font-mono text-white">{chainId}</p>
+      <p class="text-xs text-slate-500 mt-1">{chainIdHex}</p>
+    </div>
+
+    <div class="rounded-xl border border-white/10 bg-surface-1 p-4">
+      <div class="flex items-center gap-2 mb-2">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-snow-400"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        <p class="text-xs uppercase tracking-widest text-snow-400">Network</p>
+      </div>
+      <p class="text-2xl font-mono text-white capitalize">{network}</p>
+      <p class="text-xs text-slate-500 mt-1 truncate">rpc.snowside.network/{network}</p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+    <div class="rounded-xl border border-white/10 bg-surface-1 p-4">
+      <div class="flex items-center gap-2 mb-2">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-snow-400"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <p class="text-xs uppercase tracking-widest text-snow-400">Avg Block Time</p>
+      </div>
+      <p id="stat-block-time" class="text-2xl font-mono text-white">—</p>
+      <p class="text-xs text-slate-500 mt-1">last 6 blocks</p>
+    </div>
+
+    <div class="rounded-xl border border-white/10 bg-surface-1 p-4">
+      <div class="flex items-center gap-2 mb-2">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-snow-400"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+        <p class="text-xs uppercase tracking-widest text-snow-400">Recent Txns</p>
+      </div>
+      <p id="stat-recent-txns" class="text-2xl font-mono text-white">—</p>
+      <p class="text-xs text-slate-500 mt-1">last 6 blocks</p>
+    </div>
+
+    <div class="rounded-xl border border-white/10 bg-surface-1 p-4">
+      <div class="flex items-center gap-2 mb-2">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-snow-400"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <p class="text-xs uppercase tracking-widest text-snow-400">Validators</p>
+      </div>
+      <p id="stat-validators" class="text-2xl font-mono text-white">1 (PoA)</p>
+      <p class="text-xs text-slate-500 mt-1">Proof of Authority</p>
+    </div>
+
+    <div class="rounded-xl border border-white/10 bg-surface-1 p-4">
+      <div class="flex items-center gap-2 mb-2">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-snow-400"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><line x1="12" y1="7" x2="12" y2="11"/><line x1="12" y1="11" x2="6" y2="17"/><line x1="12" y1="11" x2="18" y2="17"/></svg>
+        <p class="text-xs uppercase tracking-widest text-snow-400">Network Peers</p>
+      </div>
+      <p id="stat-peers" class="text-2xl font-mono text-white">—</p>
+      <p class="text-xs text-slate-500 mt-1">connected nodes</p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+    <div class="rounded-xl border border-white/10 bg-surface-1 overflow-hidden">
+      <div class="flex items-center justify-between px-4 py-3 border-b border-white/10">
+        <h2 class="text-sm font-semibold text-white">Latest Blocks</h2>
+        <div class="flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span class="text-xs text-slate-500">Live</span>
+        </div>
+      </div>
+      <div class="px-4 py-2 border-b border-white/5 flex items-center text-xs uppercase tracking-widest text-slate-600">
+        <div class="w-16">Block</div>
+        <div class="flex-1">Age</div>
+        <div class="hidden md:block w-28">Validator</div>
+        <div class="w-14 text-right">Txns</div>
+        <div class="hidden lg:block w-28 text-right">Gas Used</div>
+      </div>
+      <div id="blocks-table" class="divide-y divide-white/5">
+        <div class="px-4 py-8 text-center text-slate-500 text-sm">Loading blocks...</div>
+      </div>
+    </div>
+
+    <div class="rounded-xl border border-white/10 bg-surface-1 overflow-hidden">
+      <div class="flex items-center justify-between px-4 py-3 border-b border-white/10">
+        <h2 class="text-sm font-semibold text-white">Latest Transactions</h2>
+        <div class="flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span class="text-xs text-slate-500">Live</span>
+        </div>
+      </div>
+      <div class="px-4 py-2 border-b border-white/5 flex items-center text-xs uppercase tracking-widest text-slate-600">
+        <div class="w-24">Tx Hash</div>
+        <div class="hidden md:block w-12">Block</div>
+        <div class="hidden md:block w-24">From</div>
+        <div class="hidden md:block w-24">To</div>
+        <div class="flex-1 text-right">Value</div>
+      </div>
+      <div id="txs-table" class="divide-y divide-white/5">
+        <div class="px-4 py-8 text-center text-slate-500 text-sm">Loading transactions...</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div class="rounded-xl border border-white/10 bg-surface-1 p-6 min-h-[140px] flex flex-col items-center justify-center">
+      <div class="flex items-center gap-2 mb-2">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-slate-600"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        <p class="text-sm font-semibold text-slate-400">Transaction History</p>
+      </div>
+      <p class="text-xs text-slate-600">14-day chart — Coming Soon</p>
+    </div>
+    <div class="rounded-xl border border-white/10 bg-surface-1 p-6 min-h-[140px] flex flex-col items-center justify-center">
+      <div class="flex items-center gap-2 mb-2">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-slate-600"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <p class="text-sm font-semibold text-slate-400">Top Accounts</p>
+      </div>
+      <p class="text-xs text-slate-600">By ECX balance — Coming Soon</p>
+    </div>
+  </div>
+</div>
+
+<script define:vars={{ rpcUrl, chainId, network }}>
+  async function rpc(method, params = []) {
+    const res = await fetch(rpcUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    return data.result;
+  }
+
+  function formatHash(hash, start = 6, end = 4) {
+    if (!hash) return '—';
+    if (hash.length <= start + end + 2) return hash;
+    return hash.slice(0, start + 2) + '...' + hash.slice(-end);
+  }
+
+  function formatTimeAgo(timestampHex) {
+    const ts = parseInt(timestampHex, 16);
+    const now = Math.floor(Date.now() / 1000);
+    const diff = now - ts;
+    if (diff < 0) return 'just now';
+    if (diff < 60) return diff + ' secs ago';
+    if (diff < 3600) return Math.floor(diff / 60) + ' mins ago';
+    if (diff < 86400) return Math.floor(diff / 3600) + ' hrs ago';
+    return Math.floor(diff / 86400) + ' days ago';
+  }
+
+  function formatValue(valueHex) {
+    if (!valueHex || valueHex === '0x0') return '0';
+    const wei = BigInt(valueHex);
+    const ecx = Number(wei) / 1e18;
+    if (ecx === 0) return '0';
+    if (ecx < 0.000001) return '<0.000001';
+    return ecx.toFixed(6);
+  }
+
+  function formatGasUsed(gasUsedHex, gasLimitHex) {
+    const used = parseInt(gasUsedHex, 16);
+    const limit = parseInt(gasLimitHex, 16);
+    const pct = limit > 0 ? ((used / limit) * 100).toFixed(2) : '0';
+    return used.toLocaleString() + ' (' + pct + '%)';
+  }
+
+  function setStatus(connected) {
+    const dot = document.getElementById('status-dot');
+    const text = document.getElementById('status-text');
+    if (connected) {
+      dot.className = 'w-2 h-2 rounded-full bg-emerald-500 animate-pulse';
+      text.textContent = 'Connected';
+      text.className = 'text-xs text-emerald-500';
+    } else {
+      dot.className = 'w-2 h-2 rounded-full bg-rose-500';
+      text.textContent = 'Disconnected';
+      text.className = 'text-xs text-rose-500';
+    }
+  }
+
+  function renderBlocksTable(blocks) {
+    const container = document.getElementById('blocks-table');
+    if (!blocks || blocks.length === 0) {
+      container.innerHTML = '<div class="px-4 py-8 text-center text-slate-500 text-sm">No blocks available</div>';
+      return;
+    }
+    container.innerHTML = blocks.map(block => {
+      const blockNum = parseInt(block.number, 16);
+      const txCount = block.transactions ? block.transactions.length : 0;
+      const validator = block.miner && block.miner !== '0x0000000000000000000000000000000000000000'
+        ? formatHash(block.miner) : 'PoA Validator';
+      const gasUsed = formatGasUsed(block.gasUsed, block.gasLimit);
+      const age = formatTimeAgo(block.timestamp);
+      return '<div class="px-4 py-3 hover:bg-surface-2 transition-colors flex items-center text-sm">'
+        + '<div class="w-16"><span class="text-snow-400 font-mono">#' + blockNum + '</span></div>'
+        + '<div class="flex-1 text-slate-400">' + age + '</div>'
+        + '<div class="hidden md:block w-28 font-mono text-slate-400 text-xs truncate">' + validator + '</div>'
+        + '<div class="w-14 text-right text-slate-400">' + txCount + '</div>'
+        + '<div class="hidden lg:block w-28 text-right text-slate-400 text-xs">' + gasUsed + '</div>'
+        + '</div>';
+    }).join('');
+  }
+
+  function renderTxsTable(txs) {
+    const container = document.getElementById('txs-table');
+    if (!txs || txs.length === 0) {
+      container.innerHTML = '<div class="px-4 py-8 text-center text-slate-500 text-sm">No transactions in recent blocks</div>';
+      return;
+    }
+    container.innerHTML = txs.map(tx => {
+      const txHash = formatHash(tx.hash);
+      const from = formatHash(tx.from);
+      const to = tx.to ? formatHash(tx.to) : 'Contract Creation';
+      const value = formatValue(tx.value);
+      return '<div class="px-4 py-3 hover:bg-surface-2 transition-colors flex items-center text-sm">'
+        + '<div class="w-24 font-mono text-snow-400 text-xs truncate">' + txHash + '</div>'
+        + '<div class="hidden md:block w-12 text-slate-400">#' + tx.blockNum + '</div>'
+        + '<div class="hidden md:block w-24 font-mono text-slate-400 text-xs truncate">' + from + '</div>'
+        + '<div class="hidden md:block w-24 font-mono text-slate-400 text-xs truncate">' + to + '</div>'
+        + '<div class="flex-1 text-right text-slate-300 font-mono text-xs">' + value + ' ECX</div>'
+        + '</div>';
+    }).join('');
+  }
+
+  function showErrorState() {
+    setStatus(false);
+    document.getElementById('stat-latest-block').textContent = 'N/A';
+    document.getElementById('stat-latest-block-age').textContent = '';
+    document.getElementById('stat-gas-price').textContent = 'N/A';
+    document.getElementById('stat-block-time').textContent = 'N/A';
+    document.getElementById('stat-recent-txns').textContent = 'N/A';
+    document.getElementById('stat-peers').textContent = 'N/A';
+    document.getElementById('blocks-table').innerHTML = '<div class="px-4 py-8 text-center text-rose-500 text-sm">RPC Unavailable</div>';
+    document.getElementById('txs-table').innerHTML = '<div class="px-4 py-8 text-center text-rose-500 text-sm">RPC Unavailable</div>';
+  }
+
+  async function loadDashboard() {
+    try {
+      const [blockNumberHex, gasPriceHex, peerCountHex] = await Promise.all([
+        rpc('eth_blockNumber'),
+        rpc('eth_gasPrice'),
+        rpc('net_peerCount').catch(() => null)
+      ]);
+
+      const latestBlock = parseInt(blockNumberHex, 16);
+      const gasPrice = parseInt(gasPriceHex, 16) / 1e9;
+      const peerCount = peerCountHex ? parseInt(peerCountHex, 16) : null;
+
+      const blockPromises = [];
+      for (let i = 0; i < 6 && latestBlock - i >= 0; i++) {
+        const blockHex = '0x' + (latestBlock - i).toString(16);
+        blockPromises.push(rpc('eth_getBlockByNumber', [blockHex, true]));
+      }
+      const blocks = (await Promise.all(blockPromises)).filter(b => b !== null);
+
+      let avgBlockTime = 0;
+      if (blocks.length > 1) {
+        const times = [];
+        for (let i = 0; i < blocks.length - 1; i++) {
+          const diff = parseInt(blocks[i].timestamp, 16) - parseInt(blocks[i + 1].timestamp, 16);
+          if (diff > 0) times.push(diff);
+        }
+        if (times.length > 0) {
+          avgBlockTime = Math.round(times.reduce((a, b) => a + b, 0) / times.length);
+        }
+      }
+
+      const txs = [];
+      for (const block of blocks) {
+        for (const tx of (block.transactions || [])) {
+          txs.push(Object.assign(tx, { blockNum: parseInt(block.number, 16), timestamp: block.timestamp }));
+        }
+      }
+
+      setStatus(true);
+      document.getElementById('stat-latest-block').textContent = '#' + latestBlock;
+      document.getElementById('stat-latest-block-age').textContent = blocks[0] ? formatTimeAgo(blocks[0].timestamp) : '';
+      document.getElementById('stat-gas-price').textContent = gasPrice.toFixed(2) + ' Gwei';
+      document.getElementById('stat-block-time').textContent = avgBlockTime + 's';
+      document.getElementById('stat-recent-txns').textContent = txs.length;
+      document.getElementById('stat-peers').textContent = peerCount !== null ? peerCount : 'N/A';
+
+      renderBlocksTable(blocks);
+      renderTxsTable(txs.slice(0, 6));
+    } catch (err) {
+      console.error('Dashboard Error:', err);
+      showErrorState();
+    }
+  }
+
+  loadDashboard();
+  setInterval(loadDashboard, 15000);
+</script>
