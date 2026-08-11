@@ -5,12 +5,13 @@
 - `packages/pitch` – Astro static site (pitch.snowside.network), separate Cloudflare Pages project. **noindex, nofollow** — no links from web to pitch.
 - `packages/docs` – Astro Starlight technical documentation (docs.snowside.network)
 - `packages/explorer` – EVM block explorer (Astro static site + Cloudflare Pages Functions). Contains Header (network switcher, search), Footer, Etherscan-style stats cards. Subdomains: `explorer.snowside.network` (mainnet), `explorer-testnet.snowside.network`, `explorer-signet.snowside.network`.
-- `packages/bridge` – (PLANNED FOR NEXT SESSION) Astro static site for BIP-300/301 deposits and withdrawals. Subdomain: `bridge.snowside.network`.
+- `packages/bridge` – Astro static site for BIP-300/301 deposits and withdrawals. Subdomain: `bridge.snowside.network`.
+- `packages/api` – Cloudflare Worker (Hono + Chanfana) serving OpenAPI at `/v1` and proxying to Drynet 4 Esplora.
 - `go/subnet-evm` – Subnet-EVM fork with BMM coordination precompile (Go)
 - `rust/bmm-bidder` – BMM bidder and settlement monitor (Rust)
 - `contracts/` – Solidity smart contracts (Foundry)
 
-## Repository Structure (Updated August 2026)
+## Repository Structure
 
 The Snowside monorepo uses language-specific top-level directories:
 
@@ -19,6 +20,8 @@ packages/     — JavaScript/TypeScript (pnpm workspace)
   pitch/ Grant pitch page (Astro)
   docs/ Documentation site (Astro + Starlight)
   explorer/ EVM block explorer (Astro static + CF Pages Functions)
+  bridge/ Bridge UI (Astro + Tailwind v4)
+  api/ Cloudflare Worker (Hono + Chanfana OpenAPI)
 
 go/ — Go packages
   subnet-evm/   Subnet-EVM fork with BMM coordination precompile
@@ -43,12 +46,14 @@ Never leave uncommitted work sitting locally at the end of a session.
 ## CRITICAL: TERMINAL HEREDOC DISCIPLINE
 **NEVER** make the user ask for CLI commands. **ALWAYS** output commands in a single terminal-ready code block.
 **CRITICAL:** If markdown content inside a heredoc contains triple backticks, they will conflict with the outer code block. Use 4-space indented code blocks instead of fenced code blocks inside heredoc content.
+**CRITICAL:** Multi-line paste blocks frequently garble in terminals. Use single-line commands or heredocs with `'EOF'` delimiters. Always verify with `wc -l` and `tail -n 15` after heredoc writes.
 
 ## Build & deploy
 - Web build:     cd packages/web && pnpm build   # Astro static, output dist/
 - Pitch build:   cd packages/pitch && pnpm build # Astro static, output dist/
 - Docs build:    cd packages/docs && pnpm build  # Astro Starlight, output dist/
 - Explorer build: cd packages/explorer && pnpm build # Astro static, output dist/
+- Bridge build:  cd packages/bridge && pnpm build # Astro static, output dist/
 - Root build:    pnpm run build                  # runs web then pitch
 - Dev web:       pnpm run dev:web
 - Dev pitch:     pnpm run dev:pitch
@@ -61,6 +66,28 @@ Never leave uncommitted work sitting locally at the end of a session.
 - **Nginx Config:** /etc/nginx/sites-available/default on VPS
 - **Cloudflare DNS:** rpc.snowside.network -> VPS IP
 - **Deployment Tool:** Avalanche-CLI (requires letters only for blockchain names, no hyphens/underscores)
+- **Avalanche-CLI Version:** Supports flags: --evm, --evm-chain-id, --evm-token, --proof-of-authority, --validator-manager-owner, --icm, --warp, --latest, --genesis, --force, --test-defaults, --production-defaults
+
+### Non-Interactive L1 Deployment with Precompiles
+
+To deploy an L1 non-interactively with custom precompiles (NativeMinter, ContractDeployerAllowList), use the **genesis cloning approach**:
+
+1. Export the genesis from an existing, working L1 (e.g., testnet):
+   cp ~/.avalanche-cli/subnets/SnowsideTestnet/genesis.json /tmp/base-genesis.json
+
+2. Patch the genesis with Python (change chainId, add precompile configs):
+   python3 -c 'import json; g=json.load(open("/tmp/base-genesis.json")); g["config"]["chainId"]=33352; g["config"]["contractNativeMinterConfig"]={"blockTimestamp":0,"adminAddresses":["0x8db97C7cEcE249c2b98bDC0226Cc4C2A57BF52FC"]}; g["config"]["contractDeployerAllowListConfig"]={"blockTimestamp":0,"adminAddresses":["0x8db97C7cEcE249c2b98bDC0226Cc4C2A57BF52FC"]}; json.dump(g,open("/tmp/new-genesis.json","w"),indent=4); print("done")'
+
+3. Create the blockchain non-interactively:
+   avalanche blockchain create SnowsideSignet --evm --evm-token ECX --proof-of-authority --validator-manager-owner 0x8db97C7cEcE249c2b98bDC0226Cc4C2A57BF52FC --icm --warp --latest --genesis /tmp/new-genesis.json --force
+
+4. Deploy locally:
+   avalanche blockchain deploy SnowsideSignet --local
+
+**CRITICAL:** The --genesis flag conflicts with --evm-chain-id. The chain ID must be baked into the genesis JSON, not passed as a CLI flag.
+**CRITICAL:** The --genesis flag also conflicts with --evm-defaults, --production-defaults, --test-defaults.
+**NOTE:** ICM Messenger/Registry contracts may fail to deploy during `blockchain deploy` when using a cloned genesis. The L1, PoA, and precompiles will still work. Deploy ICM separately with `avalanche icm deploy`.
+**NOTE:** Genesis files are stored at ~/.avalanche-cli/subnets/<BlockchainName>/genesis.json (NOT chain.json, which is only the chain config metadata).
 
 ### Deployed L1s (Local Network on VPS)
 1. **SnowsideMainnet** (Chain ID: 32904 / 0x8088)
@@ -68,16 +95,23 @@ Never leave uncommitted work sitting locally at the end of a session.
    - Subnet ID: 2951oZXRAym6ThvANrFSCWbiSgh3mrgD5gJkACZbpnoic6Zczf
    - Local RPC: http://127.0.0.1:9654/ext/bc/2sDVEVpwW8aNwgY1RMGzmFVXdJ1vyE1qWg3YBK8pGX8iy9iLtJ/rpc
    - Public RPC: https://rpc.snowside.network/mainnet
+   - Precompiles: Warp only
+
 2. **SnowsideTestnet** (Chain ID: 33160 / 0x8188)
    - Blockchain ID: 2PS8J5q5f4PXnwEsxLafFnPuFowprdaZ8EWuZpTF3hyi6SqLhe
    - Subnet ID: wNWS35thzJy9fGaxtVfPwFKEt2RU2r9fMGA7c5A9XqqSvBCVj
    - Local RPC: http://127.0.0.1:9656/ext/bc/2PS8J5q5f4PXnwEsxLafFnPuFowprdaZ8EWuZpTF3hyi6SqLhe/rpc
    - Public RPC: https://rpc.snowside.network/testnet
-3. **SnowsideSignet** (Chain ID: 33352 / 0x8288)
-   - Blockchain ID: 2pwzxirqRyWrgegTjMyLH2s5RhSb8xNkSYt5y4KhLXyAzZ7PMc
-   - Subnet ID: yeEMHr6rnkSvbgoZSc1BxaiMEnVFev4jkMDEmCZvpbZoeeosp
-   - Local RPC: http://127.0.0.1:9658/ext/bc/2pwzxirqRyWrgegTjMyLH2s5RhSb8xNkSYt5y4KhLXyAzZ7PMc/rpc
+   - Precompiles: Warp only
+
+3. **SnowsideSignet** (Chain ID: 33352 / 0x8288) — **REDEPLOYED Session 11**
+   - Blockchain ID: 26XsRMLXezgJ1mK8TSVoHsRfBcy6Mwr4kJdKUAfgegb3PH4b5f
+   - Subnet ID: 2W9boARgCWL25z6pMFNtkCfNA5v28VGg9PmBgUJfuKndEdhrvw
+   - Local RPC: http://127.0.0.1:9654/ext/bc/26XsRMLXezgJ1mK8TSVoHsRfBcy6Mwr4kJdKUAfgegb3PH4b5f/rpc
    - Public RPC: https://rpc.snowside.network/signet
+   - Precompiles: Warp, NativeMinter (admin: ewoq), ContractDeployerAllowList (admin: ewoq)
+   - ICM Status: NOT deployed (deploy failed during L1 creation due to cloned genesis; deploy separately with `avalanche icm deploy`)
+   - Genesis: Cloned from SnowsideTestnet, patched with chainId 33352 + two precompile configs
 
 ### L1 Shared Configuration
 - Token Name: ECX Token
@@ -96,22 +130,22 @@ Never leave uncommitted work sitting locally at the end of a session.
         listen [::]:80;
         listen 443 ssl http2;
         listen [::]:443 ssl http2;
-    
+
         server_name rpc.snowside.network;
-    
+
         ssl_certificate      /etc/nginx/ssl/server.crt;
         ssl_certificate_key /etc/nginx/ssl/server.key;
-    
+
         access_log /dev/null;
         error_log /root/error_log;
-    
+
         root /var/www/html;
         index index.html index.htm;
-    
+
         location / {
             try_files $uri $uri/ /index.html;
         }
-    
+
         # Snowside Mainnet (ChainID: 32904)
         location /mainnet {
             proxy_pass http://127.0.0.1:9654/ext/bc/2sDVEVpwW8aNwgY1RMGzmFVXdJ1vyE1qWg3YBK8pGX8iy9iLtJ/rpc;
@@ -120,7 +154,7 @@ Never leave uncommitted work sitting locally at the end of a session.
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_set_header X-Forwarded-Proto $scheme;
         }
-    
+
         # Snowside Testnet (ChainID: 33160)
         location /testnet {
             proxy_pass http://127.0.0.1:9656/ext/bc/2PS8J5q5f4PXnwEsxLafFnPuFowprdaZ8EWuZpTF3hyi6SqLhe/rpc;
@@ -129,10 +163,10 @@ Never leave uncommitted work sitting locally at the end of a session.
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_set_header X-Forwarded-Proto $scheme;
         }
-    
-        # Snowside Signet (ChainID: 33352)
+
+        # Snowside Signet (ChainID: 33352) — Updated Session 11
         location /signet {
-            proxy_pass http://127.0.0.1:9658/ext/bc/2pwzxirqRyWrgegTjMyLH2s5RhSb8xNkSYt5y4KhLXyAzZ7PMc/rpc;
+            proxy_pass http://127.0.0.1:9654/ext/bc/26XsRMLXezgJ1mK8TSVoHsRfBcy6Mwr4kJdKUAfgegb3PH4b5f/rpc;
             proxy_set_header Host 127.0.0.1;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -200,55 +234,40 @@ Never leave uncommitted work sitting locally at the end of a session.
 - **Current version: v0.3** (meta.ts `WHITEPAPER_VERSION = '0.3'`)
 - PDF generated at build time via `packages/web/src/pages/whitepaper.pdf.ts` (Astro static endpoint using jsPDF).
 - Content lives in `packages/web/src/data/whitepaper/content.ts` (15 sections, auto-numbered at render time).
-- Figures are vector `Figure` objects in `packages/web/src/data/whitepaper/figures/` — **9 figures** (modeled on RISCy pattern):
-  - `architecture-diagram.ts` — System architecture (Section 3)
-  - `bmm-flow.ts` — BMM flow: eCash miners ↔ Settlement Proposers (Section 4)
-  - `gas-flow.ts` — BTC gas flow: Users → Producers → Miners (Section 5)
-  - `fee-model.ts` — Three-part fee model with vesting schedule (Section 5) **v0.2**
-  - `role-separation.ts` — Validators vs Settlement Proposers (Section 4) **v0.2**
-  - `icm-bridge.ts` — ICM USDC bridge (Section 6)
-  - `consensus-layers.ts` — Three-tier confirmation model (Section 8)
-  - `validator-economics.ts` — Validator cost/revenue balance (Section 9)
-  - `permissionless-roadmap.ts` — Three-phase validation roadmap (Section 12) **v0.2**
+- Figures are vector `Figure` objects in `packages/web/src/data/whitepaper/figures/` — **9 figures**.
 - Fonts (`NotoSans-Regular/Bold/Italic.ttf`) in `packages/web/src/fonts/`.
 - Viewer page at `/whitepaper` embeds the PDF via `<iframe src="/whitepaper.pdf">`.
 - PDF.js is at `packages/web/public/pdfjs/` for any custom viewer needs.
 - **Consensus terminology (v0.3):** Use "Snowman consensus" when referring to the linear-chain variant. "Snowball" is the broader protocol family.
 - **eCash Terminology (v0.3):** Use "eCash" (not Bitcoin) when referring to miners, hashrate, L1 security source. Snowside is secured by eCash's SHA-256d PoW.
-- **Settlement Model (v0.3):** Classified as "rollup-style settlement". Includes new architecture subsections for Merkle Root Aggregation, Settlement Failure / Mutable Aggregates, Fee Escrow Mechanism, BMM Coordination Precompile, Fast Withdrawal Service, BIP300 Operation Support, Sidechain Independence.
-- **Roadmap (v0.3):** Reduced to a two-phase model (Phase 1: Permissioned, Phase 2: Permissionless with AVAX + BTC). Phase 3 / AVAX phase-out removed as speculative.
+- **Settlement Model (v0.3):** Classified as "rollup-style settlement".
+- **Roadmap (v0.3):** Two-phase model (Phase 1: Permissioned, Phase 2: Permissionless with AVAX + BTC).
 
 ## Favicon
 - All four packages (`web`, `pitch`, `docs`, `explorer`) use the same SVG favicon at `public/favicon.svg`.
 - Design: two snowmen side-by-side forming a literal "88" silhouette (Drivechain ID #88).
 - Dark rounded-square backdrop (#0a0f1a, rx=14) — required so white snowmen are visible in light browser themes.
-- If updating the favicon, update all four files and keep the SVG bodies identical (only the path-comment line 1 differs).
+- If updating the favicon, update all four files and keep the SVG bodies identical.
 
 ## OG image
-- `packages/web/public/og-image-v2.png` — 1200×630px. `packages/web` and `packages/pitch` `Base.astro` files reference `image = '/og-image-v2.png'`.
-- `packages/explorer` uses a copy at `packages/explorer/public/og-image.png` (copied during scaffolding).
-- Generated externally via a generative AI agent. The prompt lives in commit history and session handoffs.
-- **Cache-busting:** When replacing the OG image, use a versioned filename (e.g., `og-image-v3.png`) to force social platforms to re-scrape. Update `Base.astro`'s `image` default to match.
+- `packages/web/public/og-image-v2.png` — 1200x630px.
+- `packages/explorer` uses a copy at `packages/explorer/public/og-image.png`.
+- **Cache-busting:** When replacing the OG image, use a versioned filename (e.g., `og-image-v3.png`).
 
 ## retro9000 grant link
 - The Avalanche Foundation retro9000 grant announcement tweet: `https://x.com/AvalancheFDN/status/1932484367324229635?s=20`
-- Linked in:
-  - `packages/web/src/components/Team.astro` — SVG logo badge (red triangle "A" + white "retro9000" text on dark badge) + "grant from the Avalanche Foundation" text
-  - `packages/docs/src/content/docs/reference/glossary.md` — NodeRunr entry markdown link
-  - `packages/pitch/src/pages/index.astro` — Team section badges and links
 
 ## Pitch page isolation
-- `packages/pitch/src/layouts/Base.astro` has `<meta name="robots" content="noindex, nofollow">` to prevent search engine and AI indexing.
-- **Zero links to `pitch.snowside.network` from the web package.** The pitch page is only reachable via a direct URL.
-- Simple Analytics still tracks visits to the pitch domain.
+- `packages/pitch/src/layouts/Base.astro` has `<meta name="robots" content="noindex, nofollow">`.
+- **Zero links to `pitch.snowside.network` from the web package.**
 
 ## Landing page contrast pattern (packages/web)
-The landing page alternates dark and light sections for visual rhythm. The established pattern:
+The landing page alternates dark and light sections for visual rhythm.
 
 | Section | Background | Text | Cards |
 |---------|-----------|------|-------|
 | Nav | surface-0/90 (blur) | white/slate-300 | — |
-| Hero | surface-0→1 gradient | white/snow-400 | — |
+| Hero | surface-0->1 gradient | white/snow-400 | — |
 | About | surface-1 (dark) | slate-300/snow-400 | — |
 | WhyAvalanche | snow-50 (light) | slate-900 | surface-1 (dark cards) |
 | ValueProposition | surface-0 (dark) | white/slate-300 | surface-2 badges |
@@ -258,12 +277,6 @@ The landing page alternates dark and light sections for visual rhythm. The estab
 | Roadmap | surface-0 (dark) | white/slate-200/snow-400 | — |
 | CTA | snow-50 (light) | slate-900 | surface-1 buttons |
 | Footer | surface-0 (dark) | slate-400/slate-500 | — |
-
-- Use theme tokens (`surface-0/1/2/3`, `snow-50/100/.../700`, `aval-600/700`, `btc`, `usdc`) from `global.css` — NOT raw Tailwind `gray-*` colors.
-- Dark sections: `bg-surface-0` or `bg-surface-1`, text `text-slate-200/300`, headings `text-white`, accents `text-snow-400`.
-- Light sections: `bg-snow-50`, text `text-slate-700`, headings `text-slate-900`, accents `text-aval-600`.
-- `global.css` body has `background-color: var(--color-surface-0)` to prevent white flash before content renders.
-- The `index.astro` wrapper is `bg-surface-0 text-slate-200` (dark base); each section overrides its own background.
 
 ## Footer structure (packages/web)
 - **Sections:** About (`/#about`), Technology (`/#tech`), Value Proposition (`/#value`), Roadmap (`/#roadmap`)
@@ -291,6 +304,7 @@ The landing page alternates dark and light sections for visual rhythm. The estab
 | pitch | cd packages/pitch && pnpm build |
 | docs | cd packages/docs && pnpm build |
 | explorer | cd packages/explorer && pnpm build |
+| bridge | cd packages/bridge && pnpm build |
 | subnet-evm | cd go/subnet-evm && ./scripts/build.sh |
 | bmm-bidder | cd rust/bmm-bidder && cargo build |
 | contracts | cd contracts && forge build |
@@ -300,12 +314,13 @@ The landing page alternates dark and light sections for visual rhythm. The estab
 - **Deployment:** `wrangler deploy` -> `snowside.network/v1*`.
 - **OpenAPI UI:** Served directly at `/v1` (Swagger UI). Spec at `/v1/openapi.json`.
 - **Backend Proxy:** Catch-all proxy forwards requests to Drynet 4 Esplora (`https://esplora.drynet4.drivechain.dev`).
-- **Versions:** `hono@4.5.0`, `chanfana@2.1.0`, `zod@3.23.8`, `wrangler@4.120.0`, `@cloudflare/workers-types@5.20260810.1`.
 
 ## Bridge Package (packages/bridge)
 - **Stack:** Astro static site + Tailwind v4 (`@tailwindcss/postcss`).
-- **Features:** Network selector dropdown (Mainnet/Testnet/Signet), HTML5 QR code scanner (`html5-qrcode`), QR code display for deposits (dummy address currently).
+- **Features:** Network selector dropdown (Mainnet/Testnet/Signet), HTML5 QR code scanner (`html5-qrcode`), QR code display for deposits.
 - **Subdomains:** No subdomains used for networks; network selection is handled in-session.
 
 ## Terminal heredocs
 - ALWAYS run `wc -l <file>` and `tail -n 15 <file>` after a heredoc to verify correctness. Multi-file pastes garble frequently, but the content is fine.
+- Use `'EOF'` (single-quoted) delimiters to prevent shell expansion inside heredocs.
+- For Python one-liners, use single quotes outside and double quotes inside: `python3 -c '...'`
