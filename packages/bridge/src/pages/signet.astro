@@ -1,0 +1,281 @@
+---
+const network = 'signet'
+const chainId = '0x8248'
+const chainName = 'Snowside Signet'
+const rpcUrl = 'https://rpc.snowside.network/signet'
+const explorerUrl = 'https://snowside.network'
+const currency = { name: 'ECX', symbol: 'XEC', decimals: 18 }
+const l1Currency = 'XEC'
+const l1Label = 'Bitcoin Signet'
+const apiBase = 'https://snowside.network/v1'
+---
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Snowside Bridge — Signet</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>body{font-family:'Inter',sans-serif}</style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <div class="max-w-md mx-auto p-6">
+    <header class="flex items-center justify-between mb-8 pt-4">
+      <h1 class="font-bold text-xl text-gray-900">Snowside Bridge</h1>
+      <button id="connect-btn" onclick="connectWallet()"
+        class="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800">
+        Connect Wallet
+      </button>
+    </header>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div class="flex border-b border-gray-200 mb-6">
+        <a href="/" class="px-4 py-2 text-sm font-medium text-gray-500">Mainnet</a>
+        <a href="/testnet" class="px-4 py-2 text-sm font-medium text-gray-500">Testnet</a>
+        <a href="/signet" class="px-4 py-2 text-sm font-medium text-blue-600 border-b-2 border-blue-600">Signet</a>
+      </div>
+
+      <div id="wallet-info" class="hidden mb-6 p-3 bg-gray-50 rounded-lg">
+        <p class="text-xs text-gray-500 mb-1">Connected Snowside Address</p>
+        <p id="snowside-addr" class="font-mono text-sm text-gray-900 break-all"></p>
+        <p id="wallet-balance" class="text-xs text-gray-500 mt-1"></p>
+      </div>
+
+      <div id="no-wallet" class="text-center py-8">
+        <p class="text-gray-500 text-sm mb-4">Connect your Rabby wallet to create a deposit</p>
+        <button onclick="connectWallet()" class="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700">
+          Connect Wallet
+        </button>
+      </div>
+
+      <div id="create-deposit" class="hidden">
+        <button onclick="createDeposit()"
+          class="w-full bg-blue-600 text-white px-4 py-3 rounded-lg font-medium hover:bg-blue-700">
+          Create Deposit Request
+        </button>
+      </div>
+
+      <div id="deposit-loading" class="hidden text-center py-8">
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <p class="text-gray-500 text-sm mt-4">Creating deposit and waiting for federation...</p>
+      </div>
+
+      <div id="deposit-pending" class="hidden">
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
+          <p class="font-bold text-lg mb-2 text-gray-900">Send {l1Currency} to this address</p>
+          <p class="text-sm text-gray-600 mb-4">{l1Label} ({l1Currency})</p>
+          <div id="qr-container" class="flex justify-center mb-4"></div>
+          <p id="deposit-addr" class="font-mono text-sm text-gray-900 break-all bg-white p-3 rounded-lg border"></p>
+          <button onclick="copyAddress()" class="mt-3 text-sm text-blue-600 hover:text-blue-800 font-medium">
+            Copy Address
+          </button>
+        </div>
+        <div class="mt-4 flex items-center justify-center gap-2 text-sm text-gray-500">
+          <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400"></div>
+          <span>Waiting for deposit...</span>
+        </div>
+      </div>
+
+      <div id="deposit-confirmed" class="hidden">
+        <div class="bg-green-50 border border-green-200 rounded-lg p-6">
+          <p class="font-bold text-lg mb-2 text-green-800">Deposit Detected!</p>
+          <p id="confirmed-amount" class="text-sm text-green-700 mb-2"></p>
+          <p id="confirmed-tx" class="font-mono text-xs text-green-600 break-all"></p>
+          <div class="mt-4 flex items-center gap-2 text-sm text-green-600">
+            <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600"></div>
+            <span>Minting ECX on Snowside...</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="deposit-minted" class="hidden">
+        <div class="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
+          <div class="text-3xl mb-2">✓</div>
+          <p class="font-bold text-lg mb-2 text-green-800">Deposit Complete!</p>
+          <p id="minted-amount" class="text-sm text-green-700 mb-1"></p>
+          <p id="minted-tx" class="font-mono text-xs text-green-600 break-all mt-2"></p>
+          <button onclick="resetDeposit()" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">
+            New Deposit
+          </button>
+        </div>
+      </div>
+
+      <div id="deposit-error" class="hidden">
+        <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p id="error-msg" class="text-sm text-red-700"></p>
+          <button onclick="resetDeposit()" class="mt-3 text-sm text-red-600 hover:text-red-800 font-medium">
+            Try Again
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script is:inline define:vars={{ network, chainId, chainName, rpcUrl, explorerUrl, currency, l1Currency, apiBase }}>
+    let currentDepositId = null;
+    let pollTimer = null;
+    let snowsideAddr = null;
+
+    async function connectWallet() {
+      if (!window.ethereum) {
+        alert('No EIP-1193 wallet found. Please install Rabby.');
+        return;
+      }
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        snowsideAddr = accounts[0];
+
+        // Try switching to Snowside signet
+        try {
+          await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId }],
+          });
+        } catch (switchErr) {
+          if (switchErr.code === 4902) {
+            await window.ethereum.request({
+              method: 'wallet_addEthereumChain',
+              params: [{
+                chainId,
+                chainName,
+                nativeCurrency: currency,
+                rpcUrls: [rpcUrl],
+                blockExplorerUrls: [explorerUrl],
+              }],
+            });
+          }
+        }
+
+        // Get balance
+        const balance = await window.ethereum.request({
+          method: 'eth_getBalance',
+          params: [snowsideAddr, 'latest'],
+        });
+        const balEth = (BigInt(balance) / BigInt(10**15)).toString();
+        const balFormatted = (Number(balEth) / 1000).toFixed(3);
+
+        document.getElementById('connect-btn').textContent = snowsideAddr.slice(0, 6) + '...' + snowsideAddr.slice(-4);
+        document.getElementById('wallet-info').classList.remove('hidden');
+        document.getElementById('snowside-addr').textContent = snowsideAddr;
+        document.getElementById('wallet-balance').textContent = 'Balance: ' + balFormatted + ' ' + currency.symbol;
+        document.getElementById('no-wallet').classList.add('hidden');
+        document.getElementById('create-deposit').classList.remove('hidden');
+
+        window.ethereum.on('accountsChanged', (accs) => {
+          if (accs.length > 0) {
+            snowsideAddr = accs[0];
+            location.reload();
+          }
+        });
+      } catch (err) {
+        alert('Wallet connection failed: ' + err.message);
+      }
+    }
+
+    async function createDeposit() {
+      document.getElementById('create-deposit').classList.add('hidden');
+      document.getElementById('deposit-loading').classList.remove('hidden');
+
+      try {
+        const resp = await fetch(apiBase + '/bridge/deposit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            snowsideAddress: snowsideAddr,
+            network: network,
+          }),
+        });
+
+        if (!resp.ok) throw new Error('API returned ' + resp.status);
+        const data = await resp.json();
+        currentDepositId = data.id;
+
+        document.getElementById('deposit-loading').classList.add('hidden');
+        document.getElementById('deposit-pending').classList.remove('hidden');
+
+        // Start polling for address + status
+        pollTimer = setInterval(pollDeposit, 3000);
+        pollDeposit();
+      } catch (err) {
+        showError(err.message);
+      }
+    }
+
+    async function pollDeposit() {
+      if (!currentDepositId) return;
+
+      try {
+        const resp = await fetch(apiBase + '/bridge/deposit/' + currentDepositId);
+        if (!resp.ok) return;
+        const deposit = await resp.json();
+
+        // Show address once assigned
+        if (deposit.ecash_address) {
+          const addrEl = document.getElementById('deposit-addr');
+          if (addrEl.textContent !== deposit.ecash_address) {
+            addrEl.textContent = deposit.ecash_address;
+            // Generate QR code
+            const qrEl = document.getElementById('qr-container');
+            qrEl.innerHTML = '';
+            new QRCode(qrEl, {
+              text: deposit.ecash_address,
+              width: 180,
+              height: 180,
+              correctLevel: QRCode.CorrectLevel.L,
+            });
+          }
+        }
+
+        // Handle status changes
+        if (deposit.status === 'confirmed') {
+          document.getElementById('deposit-pending').classList.add('hidden');
+          document.getElementById('deposit-confirmed').classList.remove('hidden');
+          document.getElementById('confirmed-amount').textContent =
+            'Received: ' + deposit.amount_xec + ' sats';
+          document.getElementById('confirmed-tx').textContent =
+            'tx: ' + deposit.ecash_tx_hash;
+        } else if (deposit.status === 'minted') {
+          clearInterval(pollTimer);
+          pollTimer = null;
+          document.getElementById('deposit-pending').classList.add('hidden');
+          document.getElementById('deposit-confirmed').classList.add('hidden');
+          document.getElementById('deposit-minted').classList.remove('hidden');
+          document.getElementById('minted-amount').textContent =
+            'Minted: ' + deposit.amount_ecx + ' ECX';
+          document.getElementById('minted-tx').textContent =
+            'Mint tx: ' + deposit.mint_tx_hash;
+        }
+      } catch (err) {
+        console.error('Poll error:', err);
+      }
+    }
+
+    function copyAddress() {
+      const addr = document.getElementById('deposit-addr').textContent;
+      navigator.clipboard.writeText(addr).then(() => {
+        alert('Address copied: ' + addr);
+      });
+    }
+
+    function showError(msg) {
+      document.getElementById('deposit-loading').classList.add('hidden');
+      document.getElementById('deposit-pending').classList.add('hidden');
+      document.getElementById('deposit-error').classList.remove('hidden');
+      document.getElementById('error-msg').textContent = msg;
+    }
+
+    function resetDeposit() {
+      if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+      currentDepositId = null;
+      document.getElementById('deposit-error').classList.add('hidden');
+      document.getElementById('deposit-minted').classList.add('hidden');
+      document.getElementById('deposit-pending').classList.add('hidden');
+      document.getElementById('deposit-confirmed').classList.add('hidden');
+      document.getElementById('create-deposit').classList.remove('hidden');
+    }
+  </script>
+</body>
+</html>
