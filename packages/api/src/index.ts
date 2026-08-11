@@ -47,7 +47,7 @@ const DepositSchema = z.object({
   ecash_address: z.string().nullable(),
   derivation_index: z.number().nullable(),
   status: z.string(),
-  amount_xec: z.number().nullable(),
+  amount_sats: z.number().nullable(),
   amount_ecx: z.number().nullable(),
   ecash_tx_hash: z.string().nullable(),
   mint_tx_hash: z.string().nullable(),
@@ -62,7 +62,7 @@ const WithdrawalSchema = z.object({
   snowside_address: z.string(),
   ecash_address: z.string(),
   amount_ecx: z.string().nullable(),
-  amount_xec: z.number().nullable(),
+  amount_sats: z.number().nullable(),
   burn_tx_hash: z.string().nullable(),
   ecash_tx_hash: z.string().nullable(),
   status: z.string(),
@@ -460,7 +460,7 @@ openapi.patch(
               schema: z.object({
                 ecash_address: z.string().optional(),
                 derivation_index: z.number().optional(),
-                amount_xec: z.number().optional(),
+                amount_sats: z.number().optional(),
                 amount_ecx: z.number().optional(),
                 ecash_tx_hash: z.string().optional(),
                 mint_tx_hash: z.string().optional(),
@@ -494,7 +494,7 @@ openapi.patch(
       const allowed = [
         'ecash_address',
         'derivation_index',
-        'amount_xec' /* stores sats, not XEC — legacy column name */,
+        'amount_sats' /* stores sats, not XEC — legacy column name */,
         'amount_ecx',
         'ecash_tx_hash',
         'mint_tx_hash',
@@ -555,7 +555,7 @@ openapi.get(
     },
     async (c) => {
       const { results } = await c.env.DB.prepare(
-        "SELECT * FROM deposits WHERE amount_xec IS NOT NULL AND ecash_address IS NOT NULL AND derivation_index IS NOT NULL ORDER BY created_at ASC",
+        "SELECT * FROM deposits WHERE amount_sats IS NOT NULL AND ecash_address IS NOT NULL AND derivation_index IS NOT NULL ORDER BY created_at ASC",
       ).all();
       return results;
     },
@@ -610,7 +610,7 @@ openapi.patch(
           content: {
             'application/json': {
               schema: z.object({
-                amount_xec: z.number().optional(),
+                amount_sats: z.number().optional(),
                 ecash_tx_hash: z.string().optional(),
                 status: z.string().optional(),
               }),
@@ -639,7 +639,7 @@ openapi.patch(
     },
     async (c, data) => {
       const body = data.body;
-      const allowed = ['amount_xec' /* stores sats, not XEC — legacy column name */, 'ecash_tx_hash', 'status'];
+      const allowed = ['amount_sats' /* stores sats, not XEC — legacy column name */, 'ecash_tx_hash', 'status'];
       const updates: string[] = [];
       const values: any[] = [];
       for (const [key, val] of Object.entries(body)) {

@@ -269,7 +269,7 @@ async function mintEcx(
 
   try {
     const client = getWalletClient(network);
-    const amount = BigInt(satAmount) * satsToEcxMultiplier(deposit.network);
+    const amount = BigInt(satAmount) * satsToEcxMultiplier(network);
     const data = encodeMintCall(toAddress, amount);
 
     const txHash = await client.sendTransaction({
@@ -488,7 +488,7 @@ async function processWithdrawal(withdrawal: Withdrawal): Promise<void> {
     return;
   }
 
-  // Calculate amount_sats if not already set
+  // Calculate amount in sats if not already set (DB column is amount_sats, stores sats)
   const amountSats = withdrawal.amount_sats || ecxToSats(withdrawal.amount_ecx, withdrawal.network);
 
   // Update the withdrawal record via API

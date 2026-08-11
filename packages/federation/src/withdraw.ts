@@ -24,7 +24,7 @@ export interface FundedDeposit {
   network: string;
   ecash_address: string;
   derivation_index: number;
-  amount_xec: number;
+  amount_sats: number;
 }
 
 export interface WithdrawalRequest {
@@ -33,7 +33,7 @@ export interface WithdrawalRequest {
   snowside_address: string;
   ecash_address: string;
   amount_ecx: string | number | null;
-  amount_xec: number | null;
+  amount_sats: number | null;
   burn_tx_hash: string | null;
   ecash_tx_hash: string | null;
   status: string;
@@ -178,7 +178,7 @@ export async function buildSignAndBroadcastWithdrawal(
 
   // Calculate withdrawal amount in satoshis
   const targetSats =
-    withdrawal.amount_xec || ecxToSats(withdrawal.amount_ecx, withdrawal.network);
+    withdrawal.amount_sats || ecxToSats(withdrawal.amount_ecx, withdrawal.network);
   if (targetSats <= 0) {
     console.error(`[withdraw-tx] Invalid amount: ${targetSats} sats`);
     return null;
