@@ -226,11 +226,11 @@ async function checkAddressForDeposits(
 
 // ── Snowside L2 minting ─────────────────────────────────────────
 
-// NativeMinter.mint(address,uint256) function selector: 0x40c10f19
-const MINT_SELECTOR = '0x40c10f19';
+// NativeMinter.mintNativeCoin(address,uint256) selector = 0x4f5aaaba
+const MINT_SELECTOR = '0x4f5aaaba';
 
 /**
- * Encode a mint(address to, uint256 amount) call.
+ * Encode a mintNativeCoin(address to, uint256 amount) call.
  */
 function encodeMintCall(toAddress: string, amount: bigint): `0x${string}` {
   const addressPadded = toAddress
@@ -274,7 +274,7 @@ async function mintEcx(
 
     if (receipt.status === 'success') {
       console.log(
-        `[mint] Minted ${satAmount} sats as ECX to ${toAddress}: ${txHash}`,
+        `[mint] MintedNativeCoin ${satAmount} sats as ECX to ${toAddress}: ${txHash}`,
       );
       return txHash;
     } else {
@@ -337,7 +337,7 @@ async function processDeposit(deposit: Deposit): Promise<void> {
   }
 
   // Mint ECX (works for both freshly-confirmed and previously-confirmed deposits)
-  console.log(`[mint] Attempting to mint ECX for ${deposit.id} on ${deposit.network}...`);
+  console.log(`[mint] Attempting to mintNativeCoin ECX for ${deposit.id} on ${deposit.network}...`);
   const mintTxHash = await mintEcx(
     deposit.network,
     deposit.snowside_address,
