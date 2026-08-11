@@ -370,7 +370,7 @@ The landing page alternates dark and light sections for visual rhythm.
 - **Stack:** Cloudflare Worker (`snowside-api`), Hono, Chanfana (OpenAPI), Zod.
 - **Deployment:** `wrangler deploy` -> `snowside.network/v1*`.
 - **OpenAPI UI:** Served directly at `/v1` (Swagger UI). Spec at `/v1/openapi.json`.
-- **Backend Proxy:** Catch-all proxy forwards requests to Drynet 4 Esplora (`https://esplora.drynet4.drivechain.dev`).
+- **Backend Proxy:** Catch-all proxy forwards requests to Drynet 4 Esplora (`https://esplora.drynet4.drivechain.dev (testnet)`).
 
 ## Bridge Package (packages/bridge)
 - **Stack:** Astro static site + Tailwind v4 (`@tailwindcss/postcss`).
@@ -397,7 +397,10 @@ The landing page alternates dark and light sections for visual rhythm.
 - **D1 Database**: `snowside-bridge` (ID: 202053ef-9607-481d-9b73-185734164ea4)
 
 ### Future Architecture (Full BIP-300/301)
-- **bip300301_enforcer** (Rust, on VPS): Watches eCash L1 via ZMQ, validates M5 deposits and M6 withdrawals, exposes gRPC at localhost:50051
+- **bip300301_enforcer** (Rust, on VPS): Watches eCash L1 via ZMQ, validates M5 deposits and M6 withdrawals, exposes gRPC at localhost:50051 — NOT YET RUNNING
+- **Federation service** (Node.js, Docker on VPS bchplease): Polls API for pending deposits, checks Esplora per-network, mints ECX via NativeMinter precompile, 10s poll interval
+- **VPS**: bchplease (root@bchplease, Ubuntu 24.04, Docker 29.7.2)
+- **Federation Docker**: `docker compose up -d --build` in /root/snowside/packages/federation
 - Federation connects to enforcer gRPC instead of polling Esplora
 - Deposits use enforcer `WalletService/CreateNewAddress` (proper P2SH with sidechain commitment)
 - Withdrawals use M3/M4/M6 bundle process (13,150 ACKs over 26,300 blocks ≈ 6 months at 10-min block time)
@@ -436,7 +439,7 @@ The landing page alternates dark and light sections for visual rhythm.
 - **drynet4 block time**: 10 minutes (same as Bitcoin) → withdrawal period ≈ 6 months
 - **bip300301_enforcer**: Rust app (github.com/LayerTwo-Labs/bip300301_enforcer), gRPC API, watches L1 via ZMQ
 - **Enforcer RPCs**: ValidatorService/GetSidechains, GetChainInfo, GetChainTip; WalletService/CreateNewAddress, CreateSidechainProposal
-- **Esplora**: https://esplora.drynet4.drivechain.dev (eCash block explorer API, proxied via /v1/*)
+- **Esplora**: https://esplora.drynet4.drivechain.dev (testnet) (eCash block explorer API, proxied via /v1/*)
 
 ### Deployment Status (End of Session 13)
 - ✅ D1 database created (snowside-bridge)
@@ -444,10 +447,10 @@ The landing page alternates dark and light sections for visual rhythm.
 - ✅ Federation service skeleton written (monitoring + minting logic)
 - ✅ Bridge UI updated (API integration, QR codes, status polling, history)
 - ✅ D1 schema file written (packages/api/schema.sql)
-- ❌ wrangler.toml NOT yet updated with D1 binding
-- ❌ D1 schema NOT yet applied
-- ❌ FEDERATION_TOKEN secret NOT yet set
-- ❌ API NOT yet deployed to Cloudflare
-- ❌ Bridge UI NOT yet built/deployed to Cloudflare Pages
-- ❌ Federation service NOT yet running on VPS
-- ❌ "Connect Wallet" (Rabby) NOT yet implemented
+- ✅ wrangler.toml updated with D1 binding (DB)
+- ✅ D1 schema applied (meta, deposits, withdrawals tables)
+- ✅ FEDERATION_TOKEN secret set on Cloudflare Worker
+- ✅ API deployed to snowside.network/v1* (Cloudflare Worker)
+- ✅ Bridge UI deployed to Cloudflare Pages (snowside-bridge project)
+- ✅ Federation service running on VPS (bchplease) in Docker container
+- ✅ "Connect Wallet" (Rabby/EIP-1193) implemented in bridge UI

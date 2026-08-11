@@ -1,7 +1,70 @@
-# Snowside Handoff — 2026-08-10 (Session 13, Bridge Scaffolding — Custodial MVP)
+# Snowside Handoff — 2026-08-11 (Session 14, Bridge Deployed + Federation Running)
 
 ## Purpose
 Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88. The monorepo at `/Workspace/abitsuite/snowside` includes a landing page (`snowside.network`), a pitch page (`pitch.snowside.network`), docs (`docs.snowside.network`), a block explorer (`explorer.snowside.network`), the API worker (`snowside.network/v1`), the bridge UI (`bridge.snowside.network` WIP), alongside the L1 execution layer (`go/subnet-evm`), BMM bidder (`rust/bmm-bidder`), and core contracts (`contracts/`).
+
+## Session 14 summary — 2026-08-11
+
+### Task 1: Deploy Bridge API to Cloudflare
+- Fixed duplicate SQL string bug in deposits query (would have caused syntax error)
+- Added D1 binding to packages/api/wrangler.toml (binding: DB, database_id: 202053ef-9607-481d-9b73-185734164ea4)
+- Applied D1 schema (meta, deposits, withdrawals tables + indexes) to remote database
+- Generated FEDERATION_TOKEN (openssl rand -hex 32) and set as Cloudflare Worker secret
+- Deployed API to snowside.network/v1* (Cloudflare Worker with Hono + chanfana)
+- Tested all endpoints: bridge/deposit, bridge/withdraw, bridge/status, fed/checkin, fed/deposits/pending, Esplora proxy — ALL WORKING
+- Note: OpenAPI docs at /v1 only show /v1/status (chanfana); bridge endpoints work but are not registered through chanfana — cosmetic issue only
+
+### Task 2: Connect Wallet (Rabby/EIP-1193)
+- Added Connect Wallet button to BridgeWidget.astro
+- Implemented EIP-1193 wallet connection (window.ethereum)
+- Network switching via wallet_switchEthereumChain + wallet_addEthereumChain
+- Auto-fills deposit/withdraw/history addresses from connected wallet
+- Shows wallet balance via eth_getBalance
+- Handles accountsChanged and chainChanged events
+- Network chain IDs: mainnet=32904 (0x8088), testnet=33160 (0x8188), signet=33352 (0x8248)
+- Built bridge (4 pages: index, mainnet, testnet, signet) and deployed to Cloudflare Pages
+
+### Task 3: Federation Service Multi-Network + Docker
+- Rewrote federation service to support all three networks simultaneously
+- Per-network RPC URL caching (providers + wallets)
+- mintEcx() accepts network parameter, selects correct RPC
+- verifyBurnTx() skeleton for future withdrawal processing
+- Created Dockerfile (multi-stage: builder + runtime) and docker-compose.yml
+- Created .dockerignore
+
+### Task 4: Per-Network Esplora URLs
+- Corrected network mapping based on eCash config JSON:
+  - mainnet -> eCash mainnet (esplora.mainnet.drivechain.dev, XEC, ecash: addresses)
+  - testnet -> eCash drynet4 (esplora.drynet4.drivechain.dev, XEC, ecash: addresses)
+  - signet -> Bitcoin signet (esplora.signet.drivechain.info, sBTC, tb1q addresses)
+- Updated federation service with ESPLORA_URLS per-network dictionary
+- generateDepositAddress() generates ecash: or tb1q based on network
+- checkDeposits() accepts network parameter, uses correct Esplora
+- Updated API Esplora proxy to use env var instead of hardcoded URL
+- Updated docker-compose.yml and .env.example with per-network Esplora env vars
+
+### Task 5: Deploy Federation on VPS
+- VPS: bchplease (root@bchplease, Ubuntu 24.04)
+- Installed Docker 29.7.2 on VPS
+- Cloned repo via HTTPS (https://github.com/abitsuite/snowside.git)
+- Created .env with FEDERATION_TOKEN and EWOQ_PRIVATE_KEY
+- Built and started federation service: `docker compose up -d --build`
+- Federation service running, checking in to API every 10 seconds
+- Bridge status endpoint now shows federation_online: true
+
+### Current State
+- API: Deployed and working at snowside.network/v1*
+- Bridge UI: Deployed to Cloudflare Pages with Connect Wallet
+- Federation: Running in Docker on VPS, polling all three networks
+- D1: Schema applied, test data cleaned
+- All three networks supported: mainnet, testnet, signet
+
+### Known Issues
+- OpenAPI docs only show /v1/status (chanfana); bridge endpoints not registered through chanfana
+- Address generation is stubbed (ecash:qz + depositId hex, tb1q + depositId hex) — needs proper HD wallet
+- Withdrawal processing not implemented (federation logs but does not send L1 funds)
+- Burn verification not implemented (only checks tx exists)
+- Bridge UI does not show L1 currency difference (XEC vs sBTC for signet)
 
 ## Session 13 summary — 2026-08-10
 
@@ -157,10 +220,10 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
 | SnowsideTestnet | deployed, ICM deployed, relayer pending |
 | SnowsideSignet | deployed, precompiles verified, ICM pending |
 | Block Explorer | fixed (client-side fetching with 15s auto-refresh) |
-| Bridge API | code written, D1 created, NOT deployed |
-| Bridge UI | code written (API integration), NOT built/deployed |
-| Federation | skeleton written, NOT running on VPS |
-| BIP-300/301 | reviewed, custodial MVP first, full integration later |
+| Bridge API | deployed to snowside.network/v1* |
+| Bridge UI | deployed to CF Pages with Connect Wallet (Rabby) |
+| Federation | running in Docker on VPS bchplease, all 3 networks |
+| BIP-300/301 | reviewed, custodial MVP running, full integration later |
 
 ## Current Deployment Details (All Three L1s)
 
@@ -201,38 +264,38 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
 
 ## Next session priorities (in order)
 
-1. **Deploy Bridge API to Cloudflare**
-   - Update packages/api/wrangler.toml with D1 binding (database_id: 202053ef-9607-481d-9b73-185734164ea4, binding: DB)
-   - Apply D1 schema: `pnpm exec wrangler d1 execute snowside-bridge --file=schema.sql --remote`
-   - Set FEDERATION_TOKEN secret: `pnpm exec wrangler secret put FEDERATION_TOKEN`
-   - Deploy: `pnpm exec wrangler deploy`
-   - Test endpoints with curl
+1. **Register all API endpoints through chanfana**
+   - Currently only /v1/status appears in OpenAPI docs
+   - Migrate /v1/bridge/* and /v1/fed/* from app.get()/app.post() to openapi.get()/openapi.post()
+   - Add OpenAPI metadata (summary, description, request/response schemas) for each endpoint
+   - Redeploy API
 
-2. **Build & Deploy Bridge UI to Cloudflare Pages**
-   - Build packages/bridge: `pnpm --filter packages-bridge build`
-   - Deploy to Cloudflare Pages (bridge.snowside.network)
-   - Verify API calls work from bridge domain (CORS)
+2. **Implement proper HD wallet address generation**
+   - Replace stubbed generateDepositAddress() with real bip32 HD derivation
+   - eCash networks: use ecashaddrjs for ecash: qz-prefix addresses
+   - Bitcoin signet: use bitcoinjs-lib for tb1q bech32 addresses
+   - Store HD wallet seed securely (env var or encrypted file on VPS)
 
-3. **Implement "Connect Wallet" with Rabby**
-   - Add wallet connection button using window.ethereum (EIP-1193)
-   - Detect Rabby wallet (window.ethereum.isRabby)
-   - Get user's Snowside address from connected wallet
-   - Auto-fill deposit destination address
-   - For withdrawals: sign burn transaction on Snowside L1
-   - Show wallet balance (ECX) from signet RPC
+3. **Update bridge UI for L1 currency differences**
+   - mainnet/testnet: show "XEC" as deposit currency, ecash: address format
+   - signet: show "sBTC" as deposit currency, tb1q address format
+   - Update deposit instructions and QR code labels per network
+   - Add link to appropriate block explorer per network
 
-4. **Test Full Deposit/Withdrawal Flow**
-   - Create deposit request via bridge UI
-   - Verify federation service assigns address
-   - Test status polling (pending → confirmed → minted)
-   - Test withdrawal submission
-   - Verify transaction history display
+4. **Test full deposit flow end-to-end**
+   - Create deposit request via bridge UI (all three networks)
+   - Verify federation assigns correct address type per network
+   - Send small amount of XEC/sBTC to deposit address
+   - Verify federation detects UTXO via Esplora
+   - Verify ECX is minted on correct Snowside network
+   - Verify deposit status updates (pending → confirmed → minted)
 
-5. **Deploy Federation Service on VPS**
-   - SSH to VPS, clone repo, install deps
-   - Set env vars (API_URL, FEDERATION_TOKEN, SIGNET_RPC, EWOQ_PRIVATE_KEY, ESPLORA_URL)
-   - Run with pm2 or systemd: `pnpm --filter @snowside/federation start`
-   - Verify federation check-in heartbeat on API /v1/bridge/status
+5. **Implement withdrawal processing**
+   - Verify burn transaction on Snowside L2 (parse tx input, check burn amount)
+   - Send L1 funds from federation wallet to user's address
+   - For eCash: use eCash wallet (ecashaddrjs + bip32)
+   - For Bitcoin signet: use Bitcoin wallet (bitcoinjs-lib)
+   - Update withdrawal status to 'completed' with L1 tx hash
 
 6. **Deploy ICM on Signet** (lower priority)
    - Run `avalanche icm deploy` on signet
@@ -297,7 +360,13 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
 49. **BIP-300 withdrawals require 13,150 miner ACKs over 26,300 blocks** — At 10-min block time (drynet4 = same as Bitcoin), this is ~6 months. Not instant. Bridge UI must show voting progress.
 50. **bip300301_enforcer is the trustless bridge** — Rust app watching L1 via ZMQ, gRPC at localhost:50051. Has WalletService/CreateNewAddress and ValidatorService/GetSidechains. NOT yet running. Must be deployed for full BIP-300/301.
 51. **Custodial MVP → Full BIP-300/301 upgrade path** — Phase 1 (current): federation holds keys. Phase 2: register Snowside on Signet + deploy enforcer. Phase 3: Drynet. Phase 4: Mainnet. Schema needs future fields: sidechain_slot, bundle_hash, ack_count, blocks_remaining.
-52. **D1 database snowside-bridge** — ID: 202053ef-9607-481d-9b73-185734164ea4. Binding: DB. Schema at packages/api/schema.sql. wrangler.toml NOT yet updated — next session task.
+52. **D1 database snowside-bridge** — ID: 202053ef-9607-481d-9b73-185734164ea4. Binding: DB. Schema at packages/api/schema.sql. Deployed and working.
+53. **chanfana only documents openapi.get()/openapi.post() routes** — Endpoints registered via Hono app.get()/app.post() work fine but do NOT appear in the OpenAPI spec. All bridge/federation endpoints need to be migrated to chanfana for proper documentation.
+54. **Per-network L1 mapping is critical** — Snowside mainnet bridges to eCash mainnet (esplora.mainnet.drivechain.dev, XEC), testnet to eCash drynet4 (esplora.drynet4.drivechain.dev, XEC), signet to Bitcoin signet (esplora.signet.drivechain.info, sBTC). Each network uses different Esplora URLs, address formats, and currencies.
+55. **Bitcoin signet uses tb1q addresses, not ecash: addresses** — The generateDepositAddress() function must check the network and generate the correct address format. eCash uses ecash:qz... (Base58), Bitcoin signet uses tb1q... (Bech32).
+56. **Federation service is a client, not a server** — No tunneling or exposed endpoints needed. Federation only makes outbound HTTPS calls to the API, Snowside RPC, and Esplora. Deployed in Docker on VPS bchplease with docker compose.
+57. **Docker on VPS for federation** — Multi-stage Dockerfile (builder with tsc, runtime with node:22-slim). docker-compose.yml with all env vars. .env file with FEDERATION_TOKEN and EWOQ_PRIVATE_KEY. `docker compose up -d --build` to deploy.
+58. **Rabby/EIP-1193 wallet connection** — window.ethereum.request({ method: 'eth_requestAccounts' }), wallet_switchEthereumChain for network switching, wallet_addEthereumChain if chain not in wallet, eth_getBalance for balance. Handle accountsChanged and chainChanged events.
 
 ## Session history (prior sessions)
 
@@ -522,4 +591,4 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
     # Testnet: STALE (needs redeploy)
 
 ---
-*Generated at end of Session 13. Next session: Deploy bridge API + UI to Cloudflare, implement Connect Wallet with Rabby, test deposit/withdrawal flow, deploy federation on VPS. Custodial MVP now, full BIP-300/301 later. Maintained per AGENTS.md.*
+*Generated at end of Session 14. Next session: Register API endpoints through chanfana, implement HD wallet address generation, update bridge UI for L1 currency differences (XEC vs sBTC), test full deposit flow end-to-end, implement withdrawal processing. Federation running on VPS. Maintained per AGENTS.md.*
