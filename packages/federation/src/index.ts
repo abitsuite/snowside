@@ -1,124 +1,370 @@
-import { ethers } from 'ethers';
+/**
+ * Snowside Federation Service
+ *
+ * Polls the bridge API for pending deposits/withdrawals and processes them:
+ *   1. Assigns HD-derived deposit addresses to pending deposits
+ *   2. Monitors Esplora for incoming L1 transactions
+ *   3. Mints ECX on Snowside L2 via NativeMinter precompile
+ *   4. Processes withdrawals by sending L1 funds back
+ */
+
+import {
+  createWalletClient,
+  createPublicClient,
+  http,
+  type WalletClient,
+  type PublicClient,
+  type Chain,
+} from 'viem';
+import { privateKeyToAccount, type PrivateKeyAccount } from 'viem/accounts';
+import { HDWallet } from './wallet.js';
+
+// ── Configuration ───────────────────────────────────────────────
 
 const API_URL = process.env.API_URL || 'https://snowside.network/v1';
-const FED_TOKEN = process.env.FEDERATION_TOKEN || 'dev-secret';
-const EWOQ_KEY = process.env.EWOQ_PRIVATE_KEY || '';
+const FEDERATION_TOKEN = process.env.FEDERATION_TOKEN || 'dev-secret';
+const HD_MNEMONIC = process.env.HD_MNEMONIC || '';
+const EWOQ_PRIVATE_KEY = process.env.EWOQ_PRIVATE_KEY || '';
 const POLL_MS = parseInt(process.env.POLL_MS || '10000');
 
-// RPC URLs for all three Snowside L2 networks
 const RPC_URLS: Record<string, string> = {
-  mainnet: process.env.MAINNET_RPC || 'https://rpc.snowside.network/mainnet',
-  testnet: process.env.TESTNET_RPC || 'https://rpc.snowside.network/testnet',
-  signet: process.env.SIGNET_RPC || 'https://rpc.snowside.network/signet',
+  mainnet: process.env.MAINNET_RPC || '',
+  testnet: process.env.TESTNET_RPC || '',
+  signet: process.env.SIGNET_RPC || '',
 };
 
-// Esplora URLs for each L1 network
-// mainnet -> eCash mainnet
-// testnet -> eCash drynet4
-// signet -> Bitcoin signet
 const ESPLORA_URLS: Record<string, string> = {
-  mainnet: process.env.MAINNET_ESPLORA || 'https://esplora.mainnet.drivechain.dev',
-  testnet: process.env.TESTNET_ESPLORA || 'https://esplora.drynet4.drivechain.dev',
-  signet: process.env.SIGNET_ESPLORA || 'https://esplora.signet.drivechain.info',
+  mainnet:
+    process.env.MAINNET_ESPLORA || 'https://esplora.mainnet.drivechain.dev',
+  testnet:
+    process.env.TESTNET_ESPLORA || 'https://esplora.drynet4.drivechain.dev',
+  signet:
+    process.env.SIGNET_ESPLORA || 'https://esplora.signet.drivechain.info',
 };
 
 const NATIVE_MINTER = '0x0200000000000000000000000000000000000001';
-const MINTER_ABI = ['function mint(address to, uint256 amount) external'];
-const XEC_TO_ECX = BigInt(10) ** BigInt(16);
+const CHAIN_IDS: Record<string, number> = {
+  mainnet: 32904,
+  testnet: 33160,
+  signet: 33352,
+};
 
-// Cache providers and wallets per network
-const providers: Record<string, ethers.JsonRpcProvider> = {};
-const wallets: Record<string, ethers.Wallet> = {};
+// 1 XEC = 100 satoshis; 1 ECX = 10^18 (18 decimals)
+// Mint amount = satoshis * 10^16 to convert sats → ECX with 18 decimals
+const XEC_TO_ECX_MULTIPLIER = BigInt(10) ** BigInt(16);
 
-function getWallet(network: string): ethers.Wallet {
-  if (!wallets[network]) {
-    const rpc = RPC_URLS[network];
-    if (!rpc) throw new Error(`No RPC URL for network: ${network}`);
-    if (!providers[network]) providers[network] = new ethers.JsonRpcProvider(rpc);
-    if (!EWOQ_KEY) throw new Error('EWOQ_PRIVATE_KEY not set');
-    wallets[network] = new ethers.Wallet(EWOQ_KEY, providers[network]);
-  }
-  return wallets[network];
+// ── Types ───────────────────────────────────────────────────────
+
+interface Deposit {
+  id: string;
+  network: string;
+  snowside_address: string;
+  ecash_address: string | null;
+  derivation_index: number | null;
+  amount_xec: number | null;
+  amount_ecx: number | null;
+  ecash_tx_hash: string | null;
+  mint_tx_hash: string | null;
+  status: string;
+  created_at: number;
 }
 
-async function api(path: string, init?: RequestInit) {
-  const resp = await fetch(`${API_URL}${path}`, init);
-  return resp.json();
+interface Withdrawal {
+  id: string;
+  network: string;
+  snowside_address: string;
+  ecash_address: string;
+  amount_ecx: string | null;
+  amount_xec: number | null;
+  burn_tx_hash: string | null;
+  ecash_tx_hash: string | null;
+  status: string;
 }
 
-function fedHeaders(): Record<string, string> {
+// ── Chain definitions ───────────────────────────────────────────
+
+function getChain(network: string): Chain {
+  const id = CHAIN_IDS[network];
+  const rpc = RPC_URLS[network];
   return {
-    'Content-Type': 'application/json',
-    Authorization: `Bearer ${FED_TOKEN}`,
+    id,
+    name: `snowside-${network}`,
+    nativeCurrency: { name: 'ECX', symbol: 'ECX', decimals: 18 },
+    rpcUrls: { default: { http: [rpc] } },
   };
 }
 
-// Generate deposit address for the specified L1 network
-// eCash networks: ecash:qz... (Base58)
-// Bitcoin signet: tb1q... (Bech32)
-// TODO: replace with proper HD wallet derivation (bip32 + ecashaddrjs/bitcoinjs-lib)
-function generateDepositAddress(network: string, depositId: string): string {
-  const hex = depositId.replace(/-/g, '');
-  if (network === 'signet') {
-    // Bitcoin signet uses bech32 tb1q addresses
-    return `tb1q${hex.slice(0, 38)}`;
+// ── viem client cache ───────────────────────────────────────────
+
+const walletClients: Record<string, WalletClient> = {};
+const publicClients: Record<string, PublicClient> = {};
+let account: PrivateKeyAccount | null = null;
+
+function getAccount(): PrivateKeyAccount {
+  if (!account) {
+    if (!EWOQ_PRIVATE_KEY) throw new Error('EWOQ_PRIVATE_KEY not set');
+    const key = EWOQ_PRIVATE_KEY.startsWith('0x')
+      ? EWOQ_PRIVATE_KEY
+      : `0x${EWOQ_PRIVATE_KEY}`;
+    account = privateKeyToAccount(key as `0x${string}`);
+    console.log(`[viem] Account: ${account.address}`);
   }
-  // eCash uses ecash: prefix with Base58
-  return `ecash:qz${hex.slice(0, 38)}`;
+  return account;
 }
 
-// Check Esplora for UTXOs on an address (per-network)
-async function checkDeposits(
-  network: string,
-  addr: string
-): Promise<{ txHash: string; sat: number } | null> {
-  const esploraUrl = ESPLORA_URLS[network];
-  if (!esploraUrl) {
-    console.error(`No Esplora URL for network: ${network}`);
-    return null;
+function getWalletClient(network: string): WalletClient {
+  if (!walletClients[network]) {
+    const rpc = RPC_URLS[network];
+    if (!rpc) throw new Error(`No RPC URL for network: ${network}`);
+    walletClients[network] = createWalletClient({
+      account: getAccount(),
+      chain: getChain(network),
+      transport: http(),
+    });
   }
-  // Strip prefixes for Esplora API
-  const cleanAddr = addr
-    .replace('ecash:', '')
-    .replace('bitcoincash:', '')
-    .replace('tb1', 'tb1'); // bech32 addresses don't have a prefix
+  return walletClients[network];
+}
+
+function getPublicClient(network: string): PublicClient {
+  if (!publicClients[network]) {
+    const rpc = RPC_URLS[network];
+    if (!rpc) throw new Error(`No RPC URL for network: ${network}`);
+    publicClients[network] = createPublicClient({
+      chain: getChain(network),
+      transport: http(),
+    });
+  }
+  return publicClients[network];
+}
+
+// ── HTTP helpers ────────────────────────────────────────────────
+
+async function apiGet(path: string): Promise<any> {
+  const resp = await fetch(`${API_URL}${path}`, {
+    headers: { Authorization: `Bearer ${FEDERATION_TOKEN}` },
+  });
+  if (!resp.ok) throw new Error(`API GET ${path} failed: ${resp.status}`);
+  return resp.json();
+}
+
+async function apiPatch(path: string, body: any): Promise<any> {
+  const resp = await fetch(`${API_URL}${path}`, {
+    method: 'PATCH',
+    headers: {
+      Authorization: `Bearer ${FEDERATION_TOKEN}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+  if (!resp.ok) throw new Error(`API PATCH ${path} failed: ${resp.status}`);
+  return resp.json();
+}
+
+async function apiPost(path: string, body?: any): Promise<any> {
+  const resp = await fetch(`${API_URL}${path}`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${FEDERATION_TOKEN}`,
+      'Content-Type': 'application/json',
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  if (!resp.ok) throw new Error(`API POST ${path} failed: ${resp.status}`);
+  return resp.json();
+}
+
+// ── HD Wallet ───────────────────────────────────────────────────
+
+let wallet: HDWallet | null = null;
+
+function getWallet(): HDWallet {
+  if (!wallet) {
+    if (!HD_MNEMONIC) throw new Error('HD_MNEMONIC env var not set');
+    wallet = new HDWallet(HD_MNEMONIC);
+    console.log('[wallet] HD wallet initialized');
+  }
+  return wallet;
+}
+
+// ── Esplora ─────────────────────────────────────────────────────
+
+/**
+ * Check if a deposit address has received any UTXOs via Esplora.
+ * Returns the total received amount (in satoshis) and tx hash, or null.
+ */
+async function checkAddressForDeposits(
+  network: string,
+  address: string,
+): Promise<{ amount: number; txHash: string } | null> {
+  const esploraUrl = ESPLORA_URLS[network];
+  if (!esploraUrl) return null;
+
+  // Strip ecash: prefix for Esplora API
+  const cleanAddr = address.replace('ecash:', '').replace('bitcoincash:', '');
+
   try {
     const resp = await fetch(`${esploraUrl}/address/${cleanAddr}/utxo`);
     if (!resp.ok) return null;
-    const utxos = (await resp.json()) as Array<{ txid: string; value: number }>;
-    if (utxos.length > 0) {
-      return { txHash: utxos[0].txid, sat: utxos[0].value };
-    }
+    const utxos = (await resp.json()) as Array<{
+      txid: string;
+      value: number;
+    }>;
+    if (!Array.isArray(utxos) || utxos.length === 0) return null;
+
+    const totalSats = utxos.reduce(
+      (sum: number, utxo: any) => sum + (utxo.value || 0),
+      0,
+    );
+    const txHash = utxos[0].txid || '';
+
+    return { amount: totalSats, txHash };
   } catch (err) {
-    console.error(`[${network}] Esplora error:`, err);
+    console.error(`[esplora] Error checking ${address}:`, err);
+    return null;
   }
-  return null;
 }
 
-// Mint ECX on the specified Snowside network via NativeMinter precompile
+// ── Snowside L2 minting ─────────────────────────────────────────
+
+// NativeMinter.mint(address,uint256) function selector: 0x40c10f19
+const MINT_SELECTOR = '0x40c10f19';
+
+/**
+ * Encode a mint(address to, uint256 amount) call.
+ */
+function encodeMintCall(toAddress: string, amount: bigint): `0x${string}` {
+  const addressPadded = toAddress
+    .toLowerCase()
+    .replace(/^0x/, '')
+    .padStart(64, '0');
+  const amountHex = amount.toString(16).padStart(64, '0');
+  return `${MINT_SELECTOR}${addressPadded}${amountHex}` as `0x${string}`;
+}
+
+/**
+ * Mint ECX tokens on Snowside L2 via the NativeMinter precompile.
+ */
 async function mintEcx(
   network: string,
-  to: string,
-  sat: number
-): Promise<string> {
-  const wallet = getWallet(network);
-  const minter = new ethers.Contract(NATIVE_MINTER, MINTER_ABI, wallet);
-  const amount = BigInt(sat) * XEC_TO_ECX;
-  const tx = await minter.mint(to, amount);
-  await tx.wait();
-  return tx.hash;
+  toAddress: string,
+  satAmount: number,
+): Promise<string | null> {
+  if (!RPC_URLS[network] || !EWOQ_PRIVATE_KEY) {
+    console.log(`[mint] No RPC or private key for ${network}, skipping`);
+    return null;
+  }
+
+  try {
+    const client = getWalletClient(network);
+    const amount = BigInt(satAmount) * XEC_TO_ECX_MULTIPLIER;
+    const data = encodeMintCall(toAddress, amount);
+
+    const txHash = await client.sendTransaction({
+      to: NATIVE_MINTER as `0x${string}`,
+      data,
+      chain: null,
+      account: getAccount(),
+    });
+
+    // Wait for transaction receipt
+    const publicClient = getPublicClient(network);
+    const receipt = await publicClient.waitForTransactionReceipt({
+      hash: txHash,
+    });
+
+    if (receipt.status === 'success') {
+      console.log(
+        `[mint] Minted ${satAmount} sats as ECX to ${toAddress}: ${txHash}`,
+      );
+      return txHash;
+    } else {
+      console.error(`[mint] Transaction reverted: ${txHash}`);
+      return null;
+    }
+  } catch (err) {
+    console.error(`[mint] Error minting on ${network}:`, err);
+    return null;
+  }
 }
 
-// Verify a burn transaction on Snowside L2
+// ── Deposit processing ──────────────────────────────────────────
+
+/**
+ * Assign a deposit address to a pending deposit using HD wallet.
+ * Uses a timestamp-based index (TODO: query max derivation_index from API).
+ */
+async function assignDepositAddress(deposit: Deposit): Promise<void> {
+  if (deposit.ecash_address) return;
+
+  const index = Math.floor(Date.now() / 1000) % 1000000;
+  const address = getWallet().deriveDepositAddress(deposit.network, index);
+
+  await apiPatch(`/fed/deposit/${deposit.id}`, {
+    ecash_address: address,
+    derivation_index: index,
+  });
+
+  console.log(
+    `[deposit] Assigned ${address} (index ${index}) to ${deposit.id}`,
+  );
+}
+
+/**
+ * Check if a deposit has received L1 funds and mint ECX if so.
+ */
+async function processDeposit(deposit: Deposit): Promise<void> {
+  if (!deposit.ecash_address || deposit.status === 'minted') return;
+
+  const result = await checkAddressForDeposits(
+    deposit.network,
+    deposit.ecash_address,
+  );
+
+  if (!result) return;
+
+  if (deposit.status === 'pending') {
+    await apiPatch(`/fed/deposit/${deposit.id}`, {
+      status: 'confirmed',
+      amount_xec: result.amount,
+      ecash_tx_hash: result.txHash,
+    });
+    console.log(
+      `[deposit] Confirmed ${deposit.id}: ${result.amount} sats, tx ${result.txHash}`,
+    );
+  }
+
+  const mintTxHash = await mintEcx(
+    deposit.network,
+    deposit.snowside_address,
+    result.amount,
+  );
+
+  if (mintTxHash) {
+    const ecxAmount = Number(BigInt(result.amount) * XEC_TO_ECX_MULTIPLIER);
+    await apiPatch(`/fed/deposit/${deposit.id}`, {
+      status: 'minted',
+      amount_ecx: ecxAmount,
+      mint_tx_hash: mintTxHash,
+    });
+    console.log(`[deposit] Minted ECX for ${deposit.id}: ${mintTxHash}`);
+  }
+}
+
+// ── Withdrawal processing ───────────────────────────────────────
+
+/**
+ * Verify a burn transaction on Snowside L2.
+ */
 async function verifyBurnTx(
   network: string,
-  burnTxHash: string
+  burnTxHash: string,
 ): Promise<boolean> {
   if (!burnTxHash) return false;
   try {
-    const provider =
-      providers[network] || new ethers.JsonRpcProvider(RPC_URLS[network]);
-    const tx = await provider.getTransaction(burnTxHash);
+    const client = getPublicClient(network);
+    const tx = await client.getTransaction({
+      hash: burnTxHash as `0x${string}`,
+    });
     if (!tx) return false;
     // TODO: parse tx input to verify burn to correct address for correct amount
     return true;
@@ -128,123 +374,107 @@ async function verifyBurnTx(
   }
 }
 
-async function poll() {
-  // Federation check-in heartbeat
-  await api('/fed/checkin', { method: 'POST', headers: fedHeaders() });
+/**
+ * Process a pending withdrawal.
+ * TODO: Implement L1 transaction sending (requires eCash/Bitcoin wallet signing)
+ */
+async function processWithdrawal(withdrawal: Withdrawal): Promise<void> {
+  if (withdrawal.status !== 'pending') return;
 
-  // Process pending deposits across all networks
-  const pending = (await api('/fed/deposits/pending', {
-    headers: fedHeaders(),
-  })) as any[];
-  for (const dep of pending) {
-    const network = dep.network || 'signet';
+  console.log(
+    `[withdraw] Processing ${withdrawal.id}: ${withdrawal.amount_ecx} ECX to ${withdrawal.ecash_address}`,
+  );
 
-    if (!dep.ecash_address) {
-      // Assign a deposit address to this deposit
-      const addr = generateDepositAddress(network, dep.id);
-      await api(`/fed/deposit/${dep.id}`, {
-        method: 'PATCH',
-        headers: fedHeaders(),
-        body: JSON.stringify({ ecash_address: addr }),
-      });
-      console.log(`[${network}] Deposit ${dep.id}: assigned ${addr}`);
-    } else {
-      // Check Esplora for incoming L1 transaction
-      const tx = await checkDeposits(network, dep.ecash_address);
-      if (tx) {
-        console.log(
-          `[${network}] Deposit ${dep.id}: detected ${tx.sat} sats in ${tx.txHash}`
-        );
-        await api(`/fed/deposit/${dep.id}`, {
-          method: 'PATCH',
-          headers: fedHeaders(),
-          body: JSON.stringify({
-            status: 'confirmed',
-            ecash_tx_hash: tx.txHash,
-            amount_xec: tx.sat,
-          }),
-        });
-
-        // Mint ECX on the correct Snowside network
-        if (EWOQ_KEY) {
-          try {
-            const mintTx = await mintEcx(
-              network,
-              dep.snowside_address,
-              tx.sat
-            );
-            await api(`/fed/deposit/${dep.id}`, {
-              method: 'PATCH',
-              headers: fedHeaders(),
-              body: JSON.stringify({
-                status: 'minted',
-                mint_tx_hash: mintTx,
-                amount_ecx: Number(BigInt(tx.sat) * XEC_TO_ECX),
-              }),
-            });
-            console.log(
-              `[${network}] Deposit ${dep.id}: minted via ${mintTx}`
-            );
-          } catch (err) {
-            console.error(
-              `[${network}] Deposit ${dep.id}: mint failed:`,
-              err
-            );
-          }
-        }
-      }
-    }
-  }
-
-  // Process pending withdrawals across all networks
-  const wdPending = (await api('/fed/withdrawals/pending', {
-    headers: fedHeaders(),
-  })) as any[];
-  for (const wd of wdPending) {
-    const network = wd.network || 'signet';
-    console.log(
-      `[${network}] Withdrawal ${wd.id}: pending (amount: ${wd.amount_ecx} ECX, dest: ${wd.ecash_address})`
+  if (withdrawal.burn_tx_hash && EWOQ_PRIVATE_KEY) {
+    const verified = await verifyBurnTx(
+      withdrawal.network,
+      withdrawal.burn_tx_hash,
     );
-
-    if (wd.burn_tx_hash && EWOQ_KEY) {
-      const verified = await verifyBurnTx(network, wd.burn_tx_hash);
-      if (verified) {
-        console.log(
-          `[${network}] Withdrawal ${wd.id}: burn tx verified, TODO: send L1 funds to ${wd.ecash_address}`
-        );
-        // TODO: Send XEC/sBTC from federation wallet to user's L1 address
-        // TODO: Update withdrawal status to 'completed' with L1 tx hash
-      } else {
-        console.error(
-          `[${network}] Withdrawal ${wd.id}: burn tx verification failed`
-        );
-      }
-    } else {
+    if (verified) {
       console.log(
-        `[${network}] Withdrawal ${wd.id}: no burn tx hash, skipping`
+        `[withdraw] ${withdrawal.id}: burn tx verified, TODO: send L1 funds to ${withdrawal.ecash_address}`,
+      );
+      // TODO: Send XEC/sBTC from federation wallet to user's L1 address
+      // TODO: Update withdrawal with L1 tx hash and status 'completed'
+    } else {
+      console.error(
+        `[withdraw] ${withdrawal.id}: burn tx verification failed`,
       );
     }
+  } else {
+    console.log(`[withdraw] ${withdrawal.id}: no burn tx hash, skipping`);
   }
 }
 
-async function main() {
-  console.log('Snowside Federation Service');
+// ── Main loop ───────────────────────────────────────────────────
+
+async function checkIn(): Promise<void> {
+  try {
+    await apiPost('/fed/checkin');
+  } catch (err) {
+    console.error('[checkin] Failed:', err);
+  }
+}
+
+async function processPendingDeposits(): Promise<void> {
+  try {
+    const deposits: Deposit[] = await apiGet('/fed/deposits/pending');
+
+    for (const deposit of deposits) {
+      try {
+        if (!deposit.ecash_address) {
+          await assignDepositAddress(deposit);
+        } else {
+          await processDeposit(deposit);
+        }
+      } catch (err) {
+        console.error(`[deposit] Error processing ${deposit.id}:`, err);
+      }
+    }
+  } catch (err) {
+    console.error('[deposits] Error fetching pending:', err);
+  }
+}
+
+async function processPendingWithdrawals(): Promise<void> {
+  try {
+    const withdrawals: Withdrawal[] = await apiGet(
+      '/fed/withdrawals/pending',
+    );
+
+    for (const withdrawal of withdrawals) {
+      try {
+        await processWithdrawal(withdrawal);
+      } catch (err) {
+        console.error(`[withdraw] Error processing ${withdrawal.id}:`, err);
+      }
+    }
+  } catch (err) {
+    console.error('[withdrawals] Error fetching pending:', err);
+  }
+}
+
+async function main(): Promise<void> {
+  console.log('Snowside Federation Service (viem)');
   console.log(`  API: ${API_URL}`);
+  console.log(`  HD wallet: ${HD_MNEMONIC ? 'set' : 'NOT SET'}`);
+  console.log(`  EWOQ key: ${EWOQ_PRIVATE_KEY ? 'set' : 'NOT SET'}`);
   console.log('  L2 Networks (Snowside RPC):');
   for (const [net, rpc] of Object.entries(RPC_URLS)) {
-    console.log(`    ${net}: ${rpc}`);
+    console.log(`    ${net}: ${rpc || '(not set)'}`);
   }
   console.log('  L1 Networks (Esplora):');
   for (const [net, url] of Object.entries(ESPLORA_URLS)) {
     console.log(`    ${net}: ${url}`);
   }
-  console.log(`  EWOQ key: ${EWOQ_KEY ? 'set' : 'NOT SET'}`);
   console.log(`  Poll interval: ${POLL_MS}ms`);
   console.log('---');
 
   while (true) {
     try {
-      await poll();
+      await checkIn();
+      await processPendingDeposits();
+      await processPendingWithdrawals();
     } catch (err) {
       console.error('Poll error:', err);
     }

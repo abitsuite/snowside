@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS deposits (
   network TEXT NOT NULL,
   snowside_address TEXT NOT NULL,
   ecash_address TEXT,
+  derivation_index INTEGER,
   amount_xec INTEGER,
   amount_ecx INTEGER,
   status TEXT NOT NULL DEFAULT 'pending',
