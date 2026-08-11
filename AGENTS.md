@@ -103,6 +103,8 @@ To deploy an L1 non-interactively with custom precompiles (NativeMinter, Contrac
 **CRITICAL:** The --genesis flag conflicts with --evm-chain-id. The chain ID must be baked into the genesis JSON, not passed as a CLI flag.
 **CRITICAL:** The --genesis flag also conflicts with --evm-defaults, --production-defaults, --test-defaults.
 **NOTE:** ICM Messenger/Registry contracts may fail to deploy during `blockchain deploy` when using a cloned genesis. The L1, PoA, and precompiles will still work. Deploy ICM separately with `avalanche icm deploy`.
+**NOTE:** `blockchain deploy` flags: `-e` (use ewoq key for local/devnet), NO `--force` flag (only `blockchain create` has it). Each L1 gets its own local Avalanche node on a separate port (mainnet: 9656, testnet: 9658, signet: 9654).
+**NOTE:** The deploy command prompts for ICM Registry addresses of other L1s (cross-chain config). Can Ctrl+C to skip — L1 deployment is already complete. Relayer deployment can also be skipped.
 **NOTE:** Genesis files are stored at ~/.avalanche-cli/subnets/<BlockchainName>/genesis.json (NOT chain.json, which is only the chain config metadata).
 
 ### Interacting with Precompiles via cast
@@ -119,17 +121,27 @@ Deploy contract (if on DeployerAllowList):
    # 0x60006000f3 = minimal bytecode that returns 0 bytes (creates empty contract)
 
 ### Deployed L1s (Local Network on VPS)
-1. **SnowsideMainnet** (Chain ID: 32904 / 0x8088) — NEEDS REDEPLOY
-   - Blockchain ID: 2sDVEVpwW8aNwgY1RMGzmFVXdJ1vyE1qWg3YBK8pGX8iy9iLtJ (STALE — was cleaned)
-   - Subnet ID: 2951oZXRAym6ThvANrFSCWbiSgh3mrgD5gJkACZbpnoic6Zczf (STALE)
-   - Public RPC: https://rpc.snowside.network/mainnet (currently 404)
+1. **SnowsideMainnet** (Chain ID: 32904 / 0x8088) — DEPLOYED & VERIFIED Session 12
+   - Blockchain ID: 2WGjPQF6YcV3KN19d5x21Cj8VAvxrakA72Ke7RHtZJpQBJBkdV
+   - Subnet ID: No8zvE8ZFDQhY8t5u2qTLjprzCqab4cYoVfTjskkZMzM34jXZ
+   - Local RPC: http://127.0.0.1:9656/ext/bc/2WGjPQF6YcV3KN19d5x21Cj8VAvxrakA72Ke7RHtZJpQBJBkdV/rpc
+   - Public RPC: https://rpc.snowside.network/mainnet
+   - NodeID: NodeID-PGEHenyijV18FoaRZrJqveJWac7oqWorU
+   - Port: 9656
    - Precompiles: Warp only
+   - ICM Status: Deployed (Messenger: 0x253b2784c75e510dD0fF1da844684a1aC0aa5fcf, Registry: 0xB8e71012d3F55D9EbbFf74376dE180702c1D8A6F)
+   - Relayer: Not deployed (skipped, can deploy with `avalanche interchain relayer deploy`)
 
-2. **SnowsideTestnet** (Chain ID: 33160 / 0x8188) — NEEDS REDEPLOY
-   - Blockchain ID: 2PS8J5q5f4PXnwEsxLafFnPuFowprdaZ8EWuZpTF3hyi6SqLhe (STALE — was cleaned)
-   - Subnet ID: wNWS35thzJy9fGaxtVfPwFKEt2RU2r9fMGA7c5A9XqqSvBCVj (STALE)
-   - Public RPC: https://rpc.snowside.network/testnet (currently 502)
+2. **SnowsideTestnet** (Chain ID: 33160 / 0x8188) — DEPLOYED & VERIFIED Session 12
+   - Blockchain ID: 2A45por6NN5o17NwKFTHTjyKhJobL8UPd92Sbi4ffaMfohRXRA
+   - Subnet ID: KByfMHbZ8ZfTbKegC16HMkVjS8gj2SGQNVmUNC8kSCikQQK5w
+   - Local RPC: http://127.0.0.1:9658/ext/bc/2A45por6NN5o17NwKFTHTjyKhJobL8UPd92Sbi4ffaMfohRXRA/rpc
+   - Public RPC: https://rpc.snowside.network/testnet
+   - NodeID: NodeID-MFYa9TTeDp7JNAEwavG5JVuY3ZorMSixe
+   - Port: 9658
    - Precompiles: Warp only
+   - ICM Status: Deployed (Messenger: 0x253b2784c75e510dD0fF1da844684a1aC0aa5fcf, Registry: 0xB8e71012d3F55D9EbbFf74376dE180702c1D8A6F)
+   - Relayer: Not deployed (skipped)
 
 3. **SnowsideSignet** (Chain ID: 33352 / 0x8248) — DEPLOYED & VERIFIED Session 11
    - Blockchain ID: 26XsRMLXezgJ1mK8TSVoHsRfBcy6Mwr4kJdKUAfgegb3PH4b5f
@@ -153,6 +165,10 @@ Deploy contract (if on DeployerAllowList):
 - Funded account (ewoq): 0x8db97C7cEcE249c2b98bDC0226Cc4C2A57BF52FC (1,000,000 ECX)
   - Private Key: 56289e99c94b6912bfc12adc093c9b51124f0dc54ac7a766b2bc5ccf558d8027
 - ICM Deployer: 0x18cD02DB3100cb4382B61329aA2a8cBe4A24B40f (funded with 600 ECX + 1000 minted = ~1590 ECX)
+- ICM c-chain Registry: 0x17aB05351fC94a1a67Bf3f56DdbB941aE6c63E25
+- Validator Messages Lib: 0x9C00629cE712B0255b17A4a657171Acd15720B8C
+- Validator Proxy Admin: 0xa0AffE1234567890ABcDef1234567890ABCdEF34
+- Primary Nodes: NodeID-7Xhw2mDxuDS44j42TCB6U5579esbSt3Lg (port 9650), NodeID-MFrZFVCXPv5iCn6M9K6XduxGTYp891xXZ (port 9652)
 
 ### Nginx Reverse Proxy Configuration (/etc/nginx/sites-available/default)
     server {
@@ -176,18 +192,18 @@ Deploy contract (if on DeployerAllowList):
             try_files $uri $uri/ /index.html;
         }
 
-        # Snowside Mainnet (ChainID: 32904) — STALE, needs redeploy
+        # Snowside Mainnet (ChainID: 32904) — Updated Session 12
         location /mainnet {
-            proxy_pass http://127.0.0.1:9654/ext/bc/2sDVEVpwW8aNwgY1RMGzmFVXdJ1vyE1qWg3YBK8pGX8iy9iLtJ/rpc;
+            proxy_pass http://127.0.0.1:9656/ext/bc/2WGjPQF6YcV3KN19d5x21Cj8VAvxrakA72Ke7RHtZJpQBJBkdV/rpc;
             proxy_set_header Host 127.0.0.1;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_set_header X-Forwarded-Proto $scheme;
         }
 
-        # Snowside Testnet (ChainID: 33160) — STALE, needs redeploy
+        # Snowside Testnet (ChainID: 33160) — Updated Session 12
         location /testnet {
-            proxy_pass http://127.0.0.1:9656/ext/bc/2PS8J5q5f4PXnwEsxLafFnPuFowprdaZ8EWuZpTF3hyi6SqLhe/rpc;
+            proxy_pass http://127.0.0.1:9658/ext/bc/2A45por6NN5o17NwKFTHTjyKhJobL8UPd92Sbi4ffaMfohRXRA/rpc;
             proxy_set_header Host 127.0.0.1;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -205,10 +221,9 @@ Deploy contract (if on DeployerAllowList):
     }
 
 ### Block Explorer Issue (Session 11)
-The signet block explorer (explorer-signet.snowside.network) shows block height 7 instead of 11+.
-This is because the explorer was built with the OLD signet Blockchain ID (2pwzxirq...) and needs to be updated with the NEW Blockchain ID (26XsRMLX...).
-The explorer's network config likely has hardcoded Blockchain IDs that need updating for all three networks.
-**FIX:** Update packages/explorer network config with new Blockchain IDs, rebuild, and redeploy to Cloudflare Pages.
+The signet block explorer (explorer-signet.snowside.network) was showing stale block height (build-time fetch in Astro frontmatter).
+**FIX (Session 12):** Rewrote explorer pages to use client-side `<script>` fetching with 15s auto-refresh. Block height now updates in real-time.
+**Root cause:** Astro frontmatter `await getNetworkData()` runs at build time, freezing the block number at whatever it was when the static site was generated.
 
 ## File conventions
 - All source files must include a comment at the file's path relative to the monorepo root (e.g., `// packages/web/src/components/Hero.astro`).

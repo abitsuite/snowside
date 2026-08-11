@@ -1,7 +1,47 @@
-# Snowside Handoff — 2026-08-11 (Session 11, Signet Redeploy with Precompiles)
+# Snowside Handoff — 2026-08-10 (Session 12, All L1s Deployed + Explorer Fixed)
 
 ## Purpose
 Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88. The monorepo at `/Workspace/abitsuite/snowside` includes a landing page (`snowside.network`), a pitch page (`pitch.snowside.network`), docs (`docs.snowside.network`), a block explorer (`explorer.snowside.network`), the API worker (`snowside.network/v1`), the bridge UI (`bridge.snowside.network` WIP), alongside the L1 execution layer (`go/subnet-evm`), BMM bidder (`rust/bmm-bidder`), and core contracts (`contracts/`).
+
+## Session 12 summary — 2026-08-10
+
+### Task 1: Block Explorer Client-Side Fetching Fix
+- Explorer was showing stale block height (block 7) because data was fetched at **build time** in Astro frontmatter (`await getNetworkData()`).
+- Rewrote `packages/explorer/src/pages/index.astro` and `packages/explorer/src/pages/[network]/index.astro` to use client-side `<script>` fetching.
+- Added 15-second auto-refresh via `setInterval(loadNetworkData, 15000)`.
+- Shows "Loading..." initially, then updates with real-time data.
+- Error handling: shows "RPC Unavailable" / "N/A" with rose-500 color if RPC fails.
+
+### Task 2: Mainnet and Testnet Redeployment
+- Deployed SnowsideMainnet with `avalanche blockchain deploy SnowsideMainnet --local -e`.
+  - Blockchain ID: 2WGjPQF6YcV3KN19d5x21Cj8VAvxrakA72Ke7RHtZJpQBJBkdV
+  - Subnet ID: No8zvE8ZFDQhY8t5u2qTLjprzCqab4cYoVfTjskkZMzM34jXZ
+  - Port: 9656, NodeID: NodeID-PGEHenyijV18FoaRZrJqveJWac7oqWorU
+  - ICM deployed successfully (Messenger: 0x253b..., Registry: 0xB8e7...)
+  - Relayer skipped (Ctrl+C at prompt)
+- Deployed SnowsideTestnet with `avalanche blockchain deploy SnowsideTestnet --local -e`.
+  - Blockchain ID: 2A45por6NN5o17NwKFTHTjyKhJobL8UPd92Sbi4ffaMfohRXRA
+  - Subnet ID: KByfMHbZ8ZfTbKegC16HMkVjS8gj2SGQNVmUNC8kSCikQQK5w
+  - Port: 9658, NodeID: NodeID-MFYa9TTeDp7JNAEwavG5JVuY3ZorMSixe
+  - ICM deployed successfully (same Messenger/Registry addresses)
+  - Relayer skipped (Ctrl+C at prompt)
+
+### Task 3: Nginx Config Update
+- Updated `/mainnet` location: port 9656, Blockchain ID 2WGjPQF6...
+- Updated `/testnet` location: port 9658, Blockchain ID 2A45por6...
+- Signet location unchanged (port 9654, Blockchain ID 26XsRMLX...)
+- All three public RPCs verified working via curl.
+
+### Task 4: Documentation Update
+- Updated AGENTS.md with new Blockchain IDs, Subnet IDs, ports, ICM status, NodeIDs.
+- Updated Nginx config section with correct proxy_pass lines.
+- Updated block explorer section with client-side fetching fix.
+- Added `blockchain deploy` flags documentation (-e, no --force, each L1 gets own node/port).
+
+### Verification Results
+- Mainnet: eth_chainId = 0x8088 (32904), eth_blockNumber = 0x7
+- Testnet: eth_chainId = 0x8188 (33160), eth_blockNumber = 0x7
+- Signet: eth_chainId = 0x8248 (33352), eth_blockNumber = 0xb (11)
 
 ## Session 11 summary — 2026-08-11
 
@@ -66,49 +106,74 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
 | go/subnet-evm | not rebuilt this session |
 | rust/bmm-bidder | not rebuilt this session |
 | contracts | not rebuilt this session |
-| SnowsideMainnet | needs redeploy (network was cleaned) |
-| SnowsideTestnet | needs redeploy (network was cleaned) |
+| SnowsideMainnet | deployed, ICM deployed, relayer pending |
+| SnowsideTestnet | deployed, ICM deployed, relayer pending |
 | SnowsideSignet | deployed, precompiles verified, ICM pending |
+| Block Explorer | fixed (client-side fetching with 15s auto-refresh) |
 
-## Current Signet Deployment Details
+## Current Deployment Details (All Three L1s)
+
+### SnowsideMainnet
+- Blockchain ID: 2WGjPQF6YcV3KN19d5x21Cj8VAvxrakA72Ke7RHtZJpQBJBkdV
+- Subnet ID: No8zvE8ZFDQhY8t5u2qTLjprzCqab4cYoVfTjskkZMzM34jXZ
+- Chain ID: 32904 (0x8088)
+- Local RPC: http://127.0.0.1:9656/ext/bc/2WGjPQF6YcV3KN19d5x21Cj8VAvxrakA72Ke7RHtZJpQBJBkdV/rpc
+- Public RPC: https://rpc.snowside.network/mainnet
+- Port: 9656, NodeID: NodeID-PGEHenyijV18FoaRZrJqveJWac7oqWorU
+- Precompiles: Warp only
+- ICM: Deployed (Messenger: 0x253b2784c75e510dD0fF1da844684a1aC0aa5fcf, Registry: 0xB8e71012d3F55D9EbbFf74376dE180702c1D8A6F)
+- Relayer: Not deployed
+
+### SnowsideTestnet
+- Blockchain ID: 2A45por6NN5o17NwKFTHTjyKhJobL8UPd92Sbi4ffaMfohRXRA
+- Subnet ID: KByfMHbZ8ZfTbKegC16HMkVjS8gj2SGQNVmUNC8kSCikQQK5w
+- Chain ID: 33160 (0x8188)
+- Local RPC: http://127.0.0.1:9658/ext/bc/2A45por6NN5o17NwKFTHTjyKhJobL8UPd92Sbi4ffaMfohRXRA/rpc
+- Public RPC: https://rpc.snowside.network/testnet
+- Port: 9658, NodeID: NodeID-MFYa9TTeDp7JNAEwavG5JVuY3ZorMSixe
+- Precompiles: Warp only
+- ICM: Deployed (same Messenger/Registry addresses as mainnet)
+- Relayer: Not deployed
+
+### SnowsideSignet
 - Blockchain ID: 26XsRMLXezgJ1mK8TSVoHsRfBcy6Mwr4kJdKUAfgegb3PH4b5f
 - Subnet ID: 2W9boARgCWL25z6pMFNtkCfNA5v28VGg9PmBgUJfuKndEdhrvw
 - Chain ID: 33352 (0x8248)
 - Local RPC: http://127.0.0.1:9654/ext/bc/26XsRMLXezgJ1mK8TSVoHsRfBcy6Mwr4kJdKUAfgegb3PH4b5f/rpc
 - Public RPC: https://rpc.snowside.network/signet
+- Port: 9654, NodeID: NodeID-2QpdUKC81YfKoPwU4kuUA8er5FiNQ3V6w
 - Precompiles: Warp, NativeMinter (0x0200...0001, admin: ewoq), ContractDeployerAllowList (0x0200...0000, admin: ewoq)
-- ICM: NOT deployed (failed during L1 creation)
-- NodeID: NodeID-2QpdUKC81YfKoPwU4kuUA8er5FiNQ3V6w
-- Latest block: 11 (as of end of session)
-- ewoq balance: ~999,998 ECX (used gas for minting + deployments + transfer)
-- ICM deployer balance: ~1,590 ECX (600 initial + 1000 minted - gas)
+- ICM: NOT deployed (failed during L1 creation, deploy separately with `avalanche icm deploy`)
+- Latest block: 11
+- ewoq balance: ~999,998 ECX
+- ICM deployer balance: ~1,590 ECX
 
 ## Next session priorities (in order)
 
-1. **Fix Block Explorer (HIGH PRIORITY)**
-   - Update packages/explorer network config with new signet Blockchain ID (26XsRMLX...)
-   - Mainnet and testnet Blockchain IDs are also stale and will need updating after redeployment
-   - Rebuild and redeploy explorer to Cloudflare Pages
-   - Verify explorer-signet.snowside.network shows correct block height
+1. **Bridge UI (bridge.snowside.network) — PRIMARY FOCUS**
+   - Complete the BIP-300/301 deposit and withdrawal flow for eCash (ECX) into Signet
+   - Integrate with the federation service for deposit monitoring
+   - Add QR code display for deposit addresses
+   - Add transaction history and status tracking
+   - Connect to signet RPC for balance queries
 
 2. **Deploy ICM on Signet**
-   - Run `avalanche icm deploy` to deploy ICM Messenger and Registry contracts
+   - Run `avalanche icm deploy` to deploy ICM Messenger and Registry contracts on signet
    - If this fails due to the cloned genesis, may need to create signet from scratch (non-cloned) with CLI interactive mode
    - Verify ICM Messenger and Registry addresses match expected values
 
-3. **Redeploy Mainnet and Testnet**
-   - `avalanche network clean` was run during Session 11, wiping all local networks
-   - Redeploy: `avalanche blockchain deploy SnowsideMainnet --local` and `avalanche blockchain deploy SnowsideTestnet --local`
-   - These will get new Blockchain IDs and ports — update Nginx accordingly
-   - Consider adding precompiles to mainnet/testnet as well (using genesis cloning approach)
-
-4. **Federation Service**
+3. **Federation Service**
    - Deploy the `federation` Docker service to the VPS
    - Hook up the Bridge UI to the federation service
+   - Monitor BIP-300 deposit confirmations on eCash L1
 
-5. **Contract Deployment**
+4. **Contract Deployment**
    - Deploy peg contract, fee distribution contract, and other Solidity contracts to signet
-   - Test with the verified precompiles
+   - Test with the verified precompiles (NativeMinter, ContractDeployerAllowList)
+
+5. **Deploy Relayers**
+   - Deploy ICM relayers for mainnet and testnet with `avalanche interchain relayer deploy`
+   - Enables cross-chain messaging between L1s
 
 ## Key learnings (all sessions)
 1. **@tailwindcss/vite** breaks on Cloudflare's rolldown-vite — always use **@tailwindcss/postcss**
@@ -152,7 +217,12 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
 39. **NativeMinter precompile verified** — `mintNativeCoin(address,uint256)` works via `cast send` to `0x0200000000000000000000000000000000000001`. Emits `NativeCoinMinted` event. Only admin/manager/enabled roles can mint.
 40. **ContractDeployerAllowList precompile verified** — ewoq (admin) can deploy contracts, non-allowlisted addresses get "tx.origin ... is not authorized to deploy a contract" error. Minimal deployable bytecode: `0x60006000f3` (returns 0 bytes, creates empty contract).
 41. **cast wallet new --json** returns a JSON ARRAY (list), not a dict. Access with `json.load(open(file))[0]["private_key"]`, not `json.load(open(file)).get("private_key")`.
-42. **Block explorer stale Blockchain IDs** — The explorer package has hardcoded Blockchain IDs from Session 7. When L1s are redeployed with new Blockchain IDs, the explorer config must be updated and the package rebuilt/redeployed.
+42. **Block explorer stale data** — The explorer package was fetching data at build time in Astro frontmatter, freezing the block height. Fixed by moving to client-side `<script>` fetching with 15s auto-refresh.
+43. **`blockchain deploy` does NOT have `--force`** — Only `blockchain create` has `--force`. For deploy, use `-e` (ewoq key) for local/devnet deployments.
+44. **Each L1 gets its own local node/port** — When deploying multiple L1s locally, each gets its own Avalanche node on a separate port (mainnet: 9656, testnet: 9658, signet: 9654). Primary network nodes run on ports 9650 and 9652.
+45. **Deploy command ICM cross-chain prompt** — `blockchain deploy` prompts for ICM Registry addresses of other L1s for cross-chain config. Can Ctrl+C to skip — the L1 deployment is already complete. Relayer deployment can also be skipped.
+46. **ICM deploys at deterministic addresses** — ICM Messenger (0x253b2784c75e510dD0fF1da844684a1aC0aa5fcf) and Registry (0xB8e71012d3F55D9EbbFf74376dE180702c1D8A6F) deploy at the same address on all L1s.
+47. **grep can extract Subnet ID instead of Blockchain ID** — When parsing deploy logs, `grep -oE '2[a-zA-Z0-9]{30,}'` may match the Subnet ID (which also starts with "2") instead of the Blockchain ID. Always verify by checking the full deployment table output.
 
 ## Session history (prior sessions)
 
@@ -215,6 +285,14 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
 2. Scaffolded packages/api Cloudflare Worker using Hono + Chanfana
 3. Worker deploys to snowside.network/v1*, serving OpenAPI UI at /v1
 4. Configured raw proxy to Drynet 4 Esplora backend
+
+### Session 12 (2026-08-10)
+1. Fixed block explorer stale data by converting from build-time fetch to client-side `<script>` fetching with 15s auto-refresh
+2. Deployed SnowsideMainnet L1 (Blockchain ID: 2WGjPQF6..., port 9656) with ICM
+3. Deployed SnowsideTestnet L1 (Blockchain ID: 2A45por6..., port 9658) with ICM
+4. Updated Nginx config with correct Blockchain IDs and ports for all three networks
+5. Verified all three public RPCs working (mainnet: 0x8088, testnet: 0x8188, signet: 0x8248)
+6. Updated AGENTS.md and HANDOFF.md with all new deployment details
 
 ### Session 11 (2026-08-11)
 1. Redeployed SnowsideSignet with contractNativeMinterConfig and contractDeployerAllowListConfig precompiles
@@ -369,4 +447,4 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
     # Testnet: STALE (needs redeploy)
 
 ---
-*Generated at end of Session 11. Next session: Fix block explorer stale Blockchain IDs, deploy ICM on signet, redeploy mainnet/testnet. Maintained per AGENTS.md.*
+*Generated at end of Session 12. Next session: Bridge UI for eCash deposits/withdrawals into Signet, deploy ICM on signet, federation service. Maintained per AGENTS.md.*
