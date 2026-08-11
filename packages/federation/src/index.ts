@@ -35,7 +35,7 @@ const RPC_URLS: Record<string, string> = {
 
 const ESPLORA_URLS: Record<string, string> = {
   mainnet:
-    process.env.MAINNET_ESPLORA || 'https://esplora.mainnet.drivechain.dev',
+    process.env.MAINNET_ESPLORA || '',
   testnet:
     process.env.TESTNET_ESPLORA || 'https://esplora.drynet4.drivechain.dev',
   signet:
