@@ -92,8 +92,11 @@ const { network = 'mainnet' } = Astro.props;
       <input id="withdraw-amount" type="number" placeholder="0.00" class="w-full rounded-lg border border-white/10 bg-surface-0 px-4 py-3 text-sm text-snow-50 placeholder-snow-500 focus:border-aval-600 focus:outline-none focus:ring-1 focus:ring-aval-600 font-mono" />
     </div>
     <div>
-      <label class="block text-xs uppercase tracking-widest text-snow-400 mb-2">Burn Transaction Hash (optional)</label>
-      <input id="withdraw-burn-tx" type="text" placeholder="0x..." class="w-full rounded-lg border border-white/10 bg-surface-0 px-4 py-3 text-sm text-snow-50 placeholder-snow-500 focus:border-aval-600 focus:outline-none focus:ring-1 focus:ring-aval-600 font-mono" />
+      <label class="block text-xs uppercase tracking-widest text-snow-400 mb-2">Burn Transaction Hash</label>
+      <div class="flex gap-2">
+        <input id="withdraw-burn-tx" type="text" placeholder="0x..." class="w-full rounded-lg border border-white/10 bg-surface-0 px-4 py-3 text-sm text-snow-50 placeholder-snow-500 focus:border-aval-600 focus:outline-none focus:ring-1 focus:ring-aval-600 font-mono" />
+        <button id="burn-ecx" class="px-4 py-3 rounded-lg bg-aval-600 text-white text-sm hover:bg-aval-700 transition-colors">Burn ECX</button>
+      </div>
     </div>
     <div class="rounded-lg bg-surface-2 p-4 text-xs text-snow-400">
       <p class="font-bold text-snow-50 mb-2">Instructions:</p>
@@ -399,12 +402,59 @@ function pollDeposit(depositId) {
   }, 3000);
 }
 
+document.getElementById('burn-ecx').addEventListener('click', async () => {
+  if (!walletAddress || !window.ethereum) {
+    alert('Connect wallet first to burn ECX');
+    return;
+  }
+
+  const amount = document.getElementById('withdraw-amount').value;
+  if (!amount || !isFinite(amount) || amount <= 0) {
+    alert('Enter a valid ECX amount');
+    return;
+  }
+
+  const result = document.getElementById('withdraw-result');
+  result.classList.remove('hidden');
+  result.textContent = 'Sending transaction...';
+
+  try {
+    await burnECX(amount);
+  } catch (err) {
+    result.textContent = 'Failed: ' + err.message;
+  }
+});
+
 document.getElementById('initiate-withdraw').addEventListener('click', async () => {
   const snowsideAddr = document.getElementById('withdraw-snowside').value.trim();
   const ecashAddr = document.getElementById('withdraw-dest').value.trim();
   const amount = document.getElementById('withdraw-amount').value;
   const burnTx = document.getElementById('withdraw-burn-tx').value.trim();
   if (!snowsideAddr || !ecashAddr || !amount) { alert('Fill in all required fields'); return; }
+
+  // If no burn tx yet, burn ECX first
+  if (!burnTx && walletAddress) {
+    const burnResult = document.getElementById('withdraw-result');
+    burnResult.classList.remove('hidden');
+    burnResult.textContent = 'Burning ECX...';
+    document.getElementById('burn-ecx').disabled = true;
+    document.getElementById('burn-ecx').textContent = 'Burning...';
+    
+    try {
+      await burnECX(amount);
+    } catch (err) {
+      document.getElementById('burn-ecx').disabled = false;
+      document.getElementById('burn-ecx').textContent = 'Burn ECX';
+      burnResult.textContent = 'Burn failed: ' + err.message;
+      return;
+    }
+    
+    burnResult.textContent = 'Withdrawal submitted!';
+    document.getElementById('burn-ecx').disabled = false;
+    document.getElementById('burn-ecx').textContent = 'Burn ECX';
+    return;
+  }
+
   const result = document.getElementById('withdraw-result');
   result.classList.remove('hidden');
   result.textContent = 'Submitting...';
@@ -427,6 +477,45 @@ document.getElementById('initiate-withdraw').addEventListener('click', async () 
     result.textContent = 'Error: ' + err.message;
   }
 });
+
+// Burn ECX using Rabby wallet (eth_sendTransaction to 0x0)
+async function burnECX(amountXec) {
+  if (!walletAddress || !window.ethereum) {
+    throw new Error('No wallet connected');
+  }
+
+  const result = document.getElementById('withdraw-result');
+  result.classList.remove('hidden');
+  result.textContent = 'Burning ECX...';
+
+  try {
+    // Convert ECX amount to wei (multiply by 10^18)
+    const amountWei = BigInt(Math.floor(amountXec * 1e18));
+    const amountWeiHex = amountWei.toString(16);
+
+    // Send ECX to burn address (0x0)
+    const txHash = await window.ethereum.request({
+      method: 'eth_sendTransaction',
+      params: [{
+        from: walletAddress,
+        to: '0x0000000000000000000000000000000000000000',
+        value: amountWeiHex,
+        gas: '0x5208', // 21000 gas
+      }],
+    });
+
+    // Update UI to show burn success
+    result.textContent = 'Burned ECX ✓';
+    const burnTxInput = document.getElementById('withdraw-burn-tx');
+    burnTxInput.value = txHash;
+    burnTxInput.classList.add('text-green-400');
+    setTimeout(() => burnTxInput.classList.remove('text-green-400'), 2000);
+
+    return txHash;
+  } catch (err) {
+    throw new Error(err.message || 'Failed to burn ECX');
+  }
+}
 
 document.getElementById('history-address').addEventListener('input', async (e) => {
   const addr = e.target.value.trim();
