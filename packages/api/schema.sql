@@ -1,14 +1,11 @@
-CREATE TABLE IF NOT EXISTS meta (
-  key TEXT PRIMARY KEY,
-  value TEXT NOT NULL
-);
+-- Snowside Bridge API — D1 schema
+-- Matches the live D1 database (snowside-bridge) exactly
 
 CREATE TABLE IF NOT EXISTS deposits (
   id TEXT PRIMARY KEY,
   network TEXT NOT NULL,
   snowside_address TEXT NOT NULL,
   ecash_address TEXT,
-  derivation_index INTEGER,
   amount_sats INTEGER,
   amount_ecx INTEGER,
   status TEXT NOT NULL DEFAULT 'pending',
@@ -16,11 +13,9 @@ CREATE TABLE IF NOT EXISTS deposits (
   mint_tx_hash TEXT,
   created_at INTEGER NOT NULL,
   confirmed_at INTEGER,
-  minted_at INTEGER
+  minted_at INTEGER,
+  derivation_index INTEGER
 );
-
-CREATE INDEX IF NOT EXISTS idx_deposits_snowside ON deposits(snowside_address);
-CREATE INDEX IF NOT EXISTS idx_deposits_status ON deposits(status);
 
 CREATE TABLE IF NOT EXISTS withdrawals (
   id TEXT PRIMARY KEY,
@@ -36,5 +31,7 @@ CREATE TABLE IF NOT EXISTS withdrawals (
   completed_at INTEGER
 );
 
-CREATE INDEX IF NOT EXISTS idx_withdrawals_snowside ON withdrawals(snowside_address);
-CREATE INDEX IF NOT EXISTS idx_withdrawals_status ON withdrawals(status);
+CREATE TABLE IF NOT EXISTS meta (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL
+);
