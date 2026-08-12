@@ -38,7 +38,7 @@ console.log('(was using mint selector: 0x40c10f19 — WRONG!)');
 const chain: Chain = {
   id: 33352,
   name: 'snowside-signet',
-  nativeCurrency: { name: 'ECX', symbol: 'XEC', decimals: 18 },
+  nativeCurrency: { name: 'ECX', symbol: 'ECX', decimals: 18 },
   rpcUrls: { default: { http: [RPC] } },
 };
 

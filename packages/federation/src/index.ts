@@ -53,16 +53,16 @@ const CHAIN_IDS: Record<string, number> = {
   signet: 33352,
 };
 
-// 1 XEC = 100 satoshis; 1 ECX = 10^18 (18 decimals)
+// 1 ECX = 100 satoshis on eCash L1; 1 ECX = 10^18 (18 decimals)
 // Mint amount = satoshis * 10^16 to convert sats → ECX with 18 decimals
 // Network-specific satoshi→ECX conversion
 // signet (Bitcoin): 1 ECX = 1 BTC = 100,000,000 sats → 1 sat = 10^10 wei
-// eCash: 1 ECX = 1 XEC = 100 sats → 1 sat = 10^16 wei
+// eCash: 1 ECX = 100 sats → 1 sat = 10^16 wei
 const SATS_TO_ECX_SIGNET = BigInt(10) ** BigInt(10);
-const SATS_TO_ECX_XEC = BigInt(10) ** BigInt(16);
+const SATS_TO_ECX_ECASH = BigInt(10) ** BigInt(16);
 
 function satsToEcxMultiplier(network: string): bigint {
-  return network === 'signet' ? SATS_TO_ECX_SIGNET : SATS_TO_ECX_XEC;
+  return network === 'signet' ? SATS_TO_ECX_SIGNET : SATS_TO_ECX_ECASH;
 }
 
 // ── Types ───────────────────────────────────────────────────────
@@ -414,7 +414,7 @@ async function fetchFundedDeposits(): Promise<FundedDeposit[]> {
 /**
  * Process a pending withdrawal.
  * Verifies the burn tx on L2, then builds, signs, and broadcasts an L1
- * transaction sending XEC/sats from federation UTXOs to the user's address.
+ * transaction sending ECX/sats from federation UTXOs to the user's address.
  */
 async function processWithdrawal(withdrawal: Withdrawal): Promise<void> {
   if (withdrawal.status !== 'pending') return;

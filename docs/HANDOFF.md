@@ -114,14 +114,14 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
 - Registered through chanfana (OpenAPI)
 
 ### Task 3: Network-Specific ECX↔Sats Conversion (CRITICAL FIX)
-- BUG: Federation used eCash ratio (1 ECX = 1 XEC = 100 sats) for ALL networks including Bitcoin signet
+- BUG: Federation used eCash ratio (1 ECX = 100 sats) for ALL networks including Bitcoin signet
 - FIX: 1 ECX = 1 BTC = 100,000,000 sats on signet (multiplier 10^10, not 10^16)
 - `ecxToSats()` now takes `network` parameter:
   - signet: `sats = ECX * 100_000_000` (1 ECX = 1 BTC)
-  - eCash: `sats = ECX * 100` (1 ECX = 1 XEC)
+  - eCash: `sats = ECX * 100` (1 ECX = 100 sats)
 
 ### Task 4: DB Schema Rename (amount_xec → amount_sats)
-- The `amount_xec` column stored satoshis, not XEC — misleading name
+- The `amount_xec` column stored satoshis, not ECX — misleading name
 - Renamed to `amount_sats` in D1 database (both deposits and withdrawals tables)
 - Updated schema.sql, API code, and federation code to use `amount_sats` everywhere
 - Fixed old deposit record: `amount_ecx = 1.337E+24` (wrong ratio) → `1337000000000000000` (correct: 1.337 ECX in wei)
@@ -219,14 +219,14 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
 - Registered through chanfana (OpenAPI)
 
 ### Task 3: Network-Specific ECX↔Sats Conversion (CRITICAL FIX)
-- BUG: Federation used eCash ratio (1 ECX = 1 XEC = 100 sats) for ALL networks including Bitcoin signet
+- BUG: Federation used eCash ratio (1 ECX = 100 sats) for ALL networks including Bitcoin signet
 - FIX: 1 ECX = 1 BTC = 100,000,000 sats on signet (multiplier 10^10, not 10^16)
 - `ecxToSats()` now takes `network` parameter:
   - signet: `sats = ECX * 100_000_000` (1 ECX = 1 BTC)
-  - eCash: `sats = ECX * 100` (1 ECX = 1 XEC)
+  - eCash: `sats = ECX * 100` (1 ECX = 100 sats)
 
 ### Task 4: DB Schema Rename (amount_xec → amount_sats)
-- The `amount_xec` column stored satoshis, not XEC — misleading name
+- The `amount_xec` column stored satoshis, not ECX — misleading name
 - Renamed to `amount_sats` in D1 database (both deposits and withdrawals tables)
 - Updated schema.sql, API code, and federation code to use `amount_sats` everywhere
 - Fixed old deposit record: `amount_ecx = 1.337E+24` (wrong ratio) → `1337000000000000000` (correct: 1.337 ECX in wei)
@@ -384,8 +384,8 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
 
 ### Task 4: Per-Network Esplora URLs
 - Corrected network mapping based on eCash config JSON:
-  - mainnet -> eCash mainnet (esplora.mainnet.drivechain.dev, XEC, ecash: addresses)
-  - testnet -> eCash drynet4 (esplora.drynet4.drivechain.dev, XEC, ecash: addresses)
+  - mainnet -> eCash mainnet (esplora.mainnet.drivechain.dev, ECX, ecash: addresses)
+  - testnet -> eCash drynet4 (esplora.drynet4.drivechain.dev, ECX, ecash: addresses)
   - signet -> Bitcoin signet (esplora.signet.drivechain.info, sBTC, tb1q addresses)
 - Updated federation service with ESPLORA_URLS per-network dictionary
 - generateDepositAddress() generates ecash: or tb1q based on network
@@ -428,7 +428,7 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
 - ~~Address generation is stubbed~~ FIXED: HD wallet implemented in packages/federation/src/wallet.ts (@scure/bip32 + ecashaddrjs)
 - Withdrawal processing not implemented (federation logs but does not send L1 funds)
 - Burn verification not implemented (only checks tx exists)
-- ~~Bridge UI does not show L1 currency difference~~ N/A: All 3 networks use XEC (ecash: addresses)
+- ~~Bridge UI does not show L1 currency difference~~ N/A: All 3 networks use ECX (ecash: addresses)
 
 ## Session 13 summary — 2026-08-10
 
@@ -770,7 +770,7 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
 51. **Custodial MVP → Full BIP-300/301 upgrade path** — Phase 1 (current): federation holds keys. Phase 2: register Snowside on Signet + deploy enforcer. Phase 3: Drynet. Phase 4: Mainnet. Schema needs future fields: sidechain_slot, bundle_hash, ack_count, blocks_remaining.
 52. **D1 database snowside-bridge** — ID: 202053ef-9607-481d-9b73-185734164ea4. Binding: DB. Schema at packages/api/schema.sql. Deployed and working.
 53. **chanfana only documents openapi.get()/openapi.post() routes** — Endpoints registered via Hono app.get()/app.post() work fine but do NOT appear in the OpenAPI spec. All bridge/federation endpoints need to be migrated to chanfana for proper documentation.
-54. **Per-network L1 mapping is critical** — Snowside mainnet bridges to eCash mainnet (esplora.mainnet.drivechain.dev, XEC), testnet to eCash drynet4 (esplora.drynet4.drivechain.dev, XEC), signet to Bitcoin signet (esplora.signet.drivechain.info, sBTC). Each network uses different Esplora URLs, address formats, and currencies.
+54. **Per-network L1 mapping is critical** — Snowside mainnet bridges to eCash mainnet (esplora.mainnet.drivechain.dev, ECX), testnet to eCash drynet4 (esplora.drynet4.drivechain.dev, ECX), signet to Bitcoin signet (esplora.signet.drivechain.info, sBTC). Each network uses different Esplora URLs, address formats, and currencies.
 55. **Bitcoin signet uses tb1q addresses, not ecash: addresses** — The generateDepositAddress() function must check the network and generate the correct address format. eCash uses ecash:qz... (Base58), Bitcoin signet uses tb1q... (Bech32).
 56. **Federation service is a client, not a server** — No tunneling or exposed endpoints needed. Federation only makes outbound HTTPS calls to the API, Snowside RPC, and Esplora. Deployed in Docker on VPS bchplease with docker compose.
 57. **Docker on VPS for federation** — Multi-stage Dockerfile (builder with tsc, runtime with node:22-slim). docker-compose.yml with all env vars. .env file with FEDERATION_TOKEN and EWOQ_PRIVATE_KEY. `docker compose up -d --build` to deploy.
@@ -782,8 +782,8 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
 63. **@scure/btc-signer tx.finalize() required** — After signing all inputs, you MUST call `tx.finalize()` before `tx.extract()`. Without it, extract() throws "Transaction has unfinalized inputs". The library does not auto-finalize.
 64. **@scure/btc-signer p2wpkh/p2pkh expect publicKey** — The `p2wpkh()` and `p2pkh()` functions expect the **publicKey** (33 bytes compressed), NOT the pubkeyHash (20 bytes). They compute the hash internally. Access `.script` on the return value for the output script.
 65. **@scure/btc-signer addOutputAddress needs network** — `tx.addOutputAddress(address, amount, network)` requires the correct network object for bech32 decoding: `TEST_NETWORK` for signet/testnet (prefix 'tb'), `NETWORK` for mainnet (prefix 'bc').
-66. **Network-specific ECX↔sats conversion** — 1 ECX = 1 BTC = 100,000,000 sats on signet (multiplier 10^10). 1 ECX = 1 XEC = 100 sats on eCash (multiplier 10^16). Old code used 10^16 for ALL networks — WRONG for Bitcoin.
-67. **D1 column rename** — `ALTER TABLE ... RENAME COLUMN amount_xec TO amount_sats;` works in D1 (SQLite 3.25+). The column stored satoshis, not XEC — misleading name fixed.
+66. **Network-specific ECX↔sats conversion** — 1 ECX = 1 BTC = 100,000,000 sats on signet (multiplier 10^10). 1 ECX = 100 sats on eCash (multiplier 10^16). Old code used 10^16 for ALL networks — WRONG for Bitcoin.
+67. **D1 column rename** — `ALTER TABLE ... RENAME COLUMN amount_xec TO amount_sats;` works in D1 (SQLite 3.25+). The column stored satoshis, not ECX — misleading name fixed.
 68. **Burn address for ECX** — Use `0x000000000000000000000000000000000000dEaD` (dead address, 42 chars). Do NOT use short 0x0 (many EVM chains reject sends to 0x0).
 69. **Federation container naming** — Docker Compose names containers as `{project}-{service}-{N}`. To persist a clean name, set `container_name: snowside-federation` in docker-compose.yml.
 70. **First successful withdrawal on signet** — L1 TX `f6b0f0a943b6caadded84cd4635f334ca8ce92269e376cf0aff54100c579e8ee`. Input: 133,700,000 sats (P2WPKH). Output: 12,233,300 sats to user + 121,465,700 sats change. Fee: 1,000 sats. Witness properly formed with signature + pubkey.
@@ -801,8 +801,8 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
 63. **@scure/btc-signer tx.finalize() required** — After signing all inputs, you MUST call `tx.finalize()` before `tx.extract()`. Without it, extract() throws "Transaction has unfinalized inputs". The library does not auto-finalize.
 64. **@scure/btc-signer p2wpkh/p2pkh expect publicKey** — The `p2wpkh()` and `p2pkh()` functions expect the **publicKey** (33 bytes compressed), NOT the pubkeyHash (20 bytes). They compute the hash internally. Access `.script` on the return value for the output script.
 65. **@scure/btc-signer addOutputAddress needs network** — `tx.addOutputAddress(address, amount, network)` requires the correct network object for bech32 decoding: `TEST_NETWORK` for signet/testnet (prefix 'tb'), `NETWORK` for mainnet (prefix 'bc').
-66. **Network-specific ECX↔sats conversion** — 1 ECX = 1 BTC = 100,000,000 sats on signet (multiplier 10^10). 1 ECX = 1 XEC = 100 sats on eCash (multiplier 10^16). Old code used 10^16 for ALL networks — WRONG for Bitcoin.
-67. **D1 column rename** — `ALTER TABLE ... RENAME COLUMN amount_xec TO amount_sats;` works in D1 (SQLite 3.25+). The column stored satoshis, not XEC — misleading name fixed.
+66. **Network-specific ECX↔sats conversion** — 1 ECX = 1 BTC = 100,000,000 sats on signet (multiplier 10^10). 1 ECX = 100 sats on eCash (multiplier 10^16). Old code used 10^16 for ALL networks — WRONG for Bitcoin.
+67. **D1 column rename** — `ALTER TABLE ... RENAME COLUMN amount_xec TO amount_sats;` works in D1 (SQLite 3.25+). The column stored satoshis, not ECX — misleading name fixed.
 68. **Burn address for ECX** — Use `0x000000000000000000000000000000000000dEaD` (dead address, 42 chars). Do NOT use short 0x0 (many EVM chains reject sends to 0x0).
 69. **Federation container naming** — Docker Compose names containers as `{project}-{service}-{N}`. To persist a clean name, set `container_name: snowside-federation` in docker-compose.yml.
 70. **First successful withdrawal on signet** — L1 TX `f6b0f0a943b6caadded84cd4635f334ca8ce92269e376cf0aff54100c579e8ee`. Input: 133,700,000 sats (P2WPKH). Output: 12,233,300 sats to user + 121,465,700 sats change. Fee: 1,000 sats. Witness properly formed with signature + pubkey.

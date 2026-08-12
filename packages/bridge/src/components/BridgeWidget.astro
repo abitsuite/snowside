@@ -36,8 +36,8 @@ const { network = 'mainnet' } = Astro.props;
   </div>
 
   <div class="flex border-b border-white/10 mb-6">
-    <button id="tab-deposit" class="flex-1 py-3 px-4 text-sm font-bold text-white border-b-2 border-aval-600 transition-colors">Deposit (XEC -> Snowside)</button>
-    <button id="tab-withdraw" class="flex-1 py-3 px-4 text-sm font-bold text-snow-400 hover:text-white border-b-2 border-transparent transition-colors">Withdraw (Snowside -> XEC)</button>
+    <button id="tab-deposit" class="flex-1 py-3 px-4 text-sm font-bold text-white border-b-2 border-aval-600 transition-colors">Deposit (ECX -> Snowside)</button>
+    <button id="tab-withdraw" class="flex-1 py-3 px-4 text-sm font-bold text-snow-400 hover:text-white border-b-2 border-transparent transition-colors">Withdraw (Snowside -> ECX)</button>
   </div>
 
   <div id="form-deposit" class="flex flex-col gap-4">
@@ -49,7 +49,7 @@ const { network = 'mainnet' } = Astro.props;
       </div>
     </div>
     <div>
-      <label class="block text-xs uppercase tracking-widest text-snow-400 mb-2">Amount (XEC)</label>
+      <label class="block text-xs uppercase tracking-widest text-snow-400 mb-2">Amount (ECX)</label>
       <input id="deposit-amount" type="number" placeholder="0.00" class="w-full rounded-lg border border-white/10 bg-surface-0 px-4 py-3 text-sm text-snow-50 placeholder-snow-500 focus:border-aval-600 focus:outline-none focus:ring-1 focus:ring-aval-600 font-mono" />
     </div>
     <div class="rounded-lg bg-surface-2 p-4 text-xs text-snow-400">
@@ -57,7 +57,7 @@ const { network = 'mainnet' } = Astro.props;
       <ol class="list-decimal list-inside space-y-1">
         <li>Enter your Snowside address and amount.</li>
         <li>Click "Generate Deposit Address" to get a unique eCash address.</li>
-        <li>Send your XEC to the generated address.</li>
+        <li>Send your ECX to the generated address.</li>
         <li>Funds will be minted as ECX on Snowside after confirmation.</li>
       </ol>
     </div>
@@ -66,7 +66,7 @@ const { network = 'mainnet' } = Astro.props;
     <div id="deposit-result" class="hidden flex-col items-center gap-3 mt-4 border-t border-white/10 pt-6">
       <div id="deposit-loading" class="text-sm text-snow-400">Generating deposit address...</div>
       <div id="deposit-qr-wrap" class="hidden flex-col items-center gap-3">
-        <p class="text-xs text-snow-400">Send XEC to the address below:</p>
+        <p class="text-xs text-snow-400">Send ECX to the address below:</p>
         <img id="deposit-qr" src="" alt="Deposit QR" class="rounded-lg bg-white p-2 w-48 h-48" />
         <p id="deposit-addr" class="font-mono text-sm text-white break-all"></p>
       </div>
@@ -104,7 +104,7 @@ const { network = 'mainnet' } = Astro.props;
         <li>Enter your destination address and ECX amount.</li>
         <li>Click "Burn ECX" to burn your ECX on Snowside L1 via Rabby wallet.</li>
         <li>Click "Initiate Withdrawal" to submit to the federation.</li>
-        <li>The federation will send XEC/BTC to your address after verification.</li>
+        <li>The federation will send ECX/BTC to your address after verification.</li>
       </ol>
       <p class="text-aval-400 mt-2 font-bold">⚠ Time limit: Withdrawals must be processed within 15 minutes or they will auto-fail.</p>
     </div>
@@ -537,7 +537,7 @@ document.getElementById('history-address').addEventListener('input', async (e) =
     for (const d of deposits) {
       const div = document.createElement('div');
       div.className = 'rounded-lg bg-surface-2 px-3 py-2 text-xs flex justify-between items-center';
-      div.innerHTML = `<span class="text-snow-400">Deposit ${d.amount_xec ? (d.amount_xec / 100).toFixed(2) + ' XEC' : '—'}</span><span class="font-mono ${d.status === 'minted' ? 'text-green-400' : 'text-snow-400'}">${d.status}</span>`;
+      div.innerHTML = `<span class="text-snow-400">Deposit ${d.amount_sats ? (d.amount_sats / 100).toFixed(2) + ' ECX' : '—'}</span><span class="font-mono ${d.status === 'minted' ? 'text-green-400' : 'text-snow-400'}">${d.status}</span>`;
       list.appendChild(div);
     }
     for (const w of withdrawals) {

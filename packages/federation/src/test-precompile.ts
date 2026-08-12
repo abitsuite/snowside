@@ -6,7 +6,7 @@ const NATIVE_MINTER = '0x0200000000000000000000000000000000000001';
 const chain: Chain = {
   id: 33352,
   name: 'snowside-signet',
-  nativeCurrency: { name: 'ECX', symbol: 'XEC', decimals: 18 },
+  nativeCurrency: { name: 'ECX', symbol: 'ECX', decimals: 18 },
   rpcUrls: { default: { http: [RPC] } },
 };
 

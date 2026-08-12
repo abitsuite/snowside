@@ -433,7 +433,7 @@ The landing page alternates dark and light sections for visual rhythm.
 - **Future BIP-300 fields needed**: sidechain_slot, bundle_hash, ack_count, blocks_remaining, ctip_txid, ctip_vout
 
 ### BIP-300/301 Reference (for future upgrade)
-- **BIP-300**: Hashrate Escrows — deposits/withdrawals via miner voting, OP_DRIVECHAIN opcode — OPTIONAL (custodial XEC model first)
+- **BIP-300**: Hashrate Escrows — deposits/withdrawals via miner voting, OP_DRIVECHAIN opcode — OPTIONAL (custodial ECX model first)
 - **BIP-301**: Blind Merged Mining — miners secure sidechain without running sidechain nodes
 - **M5 (Deposit)**: L1 tx spending CTIP, creating new CTIP with more coins, includes destination L2 address
 - **M6 (Withdrawal)**: L1 tx paying out from CTIP, requires 13,150 miner ACKs over 26,300 blocks
@@ -443,8 +443,8 @@ The landing page alternates dark and light sections for visual rhythm.
 - **bip300301_enforcer**: Rust app (github.com/LayerTwo-Labs/bip300301_enforcer), gRPC API, watches L1 via ZMQ
 - **Enforcer RPCs**: ValidatorService/GetSidechains, GetChainInfo, GetChainTip; WalletService/CreateNewAddress, CreateSidechainProposal
 - **Esplora (per-network)**:
-  - mainnet: https://esplora.mainnet.drivechain.dev (eCash mainnet, XEC, ecash: addresses)
-  - testnet: https://esplora.drynet4.drivechain.dev (eCash drynet4, XEC, ecash: addresses)
+  - mainnet: https://esplora.mainnet.drivechain.dev (eCash mainnet, ECX, ecash: addresses)
+  - testnet: https://esplora.drynet4.drivechain.dev (eCash drynet4, ECX, ecash: addresses)
   - signet: https://esplora.signet.drivechain.info (Bitcoin signet, sBTC, tb1q addresses)
 
 ### Deployment Status (End of Session 15)

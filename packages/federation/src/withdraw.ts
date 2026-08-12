@@ -46,13 +46,13 @@ export interface WithdrawalRequest {
   status: string;
 }
 
-// 1 ECX = 10^18 (18 decimals), 1 XEC = 100 satoshis
+// 1 ECX = 10^18 (18 decimals), 1 ECX = 100 satoshis on eCash L1
 // sats = ecx / 10^16
-// Network-specific conversion: 1 ECX pegged to 1 BTC or 1 XEC
+// Network-specific conversion: 1 ECX pegged to 1 BTC (signet) or 100 sats (eCash L1)
 // signet (Bitcoin): 1 ECX = 1 BTC = 100,000,000 sats → divisor = 10^10
-// eCash (mainnet/testnet): 1 ECX = 1 XEC = 100 sats → divisor = 10^16
+// eCash (mainnet/testnet): 1 ECX = 100 sats → divisor = 10^16
 const ECX_TO_SATS_SIGNET = BigInt(10) ** BigInt(10);
-const ECX_TO_SATS_XEC = BigInt(10) ** BigInt(16);
+const ECX_TO_SATS_ECASH = BigInt(10) ** BigInt(16);
 
 /**
  * Convert ECX amount (18 decimals) to satoshis.
@@ -73,7 +73,7 @@ export function ecxToSats(
     } else {
       // Wei integer string (e.g., "1337000000000000000" from federation)
       const ecx = BigInt(str);
-      const divisor = isSignet ? ECX_TO_SATS_SIGNET : ECX_TO_SATS_XEC;
+      const divisor = isSignet ? ECX_TO_SATS_SIGNET : ECX_TO_SATS_ECASH;
       return Number(ecx / divisor);
     }
   } catch {
