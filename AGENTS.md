@@ -92,7 +92,7 @@ To deploy an L1 non-interactively with custom precompiles (NativeMinter, Contrac
    cp ~/.avalanche-cli/subnets/SnowsideTestnet/genesis.json /tmp/base-genesis.json
 
 2. Patch the genesis with Python (change chainId, add precompile configs):
-   python3 -c 'import json; g=json.load(open("/tmp/base-genesis.json")); g["config"]["chainId"]=33352; g["config"]["contractNativeMinterConfig"]={"blockTimestamp":0,"adminAddresses":["0x8db97C7cEcE249c2b98bDC0226Cc4C2A57BF52FC"]}; g["config"]["contractDeployerAllowListConfig"]={"blockTimestamp":0,"adminAddresses":["0x8db97C7cEcE249c2b98bDC0226Cc4C2A57BF52FC"]}; json.dump(g,open("/tmp/new-genesis.json","w"),indent=4); print("done")'
+   python3 -c 'import json; g=json.load(open("/tmp/base-genesis.json")); g["config"]["chainId"]=33416; g["config"]["contractNativeMinterConfig"]={"blockTimestamp":0,"adminAddresses":["0x8db97C7cEcE249c2b98bDC0226Cc4C2A57BF52FC"]}; g["config"]["contractDeployerAllowListConfig"]={"blockTimestamp":0,"adminAddresses":["0x8db97C7cEcE249c2b98bDC0226Cc4C2A57BF52FC"]}; json.dump(g,open("/tmp/new-genesis.json","w"),indent=4); print("done")'
 
 3. Create the blockchain non-interactively:
    avalanche blockchain create SnowsideSignet --evm --evm-token ECX --proof-of-authority --validator-manager-owner 0x8db97C7cEcE249c2b98bDC0226Cc4C2A57BF52FC --icm --warp --latest --genesis /tmp/new-genesis.json --force
@@ -144,7 +144,7 @@ Deploy contract (if on DeployerAllowList):
    - ICM Status: Deployed (Messenger: 0x253b2784c75e510dD0fF1da844684a1aC0aa5fcf, Registry: 0xB8e71012d3F55D9EbbFf74376dE180702c1D8A6F)
    - Relayer: Not deployed (skipped)
 
-3. **SnowsideSignet** (Chain ID: 33352 / 0x8248) — DEPLOYED & VERIFIED Session 11
+3. **SnowsideSignet** (Chain ID: 33416 / 0x8288) — DEPLOYED & VERIFIED Session 11
    - Blockchain ID: 26XsRMLXezgJ1mK8TSVoHsRfBcy6Mwr4kJdKUAfgegb3PH4b5f
    - Subnet ID: 2W9boARgCWL25z6pMFNtkCfNA5v28VGg9PmBgUJfuKndEdhrvw
    - Local RPC: http://127.0.0.1:9654/ext/bc/26XsRMLXezgJ1mK8TSVoHsRfBcy6Mwr4kJdKUAfgegb3PH4b5f/rpc
@@ -152,7 +152,7 @@ Deploy contract (if on DeployerAllowList):
    - NodeID: NodeID-2QpdUKC81YfKoPwU4kuUA8er5FiNQ3V6w
    - Precompiles: Warp, NativeMinter (admin: ewoq), ContractDeployerAllowList (admin: ewoq)
    - ICM Status: NOT deployed (deploy failed during L1 creation due to cloned genesis; deploy separately with `avalanche icm deploy`)
-   - Genesis: Cloned from SnowsideTestnet, patched with chainId 33352 + two precompile configs
+   - Genesis: Cloned from SnowsideTestnet, patched with chainId 33416 + two precompile configs
    - Verified: NativeMinter minting works, DeployerAllowList blocks non-allowlisted deploys
 
 ### L1 Shared Configuration
@@ -211,7 +211,7 @@ Deploy contract (if on DeployerAllowList):
             proxy_set_header X-Forwarded-Proto $scheme;
         }
 
-        # Snowside Signet (ChainID: 33352) — Updated Session 11
+        # Snowside Signet (ChainID: 33416) — Updated Session 11
         location /signet {
             proxy_pass http://127.0.0.1:9654/ext/bc/26XsRMLXezgJ1mK8TSVoHsRfBcy6Mwr4kJdKUAfgegb3PH4b5f/rpc;
             proxy_set_header Host 127.0.0.1;

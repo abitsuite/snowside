@@ -4,7 +4,7 @@ const RPC = 'https://rpc.snowside.network/signet';
 const NATIVE_MINTER = '0x0200000000000000000000000000000000000001';
 
 const chain: Chain = {
-  id: 33352,
+  id: 33416,
   name: 'snowside-signet',
   nativeCurrency: { name: 'ECX', symbol: 'ECX', decimals: 18 },
   rpcUrls: { default: { http: [RPC] } },

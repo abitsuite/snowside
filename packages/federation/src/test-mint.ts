@@ -36,7 +36,7 @@ console.log('mintNativeCoin selector:', selector);
 console.log('(was using mint selector: 0x40c10f19 — WRONG!)');
 
 const chain: Chain = {
-  id: 33352,
+  id: 33416,
   name: 'snowside-signet',
   nativeCurrency: { name: 'ECX', symbol: 'ECX', decimals: 18 },
   rpcUrls: { default: { http: [RPC] } },

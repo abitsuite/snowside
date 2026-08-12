@@ -371,7 +371,7 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
 - Auto-fills deposit/withdraw/history addresses from connected wallet
 - Shows wallet balance via eth_getBalance
 - Handles accountsChanged and chainChanged events
-- Network chain IDs: mainnet=32904 (0x8088), testnet=33160 (0x8188), signet=33352 (0x8248)
+- Network chain IDs: mainnet=32904 (0x8088), testnet=33160 (0x8188), signet=33416 (0x8288)
 - Built bridge (4 pages: index, mainnet, testnet, signet) and deployed to Cloudflare Pages
 
 ### Task 3: Federation Service Multi-Network + Docker
@@ -515,7 +515,7 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
 ### Verification Results
 - Mainnet: eth_chainId = 0x8088 (32904), eth_blockNumber = 0x7
 - Testnet: eth_chainId = 0x8188 (33160), eth_blockNumber = 0x7
-- Signet: eth_chainId = 0x8248 (33352), eth_blockNumber = 0xb (11)
+- Signet: eth_chainId = 0x8288 (33416), eth_blockNumber = 0xb (11)
 
 ## Session 11 summary — 2026-08-11
 
@@ -523,7 +523,7 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
 - Previous signet deployment (Session 6/7) lacked `contractNativeMinterConfig` and `contractDeployerAllowListConfig` precompiles.
 - Initial attempt with hand-written genesis failed: heredoc garbled, genesis truncated, missing `alloc` section with ICM contract bytecode. PoA Validator Manager init failed with "no contract code at given address".
 - Initial attempt with CLI flags failed: `--chain-id` flag does not exist in this Avalanche-CLI version.
-- **Solution: Genesis cloning approach** — copied testnet's genesis from `~/.avalanche-cli/subnets/SnowsideTestnet/genesis.json` (58KB, complete with all ICM contract bytecode in `alloc`), patched `chainId` to 33352 and added both precompile configs via Python one-liner.
+- **Solution: Genesis cloning approach** — copied testnet's genesis from `~/.avalanche-cli/subnets/SnowsideTestnet/genesis.json` (58KB, complete with all ICM contract bytecode in `alloc`), patched `chainId` to 33416 and added both precompile configs via Python one-liner.
 - Created non-interactively with: `avalanche blockchain create SnowsideSignet --evm --evm-token ECX --proof-of-authority --validator-manager-owner 0x8db97C7cEcE249c2b98bDC0226Cc4C2A57BF52FC --icm --warp --latest --genesis /tmp/signet-genesis.json --force`
 - PoA Validator Manager initialized successfully.
 - Both precompiles confirmed in describe output: NativeMinter (admin: ewoq), ContractDeployerAllowList (admin: ewoq).
@@ -532,7 +532,7 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
 ### Task 2: Nginx Config Update
 - Updated `/signet` location block with new Blockchain ID: `26XsRMLXezgJ1mK8TSVoHsRfBcy6Mwr4kJdKUAfgegb3PH4b5f` and port 9654.
 - Old Blockchain ID `2pwzxirqRyWrgegTjMyLH2s5RhSb8xNkSYt5y4KhLXyAzZ7PMc` and port 9658 are dead.
-- Signet public RPC confirmed working: `curl https://rpc.snowside.network/signet` returns chain ID `0x8248` (33352).
+- Signet public RPC confirmed working: `curl https://rpc.snowside.network/signet` returns chain ID `0x8288` (33416).
 - Mainnet returns 404 (stale Blockchain ID), Testnet returns 502 (no node running on port 9656).
 
 ### Task 3: Precompile Address Discovery & Verification
@@ -616,7 +616,7 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
 ### SnowsideSignet
 - Blockchain ID: 26XsRMLXezgJ1mK8TSVoHsRfBcy6Mwr4kJdKUAfgegb3PH4b5f
 - Subnet ID: 2W9boARgCWL25z6pMFNtkCfNA5v28VGg9PmBgUJfuKndEdhrvw
-- Chain ID: 33352 (0x8248)
+- Chain ID: 33416 (0x8288)
 - Local RPC: http://127.0.0.1:9654/ext/bc/26XsRMLXezgJ1mK8TSVoHsRfBcy6Mwr4kJdKUAfgegb3PH4b5f/rpc
 - Public RPC: https://rpc.snowside.network/signet
 - Port: 9654, NodeID: NodeID-2QpdUKC81YfKoPwU4kuUA8er5FiNQ3V6w
@@ -650,7 +650,7 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
 ### Correct Chain IDs (verified via Avalanche CLI)
 - SnowsideMainnet: Chain ID 32904
 - SnowsideTestnet: Chain ID 33160
-- (Signet: Chain ID 33352 — not submitted to Chainlist yet)
+- (Signet: Chain ID 33416 — not submitted to Chainlist yet)
 
 ## Next session priorities (in order)
 
@@ -858,7 +858,7 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
 
 ### Session 7 (2026-08-10)
 1. Deployed SnowsideMainnet (Chain ID: 32904)
-2. Deployed SnowsideSignet (Chain ID: 33352) — without precompiles
+2. Deployed SnowsideSignet (Chain ID: 33416) — without precompiles
 3. Updated Nginx configuration with correct Blockchain IDs for all 3 networks
 
 ### Session 8 (2026-08-10)
@@ -883,7 +883,7 @@ Snowside is an Avalanche L1 sidechain project requesting eCash Drivechain ID #88
 2. Deployed SnowsideMainnet L1 (Blockchain ID: 2WGjPQF6..., port 9656) with ICM
 3. Deployed SnowsideTestnet L1 (Blockchain ID: 2A45por6..., port 9658) with ICM
 4. Updated Nginx config with correct Blockchain IDs and ports for all three networks
-5. Verified all three public RPCs working (mainnet: 0x8088, testnet: 0x8188, signet: 0x8248)
+5. Verified all three public RPCs working (mainnet: 0x8088, testnet: 0x8188, signet: 0x8288)
 6. Updated AGENTS.md and HANDOFF.md with all new deployment details
 
 ### Session 11 (2026-08-11)

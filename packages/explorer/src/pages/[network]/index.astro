@@ -7,7 +7,7 @@ export function getStaticPaths() {
   const networks = {
     mainnet: { url: 'https://rpc.snowside.network/mainnet', id: 32904 },
     testnet: { url: 'https://rpc.snowside.network/testnet', id: 33160 },
-    signet: { url: 'https://rpc.snowside.network/signet', id: 33352 }
+    signet: { url: 'https://rpc.snowside.network/signet', id: 33416 }
   };
   return Object.entries(networks).map(([network, { url, id }]) => ({
     params: { network },

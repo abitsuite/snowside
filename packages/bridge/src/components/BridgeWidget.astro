@@ -12,7 +12,7 @@ const { network = 'mainnet' } = Astro.props;
     <select id="network-select" class="w-full rounded-lg border border-white/10 bg-surface-0 px-4 py-3 text-sm text-snow-50 focus:border-aval-600 focus:outline-none focus:ring-1 focus:ring-aval-600 font-mono">
       <option value="mainnet" selected={network === 'mainnet'}>Mainnet (Chain ID: 32904)</option>
       <option value="testnet" selected={network === 'testnet'}>Testnet (Chain ID: 33160)</option>
-      <option value="signet" selected={network === 'signet'}>Signet (Chain ID: 33352)</option>
+      <option value="signet" selected={network === 'signet'}>Signet (Chain ID: 33416)</option>
     </select>
   </div>
 
@@ -143,7 +143,7 @@ let walletChainId = null;
 const NETWORK_CONFIG = {
   mainnet: { chainId: '0x8088', chainIdDec: 32904, rpc: 'https://rpc.snowside.network/mainnet', explorer: 'https://explorer.snowside.network' },
   testnet: { chainId: '0x8188', chainIdDec: 33160, rpc: 'https://rpc.snowside.network/testnet', explorer: 'https://explorer.snowside.network' },
-  signet: { chainId: '0x8248', chainIdDec: 33352, rpc: 'https://rpc.snowside.network/signet', explorer: 'https://explorer.snowside.network' },
+  signet: { chainId: '0x8288', chainIdDec: 33416, rpc: 'https://rpc.snowside.network/signet', explorer: 'https://explorer.snowside.network' },
 };
 
 async function connectWallet() {

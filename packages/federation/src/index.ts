@@ -50,7 +50,7 @@ const NATIVE_MINTER = '0x0200000000000000000000000000000000000001';
 const CHAIN_IDS: Record<string, number> = {
   mainnet: 32904,
   testnet: 33160,
-  signet: 33352,
+  signet: 33416,
 };
 
 // 1 ECX = 100 satoshis on eCash L1; 1 ECX = 10^18 (18 decimals)

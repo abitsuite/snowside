@@ -33,7 +33,7 @@ Snowside operates three Avalanche L1 networks. Use the details below to connect 
 | :--- | :--- |
 | Network Name | Snowside Signet |
 | RPC URL | `https://rpc.snowside.network/signet` |
-| Chain ID | `33352` \| `0x8288` |
+| Chain ID | `33416` \| `0x8288` |
 | Currency Symbol | `ECX` |
 | Block Explorer URL | `https://explorer-signet.snowside.network` |
 
