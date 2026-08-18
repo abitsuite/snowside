@@ -19,9 +19,9 @@ import type { WhitepaperSection } from './types';
 export const WHITEPAPER = {
   title: 'Snowside Whitepaper',
   subtitle: `version ${meta.version}`,
-  date: 'July 2026',
-  tagline: 'Bitcoin security. Avalanche speed.',
-  subTagline: 'A dedicated Avalanche Layer-1 for the eCash hard-fork',
+  date: 'August 2026',
+  tagline: 'Bitcoin Security • Avalanche Speed',
+  headline: 'The eCash Sidechain on Avalanche',
 
   sections: [
     {

@@ -10,7 +10,7 @@ export const meta: WhitepaperMeta = {
   title: 'Snowside Whitepaper',
   subtitle: `version ${WHITEPAPER_VERSION}`,
   date: 'August 2026',
-  tagline: 'Bitcoin security. Avalanche speed.',
+  tagline: 'Bitcoin Security • Avalanche Speed',
   author: '0xShomari',
   url: 'https://snowside.network',
 };
