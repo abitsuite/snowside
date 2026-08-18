@@ -20,8 +20,8 @@ export const roleSeparation: Figure = {
   caption:
     'Figure: Role separation. Validators (top) run Snowball consensus and ' +
     'produce blocks with BTC bonding. Settlement Proposers (bottom) submit ' +
-    'BMM commitments to eCash L1 — permissionless, no bonding required, ' +
-    'reimbursed via Base Fees.',
+    'BMM commitments to eCash L1 \u2014 permissionless, no bonding required, ' +
+    'compensated from the Snowside Treasury\u2019s captured Contract Fees.',
   height: 170,
 
   draw: ({ doc, x, y, width }) => {
@@ -52,7 +52,7 @@ export const roleSeparation: Figure = {
     tx(AXIS);
     doc.text('Run Snowball consensus \u00b7 Produce + finalize blocks', boxX + 12, valY + 30);
     doc.text('BTC bonding (Phase 2+) \u00b7 Subject to slashing', boxX + 12, valY + 42);
-    doc.text('Earn Priority Fees + Contract Fees', boxX + 12, valY + 52);
+    doc.text('Earn Priority Fees + Treasury distribution (85%)', boxX + 12, valY + 52);
 
     // --- Arrow: finalized blocks flow down ---
     const arrowX = boxX + boxW / 2;
@@ -82,7 +82,7 @@ export const roleSeparation: Figure = {
     doc.setFontSize(7.5);
     tx(AXIS);
     doc.text('Submit BMM commitments to eCash L1 \u00b7 No bonding required', boxX + 12, spY + 30);
-    doc.text('Permissionless from day one \u00b7 Reimbursed via Base Fees', boxX + 12, spY + 42);
+    doc.text('Permissionless from day one \u00b7 Treasury-compensated (5%)', boxX + 12, spY + 42);
     doc.text('Cannot forge blocks \u2014 only anchor existing finalized blocks', boxX + 12, spY + 52);
   },
 };

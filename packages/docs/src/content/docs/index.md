@@ -12,7 +12,7 @@ via blind merged mining.
 
 <CardGrid stagger>
   <Card title="Native BTC Gas" icon="fuel">
-    Transaction fees paid in BTC. No new token, no pre-mine, no governance token.
+    Base Fees and Priority Fees paid in BTC. Contract Fees optional (BTC or USDC). No new token, no pre-mine.
   </Card>
   <Card title="Bitcoin Security" icon="shield">
     Blind Merged Mining (BIP-301) anchors Snowside to Bitcoin's hash power.

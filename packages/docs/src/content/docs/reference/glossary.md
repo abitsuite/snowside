@@ -104,3 +104,19 @@ C-Chain and Snowside.
 
 A USD-pegged stablecoin issued by Circle. On Snowside, USDC is bridged from
 Avalanche's C-Chain via ICM — no wrapped representation, native settlement.
+
+## Snowside Treasury
+
+The entity that captures the Treasury portion of Contract Fees from opted-in contracts. Distributes to the Snowside Foundation (10% retained), Settlement Proposers (5%), and Validators (85%, proportional to bonded BTC).
+
+## Snowside Foundation
+
+The governing body that manages the Snowside Treasury. Retains 10% of gross Contract Fee capture to fund ecosystem development, operational costs, and the fallback settlement proposer.
+
+## Contract Fee
+
+An optional, opt-in fee on EVM contract calls. May be denominated in BTC or USDC. Split between Contract Owner (50% to 80% over 18-month vesting) and the Snowside Treasury.
+
+## Fallback Settlement Proposer
+
+A settlement proposer operated by the Snowside Foundation that submits BMM commitments only when no open-market proposer has submitted within approximately 10 minutes.

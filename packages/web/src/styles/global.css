@@ -1,5 +1,5 @@
 /* packages/web/src/styles/global.css */
-@import 'tailwindcss';
+@import 'tailwindcss/index.css';
 
 @theme {
   --color-snow-50:  #f0f7ff;

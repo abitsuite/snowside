@@ -36,6 +36,8 @@ to the world's most recognized stablecoin. This makes Snowside useful for DeFi
 applications from day one — lending, borrowing, trading, and payments can all use
 USDC without waiting for a separate bridge deployment or liquidity bootstrapping.
 
+Additionally, when contract owners denominate Contract Fees in USDC, the Contract Owner vested USDC share auto-bridges back to C-Chain by default. The Treasury USDC remains on Snowside under Foundation management. This creates a circular value flow: USDC enters Snowside for application use, application usage generates USDC Contract Fees, and those fees flow back to C-Chain for the contract owner.
+
 ## References
 
 - [Avalanche Interchain Messaging (ICM)](https://docs.avax.network/)

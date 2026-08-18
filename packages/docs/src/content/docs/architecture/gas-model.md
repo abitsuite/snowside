@@ -3,7 +3,7 @@ title: BTC Gas Model
 description: Why BTC is the only gas token — no new token, no pre-mine, no governance games
 ---
 
-All transaction fees on Snowside are paid in BTC. There is no alternative gas token,
+Base Fees and Priority Fees on Snowside are always paid in BTC. Contract Fees (optional, opt-in by contract owner) may be denominated in BTC or USDC. There is no alternative gas token,
 no new minted token, and no pre-mine. The only assets on Snowside are BTC (for gas)
 and USDC (bridged from C-Chain via ICM).
 

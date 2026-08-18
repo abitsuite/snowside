@@ -3,8 +3,10 @@
 //
 // Visual intent: User transaction fee splits into three streams —
 // Base Fee (to eCash L1 miners via BMM), Priority Fee (to block-producing
-// validator), Contract Fee (split between Contract Owner and Validator Set
-// with vesting schedule 50% → 80% over 18 months).
+// validator), Contract Fee (optional, opt-in by contract owner, BTC or USDC,
+// split between Contract Owner and Snowside Treasury with vesting schedule
+// 50% -> 80% over 18 months). Treasury distributes to Foundation (10%),
+// Settlement Proposers (5%), and Validators (85%, proportional to bonded BTC).
 
 import type { Figure } from '../types';
 
@@ -20,11 +22,13 @@ export const feeModel: Figure = {
   kind: 'figure',
   caption:
     'Figure: Three-part fee model. Base Fees flow to eCash L1 miners via ' +
-    'BMM commitments. Priority Fees go to the block-producing validator. ' +
-    'Contract Fees split between the Contract Owner (50%\u219280% vesting over ' +
-    '18 months) and the Validator Set (50%\u219220%), with the validator portion ' +
-    'further split 50% equal / 50% proportional to bonded BTC.',
-  height: 220,
+    'BMM commitments (non-negotiable). Priority Fees go to the block-producing ' +
+    'validator. Contract Fees (optional, opt-in by contract owner, BTC or USDC) ' +
+    'split between the Contract Owner (50%\u219280% vesting over 18 months) and ' +
+    'the Snowside Treasury (50%\u219220%). The Treasury distributes to the ' +
+    'Foundation (10% retained), Settlement Proposers (5%), and Validators ' +
+    '(85%, 100% proportional to bonded BTC).',
+  height: 260,
 
   draw: ({ doc, x, y, width }) => {
     const dr = (c: readonly number[]) => doc.setDrawColor(c[0], c[1], c[2]);
@@ -34,7 +38,7 @@ export const feeModel: Figure = {
       doc.text(t, cx - doc.getTextWidth(t) / 2, ty);
 
     // --- Top box: Transaction Fee ---
-    const topBoxW = 160;
+    const topBoxW = 180;
     const topBoxH = 32;
     const topBoxY = y + 10;
     const topBoxX = x + (width - topBoxW) / 2;
@@ -46,7 +50,7 @@ export const feeModel: Figure = {
     doc.setFont('NotoSans', 'bold');
     doc.setFontSize(10);
     tx(INK);
-    ctext('Transaction Fee (BTC)', topBoxX + topBoxW / 2, topBoxY + 20);
+    ctext('Transaction Fee (BTC / USDC)', topBoxX + topBoxW / 2, topBoxY + 20);
 
     // --- Three middle boxes: fee types ---
     const midBoxW = (width - 40) / 3;
@@ -71,7 +75,7 @@ export const feeModel: Figure = {
     tx(AXIS);
     ctext('Required, algorithmic', baseX + midBoxW / 2, midBoxY + 26);
     ctext('\u2192 eCash L1 miners', baseX + midBoxW / 2, midBoxY + 38);
-    ctext('(via BMM)', baseX + midBoxW / 2, midBoxY + 48);
+    ctext('(100% via BMM)', baseX + midBoxW / 2, midBoxY + 48);
 
     // Priority Fee box
     fl(LIGHT);
@@ -99,11 +103,11 @@ export const feeModel: Figure = {
     tx(SNOW_D);
     ctext('Contract Fee', contractX + midBoxW / 2, midBoxY + 14);
     doc.setFont('NotoSans', 'normal');
-    doc.setFontSize(7.5);
+    doc.setFontSize(7);
     tx(AXIS);
-    ctext('Required on EVM calls', contractX + midBoxW / 2, midBoxY + 26);
-    ctext('\u2192 Owner + Validators', contractX + midBoxW / 2, midBoxY + 38);
-    ctext('(vesting schedule)', contractX + midBoxW / 2, midBoxY + 48);
+    ctext('Optional, opt-in', contractX + midBoxW / 2, midBoxY + 26);
+    ctext('BTC or USDC', contractX + midBoxW / 2, midBoxY + 36);
+    ctext('\u2192 Owner + Treasury', contractX + midBoxW / 2, midBoxY + 48);
 
     // --- Arrows from top box to three boxes ---
     const arrowFromTop = (tx_x: number, bx: number, color: readonly number[]) => {
@@ -141,8 +145,8 @@ export const feeModel: Figure = {
     doc.setFont('NotoSans', 'normal');
     doc.setFontSize(7);
     tx(AXIS);
-    ctext('t=0: Owner 50% | Val 50%', vestX + vestW / 2, vestY + 24);
-    ctext('t=18: Owner 80% | Val 20%', vestX + vestW / 2, vestY + 34);
+    ctext('t=0: Owner 50% | Treasury 50%', vestX + vestW / 2, vestY + 24);
+    ctext('t=18: Owner 80% | Treasury 20%', vestX + vestW / 2, vestY + 34);
 
     // Arrow from Contract Fee box to vesting
     dr(AXIS);
@@ -151,11 +155,31 @@ export const feeModel: Figure = {
     fl(AXIS);
     doc.triangle(vestX + vestW / 2, vestY, vestX + vestW / 2 - 3, vestY - 5, vestX + vestW / 2 + 3, vestY - 5, 'F');
 
-    // --- Validator portion distribution ---
-    const valDistY = vestY + vestH + 20;
-    doc.setFont('NotoSans', 'italic');
-    doc.setFontSize(7);
+    // --- Treasury distribution ---
+    const distY = vestY + vestH + 24;
+    fl(LIGHT);
+    dr(AXIS);
+    doc.setLineWidth(0.8);
+    doc.setLineDashPattern([3, 2], 0);
+    doc.roundedRect(vestX, distY, vestW, 58, 4, 4, 'FD');
+    doc.setLineDashPattern([], 0);
+    doc.setFont('NotoSans', 'bold');
+    doc.setFontSize(8);
+    tx(INK);
+    ctext('Treasury Distribution', vestX + vestW / 2, distY + 12);
+    doc.setFont('NotoSans', 'normal');
+    doc.setFontSize(6.5);
     tx(AXIS);
-    ctext('Validator portion: 50% equal distribution / 50% proportional to bonded BTC', x + width / 2, valDistY);
+    ctext('Foundation: 10% (retained)', vestX + vestW / 2, distY + 24);
+    ctext('Proposers: 5% (configurable)', vestX + vestW / 2, distY + 34);
+    ctext('Validators: 85% (prop. to bonded BTC)', vestX + vestW / 2, distY + 44);
+    ctext('(governance: mechanism TBD)', vestX + vestW / 2, distY + 54);
+
+    // Arrow from vesting to Treasury distribution
+    dr(AXIS);
+    doc.setLineWidth(0.8);
+    doc.line(vestX + vestW / 2, vestY + vestH, vestX + vestW / 2, distY);
+    fl(AXIS);
+    doc.triangle(vestX + vestW / 2, distY, vestX + vestW / 2 - 3, distY - 5, vestX + vestW / 2 + 3, distY - 5, 'F');
   },
 };

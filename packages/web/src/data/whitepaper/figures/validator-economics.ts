@@ -3,8 +3,8 @@
 //
 // Visual intent: show the cost/revenue balance for running a Snowside
 // validator. Low cost (Avalanche9000 subscription ~$10-20/mo + BTC bond)
-// vs revenue (Priority Fees + Contract Fees in BTC). NodΞRunr handles all
-// operational overhead.
+// vs revenue (Priority Fees + Treasury distribution in BTC or USDC).
+// NodΞRunr handles all operational overhead.
 
 import type { Figure } from '../types';
 
@@ -19,8 +19,9 @@ export const validatorEconomics: Figure = {
   caption:
     'Figure: Validator economics. Operational cost is ~$10-20/month via ' +
     'Avalanche9000 subscription plus BTC bond (0.3 BTC minimum, Phase 2+). ' +
-    'Revenue comes from Priority Fees and Contract Fees (BTC). NodΞRunr ' +
-    'eliminates manual maintenance, making community-run validation feasible.',
+    'Revenue comes from Priority Fees and Treasury distribution (85%, ' +
+    'proportional to bonded BTC). NodΞRunr eliminates manual maintenance, ' +
+    'making community-run validation feasible.',
   height: 110,
 
   draw: ({ doc, x, y, width }) => {
@@ -67,7 +68,7 @@ export const validatorEconomics: Figure = {
     doc.setFontSize(8);
     tx(AXIS);
     doc.text('Priority Fees (BTC, 100% to producer)', rightX + 12, cy + 4);
-    doc.text('Contract Fees (BTC, vesting split)', rightX + 12, cy + 16);
+    doc.text('Treasury distribution (85%, prop. to bonded BTC)', rightX + 12, cy + 16);
     doc.text('Permissionless \u2014 anyone can run', rightX + 12, cy + 28);
   },
 };

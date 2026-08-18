@@ -1,14 +1,16 @@
 // packages/web/src/data/whitepaper/figures/icm-bridge.ts
 // Vector figure for the ICM USDC bridge (section 6).
 //
-// Visual intent: USDC flows from C-Chain to Snowside via Avalanche's native
-// Interchain Messaging. No third-party custodian. Trust-minimized. Available
-// from day one.
+// Visual intent: USDC flows bidirectionally between C-Chain and Snowside via
+// Avalanche's native Interchain Messaging. No third-party custodian.
+// Trust-minimized. Available from day one. Contract Owner USDC share
+// auto-bridges to C-Chain by default; Treasury USDC remains on Snowside.
 
 import type { Figure } from '../types';
 
 const USDC_BL = [39, 117, 202] as const;
 const PURPLE  = [107, 45, 91] as const;
+const SNOW    = [56, 189, 248] as const;
 const INK     = [15, 15, 15] as const;
 const LIGHT   = [240, 240, 245] as const;
 const AXIS    = [102, 102, 115] as const;
@@ -16,10 +18,12 @@ const AXIS    = [102, 102, 115] as const;
 export const icmBridge: Figure = {
   kind: 'figure',
   caption:
-    'Figure: ICM USDC bridge. USDC moves trust-minimized from Avalanche ' +
-    'C-Chain to Snowside via native Interchain Messaging — no third-party ' +
-    'custodian, no wrapped tokens, available from mainnet launch.',
-  height: 110,
+    'Figure: ICM USDC bridge. USDC moves trust-minimized between Avalanche ' +
+    'C-Chain and Snowside via native Interchain Messaging — no third-party ' +
+    'custodian, no wrapped tokens. Contract Owner USDC shares auto-bridge ' +
+    'to C-Chain by default; the Treasury\u2019s USDC remains on Snowside under ' +
+    'Foundation management.',
+  height: 140,
 
   draw: ({ doc, x, y, width }) => {
     const dr = (c: readonly number[]) => doc.setDrawColor(c[0], c[1], c[2]);
@@ -66,24 +70,39 @@ export const icmBridge: Figure = {
     ctext('USDC bridged', rightX + boxW / 2, cy + 8);
     ctext('DeFi-ready', rightX + boxW / 2, cy + 20);
 
-    // Bridge arrow
+    // Bridge arrows — bidirectional
     const gapL = leftX + boxW + 6;
     const gapR = rightX - 6;
     const midX = (gapL + gapR) / 2;
 
+    // Top arrow: C-Chain -> Snowside (incoming)
+    const yTop = cy - 10;
     dr(USDC_BL);
     doc.setLineWidth(2);
-    doc.line(gapL, cy, gapR, cy);
+    doc.line(gapL, yTop, gapR, yTop);
     fl(USDC_BL);
-    doc.triangle(gapR, cy, gapR - 7, cy - 4, gapR - 7, cy + 4, 'F');
-
-    doc.setFont('NotoSans', 'bold');
-    doc.setFontSize(8);
-    tx(INK);
-    ctext('ICM (trust-minimized)', midX, cy - 8);
+    doc.triangle(gapR, yTop, gapR - 7, yTop - 4, gapR - 7, yTop + 4, 'F');
     doc.setFont('NotoSans', 'normal');
-    doc.setFontSize(7);
-    tx(AXIS);
-    ctext('No custodian', midX, cy + 16);
+    doc.setFontSize(6.5);
+    tx(INK);
+    ctext('USDC in', midX, yTop - 6);
+
+    // Bottom arrow: Snowside -> C-Chain (auto-bridge out)
+    const yBot = cy + 10;
+    dr(SNOW);
+    doc.setLineWidth(2);
+    doc.line(gapR, yBot, gapL, yBot);
+    fl(SNOW);
+    doc.triangle(gapL, yBot, gapL + 7, yBot - 4, gapL + 7, yBot + 4, 'F');
+    doc.setFont('NotoSans', 'normal');
+    doc.setFontSize(6.5);
+    tx(INK);
+    ctext('Owner USDC out (auto)', midX, yBot + 10);
+
+    // Center label
+    doc.setFont('NotoSans', 'bold');
+    doc.setFontSize(7.5);
+    tx(INK);
+    ctext('ICM (trust-minimized)', midX, cy + 1);
   },
 };

@@ -39,6 +39,11 @@ contracts/    — Solidity smart contracts (Foundry)
 
 docs/ — Documentation and handoff notes
 
+## Session startup
+**Read these files at the start of every session:**
+- `AGENTS.md` — this file (project rules, conventions, current state)
+- `docs/HANDOFF.md` — last session's summary, known issues, and next steps
+
 ## Core workflow rules
 **Push to production often.** After every meaningful change, build, commit from the repo root, and push to `master`.
 Never leave uncommitted work sitting locally at the end of a session.
@@ -289,17 +294,33 @@ The signet block explorer (explorer-signet.snowside.network) was showing stale b
 - Never commit `node_modules/` — if accidentally committed, run `git rm -r --cached node_modules`, add `.gitignore`, and amend the unpushed commit.
 
 ## Whitepaper
-- **Current version: v0.3** (meta.ts `WHITEPAPER_VERSION = '0.3'`)
+- **Current version: v0.4** (meta.ts `WHITEPAPER_VERSION = '0.4'`)
 - PDF generated at build time via `packages/web/src/pages/whitepaper.pdf.ts` (Astro static endpoint using jsPDF).
 - Content lives in `packages/web/src/data/whitepaper/content.ts` (15 sections, auto-numbered at render time).
 - Figures are vector `Figure` objects in `packages/web/src/data/whitepaper/figures/` — **9 figures**.
 - Fonts (`NotoSans-Regular/Bold/Italic.ttf`) in `packages/web/src/fonts/`.
 - Viewer page at `/whitepaper` embeds the PDF via `<iframe src="/whitepaper.pdf">`.
 - PDF.js is at `packages/web/public/pdfjs/` for any custom viewer needs.
-- **Consensus terminology (v0.3):** Use "Snowman consensus" when referring to the linear-chain variant. "Snowball" is the broader protocol family.
-- **eCash Terminology (v0.3):** Use "eCash" (not Bitcoin) when referring to miners, hashrate, L1 security source. Snowside is secured by eCash's SHA-256d PoW.
-- **Settlement Model (v0.3):** Classified as "rollup-style settlement".
-- **Roadmap (v0.3):** Two-phase model (Phase 1: Permissioned, Phase 2: Permissionless with AVAX + BTC).
+
+## v0.4 Whitepaper Refactoring Notes
+The following files were modified in the v0.3 → v0.4 refactor:
+- **content.ts** — Sections 4.9, 4.10, 4.11 (new: Fallback Settlement), 5.3, 5.4, 5.5, 5.7 (new: USDC Bridging), 5.8 (new: Foundation), 5.9 (new: Avalanche Value Flow), 9.2, Section 12 Roadmap. Tl;dr updated.
+- **meta.ts** — Version 0.3 → 0.4, date updated.
+- **figures/fee-model.ts** — Diagram updated: Contract Fee opt-in, Owner+Treasury vesting, Treasury distribution (Foundation/Proposers/Validators).
+- **figures/role-separation.ts** — Settlement Proposers: "Reimbursed via Base Fees" → Treasury-compensated.
+- **figures/validator-economics.ts** — Revenue: "Contract Fees (BTC, vesting split)" → "Treasury distribution (85%, proportional to bonded BTC)".
+- **figures/icm-bridge.ts** — Added reverse USDC flow (Snowside → C-Chain via ICM).
+- **docs/architecture/bmm.md** — Updated economic incentives text.
+- **docs/architecture/gas-model.md** — Updated fee model text.
+- **docs/architecture/icm-bridge.md** — Added reverse USDC flow note.
+- **docs/reference/glossary.md** — Added Treasury, Foundation, USDC auto-bridging terms.
+- **global.css** — Applied Tailwind ENOENT fix (`@import 'tailwindcss/index.css'`).
+- **FIXED:** content.ts orphaned sections (5.7–5.9) moved inside Section 5 paragraphs array. Build passes, PDF generates successfully.
+- **Consensus terminology (v0.4):** Use "Snowman consensus" when referring to the linear-chain variant. "Snowball" is the broader protocol family.
+- **eCash Terminology (v0.4):** Use "eCash" (not Bitcoin) when referring to miners, hashrate, L1 security source. Snowside is secured by eCash's SHA-256d PoW.
+- **Settlement Model (v0.4):** Classified as "rollup-style settlement".
+- **Roadmap (v0.4):** Two-phase model (Phase 1: Permissioned, Phase 2: Permissionless with AVAX + BTC).
+- **Fee Model (v0.4):** Three-part fee model updated — Contract Fees are now optional/opt-in (not required), may be denominated in BTC or USDC, and the validator portion is replaced by a Snowside Treasury. Treasury distribution: Foundation retains 10%, Settlement Proposers receive 5% (configurable), Validators receive 85% (100% proportional to bonded BTC, no equal distribution). Contract Owner vesting: 50%→80% over 18 months. Settlement Proposers compensated from Treasury (not Base Fees) — 100% of Base Fees go to eCash miners via BMM.
 
 ## Favicon
 - All four packages (`web`, `pitch`, `docs`, `explorer`) use the same SVG favicon at `public/favicon.svg`.

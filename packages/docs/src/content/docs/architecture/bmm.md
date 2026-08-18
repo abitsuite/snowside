@@ -30,8 +30,8 @@ internals.
 The economic model is simple and self-sustaining:
 
 - Snowside users pay **BTC** for gas (transaction fees)
-- Block producers collect these BTC fees
-- Producers pay a portion as BMM incentives to Bitcoin miners
+- 100% of Base Fees are paid to eCash L1 miners via BMM. Settlement proposers are compensated from the Snowside Treasury (5% of Contract Fee capture). Validators receive Treasury distribution (85%, proportional to bonded BTC)
+- Settlement proposers pay 100% of escrowed Base Fees to eCash miners via BMM and are compensated from the Treasury instead
 - Miners include commitments because the marginal cost is zero and the fee is positive
 
 Because the cost to miners is negligible — they are already producing blocks —
