@@ -24,8 +24,8 @@ export const feeModel: Figure = {
     'Figure: Three-part fee model. Base Fees flow to eCash L1 miners via ' +
     'BMM commitments (non-negotiable). Priority Fees go to the block-producing ' +
     'validator. Contract Fees (optional, opt-in by contract owner, BTC or USDC) ' +
-    'split between the Contract Owner (50%\u219280% vesting over 18 months) and ' +
-    'the Snowside Treasury (50%\u219220%). The Treasury distributes to the ' +
+    'split between the Contract Owner (50% -> 80% vesting over 18 months) and ' +
+    'the Snowside Treasury (50% -> 20%). The Treasury distributes to the ' +
     'Foundation (10% retained), Settlement Proposers (5%), and Validators ' +
     '(85%, 100% proportional to bonded BTC).',
   height: 260,
@@ -74,7 +74,7 @@ export const feeModel: Figure = {
     doc.setFontSize(7.5);
     tx(AXIS);
     ctext('Required, algorithmic', baseX + midBoxW / 2, midBoxY + 26);
-    ctext('\u2192 eCash L1 miners', baseX + midBoxW / 2, midBoxY + 38);
+    ctext('-> eCash L1 miners', baseX + midBoxW / 2, midBoxY + 38);
     ctext('(100% via BMM)', baseX + midBoxW / 2, midBoxY + 48);
 
     // Priority Fee box
@@ -90,7 +90,7 @@ export const feeModel: Figure = {
     doc.setFontSize(7.5);
     tx(AXIS);
     ctext('Optional, user-set', prioX + midBoxW / 2, midBoxY + 26);
-    ctext('\u2192 Block-producing', prioX + midBoxW / 2, midBoxY + 38);
+    ctext('-> Block-producing', prioX + midBoxW / 2, midBoxY + 38);
     ctext('validator (100%)', prioX + midBoxW / 2, midBoxY + 48);
 
     // Contract Fee box
@@ -107,7 +107,7 @@ export const feeModel: Figure = {
     tx(AXIS);
     ctext('Optional, opt-in', contractX + midBoxW / 2, midBoxY + 26);
     ctext('BTC or USDC', contractX + midBoxW / 2, midBoxY + 36);
-    ctext('\u2192 Owner + Treasury', contractX + midBoxW / 2, midBoxY + 48);
+    ctext('-> Owner + Treasury', contractX + midBoxW / 2, midBoxY + 48);
 
     // --- Arrows from top box to three boxes ---
     const arrowFromTop = (tx_x: number, bx: number, color: readonly number[]) => {
