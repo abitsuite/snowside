@@ -50,7 +50,7 @@ export const feeModel: Figure = {
     doc.setFont('NotoSans', 'bold');
     doc.setFontSize(10);
     tx(INK);
-    ctext('Transaction Fee (BTC / USDC)', topBoxX + topBoxW / 2, topBoxY + 20);
+    ctext('Transaction Fee (BTC) \u2014 Contract Fees optionally USDC', topBoxX + topBoxW / 2, topBoxY + 20);
 
     // --- Three middle boxes: fee types ---
     const midBoxW = (width - 40) / 3;

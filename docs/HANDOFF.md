@@ -1,69 +1,50 @@
-# Snowside Handoff — 2026-08-17 (Session 16, Whitepaper v0.4 Refactor)
+# Snowside Handoff — 2026-08-18 (Session 17, Whitepaper v0.4 Corrections)
 
-## Session 16 summary — 2026-08-17
+## Session 17 summary — 2026-08-18
 
-### Primary Task: Whitepaper v0.3 → v0.4 Refactor
-Refactored the Snowside whitepaper to correct the fee model, add Treasury/Foundation architecture, and update economic incentives.
+### Primary Task: Whitepaper v0.4 Corrections (9 items)
+Applied 9 corrections from the Project Lead's review email to the v0.4 whitepaper. All corrections address fee model terminology and USDC distribution paths that were not properly updated in the v0.3 → v0.4 refactor (Session 16).
 
-### Files Modified (13 files, +200/-74 lines)
+### Files Modified (2 files)
 
-**Whitepaper core:**
-- `packages/web/src/data/whitepaper/meta.ts` — Version 0.3 → 0.4, date updated to August 2026
-- `packages/web/src/data/whitepaper/content.ts` — All section text changes + 4 new subsections
-- `packages/web/src/data/whitepaper/figures/fee-model.ts` — Diagram: Contract Fee opt-in, Owner+Treasury vesting, Treasury distribution
-- `packages/web/src/data/whitepaper/figures/role-separation.ts` — Settlement Proposers: Treasury-compensated (not Base Fees)
-- `packages/web/src/data/whitepaper/figures/validator-economics.ts` — Revenue: Treasury distribution (85% proportional)
-- `packages/web/src/data/whitepaper/figures/icm-bridge.ts` — Added reverse USDC flow arrow
+- `packages/web/src/data/whitepaper/content.ts` — 8 corrections (C1–C4, C6–C9)
+- `packages/web/src/data/whitepaper/figures/fee-model.ts` — 1 correction (C5, table header)
 
-**Docs site:**
-- `packages/docs/src/content/docs/architecture/bmm.md` — Economic incentives text updated
-- `packages/docs/src/content/docs/architecture/gas-model.md` — Fee model text updated
-- `packages/docs/src/content/docs/architecture/icm-bridge.md` — Reverse USDC flow note added
-- `packages/docs/src/content/docs/index.md` — Index updated
-- `packages/docs/src/content/docs/reference/glossary.md` — Added Treasury, Foundation, USDC auto-bridging terms
+### Corrections Applied
 
-**Config/docs:**
-- `packages/web/src/styles/global.css` — Tailwind ENOENT fix applied (`tailwindcss/index.css`)
-- `AGENTS.md` — Version v0.4, fee model description, refactoring notes, session startup instructions
+| # | Section | Change |
+|---|---------|--------|
+| C1 | 4.5 | Validator bullet: "Earn Priority Fees and Contract Fees" → "Earn Priority Fees and Treasury distribution" |
+| C2 | 4.9 | First bullet: Split BTC/USDC denomination note for Contract Fees |
+| C3 | 4.10 | Entire section body replaced with Treasury-based proposer economics model |
+| C4 | 5.3 | Contract Fee bullets: "Validator Set" → "Snowside Treasury" + distribution reference to §5.5 |
+| C5 | 5.3 | Fee model figure header: "(BTC / USDC)" → "(BTC) — Contract Fees optionally USDC" |
+| C6 | 5.4 | Vesting timeline: all 4 "Validators" → "Snowside Treasury" |
+| C7 | 5.4 | Descriptive text: "validators" → "Treasury" in 2 locations |
+| C8 | 5.7 | USDC distribution: added validator (85%) and proposer (5%) auto-bridge paths to C-Chain |
+| C9 | 9.2 | Validator revenue paragraph: replaced with corrected Treasury + USDC description |
 
-### Key Model Changes (v0.4)
-
-1. **Contract Fees: Optional/Opt-in** — No longer required on all EVM calls. Contract owners choose to opt in.
-2. **USDC Denomination** — Contract owners may denominate fees in BTC or USDC. USDC fees auto-bridge to C-Chain by default (batch mode available as config option).
-3. **Snowside Treasury** — Replaces "validator portion" of Contract Fees. Treasury captures the portion previously split among validators.
-4. **Treasury Distribution:**
-   - Foundation: 10% retained (gross)
-   - Settlement Proposers: 5% of net (configurable via governance, mechanism TBD)
-   - Validators: 85% of net (100% proportional to bonded BTC, no equal distribution)
-5. **Settlement Proposers** — Compensated from Treasury, NOT Base Fees. 100% of Base Fees go to eCash miners via BMM.
-6. **Contract Owner Vesting** — Unchanged: 50% → 80% over 18 months.
-7. **New Sections Added:**
-   - 4.11: Fallback Settlement by Snowside Foundation
-   - 5.7: USDC Contract Fee Bridging
-   - 5.8: The Snowside Foundation
-   - 5.9: Avalanche Ecosystem Value Flow
+### Confirmed Unchanged (DO NOT CHANGE items verified intact)
+- Settlement Proposer share: 5% ✓
+- Foundation retained: 10% ✓
+- Validator share: 85% ✓
+- Distribution total: 100% ✓
+- Section 5.5 (Treasury Distribution) ✓
+- Section 4.11 (Fallback Settlement) ✓
+- Section 5.8 (Snowside Foundation) ✓
+- Section 5.9 (Avalanche Ecosystem Value Flow) ✓
+- Section 12.1 Phase 2 bullet ✓
 
 ### Build Status
 - **Web build:** ✅ PASSES (exit 0, 3 pages built including PDF)
-- **PDF generation:** ✅ PASSES (whitepaper.pdf generates successfully)
-- **Docs build:** Not tested this session — recommended to test before deploy
-
-### Issues Encountered & Resolved
-1. **PDF generation error** (`Cannot read properties of undefined (reading 'replace')`) — Caused by new sections 5.7–5.9 being inserted outside Section 5's paragraphs array. Fixed by moving them inside the array.
-2. **Tailwind ENOENT** — `global.css` had `@import 'tailwindcss'` instead of `@import 'tailwindcss/index.css'`. Fixed per AGENTS.md documented fix.
-3. **Text issues** — "entirely Bitcoin-native" → "predominantly Bitcoin-native" (Section 5.6). Typo "enerating" → "generating" (Section 5.9).
-
-### Known Issues
-1. **Governance mechanism TBD** — The specific governance mechanism for adjusting Settlement Proposer and Validator distribution percentages is not yet finalized. Noted in whitepaper Sections 5.5 and 5.8.
-2. **Docs build untested** — The docs site changes have not been build-tested. Run `cd packages/docs && pnpm build` before deploying.
-3. **Explorer stale block height** — Pre-existing issue from Session 7. Signet explorer queries old Blockchain ID.
+- **PDF generation:** ✅ PASSES (whitepaper.pdf, 572KB)
 
 ### Next Steps
-1. **Test docs build:** `cd packages/docs && pnpm build`
-2. **Review PDF output:** Open `packages/web/dist/whitepaper.pdf` and verify all new sections render correctly with proper numbering (5.7, 5.8, 5.9, new 4.11)
-3. **Commit and push:** `git add -A && git commit -m "whitepaper v0.4: Treasury model, USDC bridging, Foundation architecture" && git push origin master`
-4. **Verify deploy:** Check https://snowside.network/whitepaper after Cloudflare Pages build completes
-5. **Consider condensing AGENTS.md** — File is ~370 lines. L1 deployment details, Nginx config, Bridge API endpoints, and BIP-300/301 reference could be moved to separate docs to reduce context window usage in future sessions.
+1. **Review PDF output:** Open `packages/web/dist/whitepaper.pdf` and verify all 9 corrections render correctly
+2. **Commit and push:** `git add -A && git commit -m "whitepaper v0.4: apply 9 review corrections (Treasury terminology, USDC distribution)" && git push origin master`
+3. **Verify deploy:** Check https://snowside.network/whitepaper after Cloudflare Pages build completes
+4. **Test docs build:** `cd packages/docs && pnpm build` (docs site still has v0.4 text from Session 16 — may need parallel corrections)
+5. **Proceed with X post and AvaxTeam1 grant ticket** per Project Lead's note
 
 ### Previous Session
-Session 15 (2026-08-11): Custodial Bridge MVP complete. Federation service running on VPS. Withdrawal implementation with @scure/btc-signer. See git log for details.
+Session 16 (2026-08-17): Whitepaper v0.3 → v0.4 refactor. Treasury model, USDC bridging, Foundation architecture. See git log for details.
