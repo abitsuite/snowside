@@ -1,50 +1,65 @@
-# Snowside Handoff — 2026-08-18 (Session 17, Whitepaper v0.4 Corrections)
+# Snowside Handoff — 2026-08-18 (Session 17, Whitepaper v0.4 Finalization)
 
 ## Session 17 summary — 2026-08-18
 
-### Primary Task: Whitepaper v0.4 Corrections (9 items)
-Applied 9 corrections from the Project Lead's review email to the v0.4 whitepaper. All corrections address fee model terminology and USDC distribution paths that were not properly updated in the v0.3 → v0.4 refactor (Session 16).
+### Primary Task: Whitepaper v0.4 Final Corrections (5 items)
+Applied 5 final corrections from the Project Lead's second review email. Root cause for 4 of 5 was missing font glyphs.
 
-### Files Modified (2 files)
+### Commits (3 pushed to master)
 
-- `packages/web/src/data/whitepaper/content.ts` — 8 corrections (C1–C4, C6–C9)
-- `packages/web/src/data/whitepaper/figures/fee-model.ts` — 1 correction (C5, table header)
+1. `d0f3964a` — whitepaper v0.4: apply 9 review corrections (Treasury terminology, USDC distribution)
+2. `5ac15f97` — docs: sync icm-bridge.md USDC distribution with whitepaper v0.4 C8
+3. `f7e60cb5` — whitepaper v0.4: final corrections — configurable auto-bridge + missing glyphs
+4. `c4ba2827` — docs: sync icm-bridge.md USDC auto-bridge with whitepaper v0.4 C1
 
-### Corrections Applied
+### Final Corrections Applied
 
-| # | Section | Change |
-|---|---------|--------|
-| C1 | 4.5 | Validator bullet: "Earn Priority Fees and Contract Fees" → "Earn Priority Fees and Treasury distribution" |
-| C2 | 4.9 | First bullet: Split BTC/USDC denomination note for Contract Fees |
-| C3 | 4.10 | Entire section body replaced with Treasury-based proposer economics model |
-| C4 | 5.3 | Contract Fee bullets: "Validator Set" → "Snowside Treasury" + distribution reference to §5.5 |
-| C5 | 5.3 | Fee model figure header: "(BTC / USDC)" → "(BTC) — Contract Fees optionally USDC" |
-| C6 | 5.4 | Vesting timeline: all 4 "Validators" → "Snowside Treasury" |
-| C7 | 5.4 | Descriptive text: "validators" → "Treasury" in 2 locations |
-| C8 | 5.7 | USDC distribution: added validator (85%) and proposer (5%) auto-bridge paths to C-Chain |
-| C9 | 9.2 | Validator revenue paragraph: replaced with corrected Treasury + USDC description |
+| # | Section | Change | Root Cause |
+|---|---------|--------|------------|
+| C1 | 5.7 | Auto-bridge to C-Chain is now configurable for ALL USDC recipients (Contract Owners, Validators, Settlement Proposers), not just Contract Owners. Each has per-recipient config. | Wording (implied "always") |
+| C2 | 4.10 | Missing minus sign: "Treasury Share - Base Fee Pass-Through" | Font missing U+2212 (−) |
+| C3 | 5.4 | Missing minus sign: "(1 - r(t))" | Font missing U+2212 (−) |
+| C4 | 5.5 | Missing minus sign: "(1 - r(t)) is distributed among three recipients" | Font missing U+2212 (−) |
+| C5 | 5.9 | Missing space after comma + missing arrow: "50% -> 80% over 18 months... by default, generating value flow" | Font missing U+2192 (→) + typo |
 
-### Confirmed Unchanged (DO NOT CHANGE items verified intact)
-- Settlement Proposer share: 5% ✓
-- Foundation retained: 10% ✓
-- Validator share: 85% ✓
-- Distribution total: 100% ✓
-- Section 5.5 (Treasury Distribution) ✓
-- Section 4.11 (Fallback Settlement) ✓
-- Section 5.8 (Snowside Foundation) ✓
-- Section 5.9 (Avalanche Ecosystem Value Flow) ✓
-- Section 12.1 Phase 2 bullet ✓
+### Root Cause: Missing Font Glyphs (C2–C5)
+The bundled NotoSans fonts (Regular/Bold/Italic) lack Unicode codepoints:
+- **U+2212 (−)**: MINUS SIGN — silently dropped by jsPDF, producing "missing minus sign" artifacts
+- **U+2192 (→)**: RIGHTWARDS ARROW — silently dropped, producing "missing char/space" artifacts
+
+Present in font: U+002D (-) ASCII hyphen-minus, U+2014 (—) em-dash, U+2013 (–) en-dash, U+2022 (•) bullet, U+2019 (') right single quote.
+
+**Fix applied:** Replaced all U+2212 with ASCII '-' (U+002D) and all U+2192 with '->' throughout:
+- `packages/web/src/data/whitepaper/content.ts` (6 edits: 3 minus signs, 4 arrows including Section 9 bond parameters)
+- `packages/web/src/data/whitepaper/figures/fee-model.ts` (4 edits: caption arrows + box label arrows)
+
+**Verification:** Confirmed via `pdftotext` extraction of `packages/web/dist/whitepaper.pdf` — all minus signs and arrows now render correctly. All three auto-bridge config bullets (Contract Owners, Validators, Settlement Proposers) present in rendered PDF.
+
+### Note on C4 Email Wording
+The email C4 said to change "The Snowside Treasury's" to "The Snowside Whitepaper's" — this appears to be a typo in the email ("Whitepaper's captured Contract Fee portion" makes no sense in context). Only the minus sign was fixed; "Treasury's" was retained. Flag to Project Lead if this needs revisiting.
+
+### Docs Site Sync
+- `packages/docs/src/content/docs/architecture/icm-bridge.md` — updated twice (C8 parallel, then C1 parallel) to match whitepaper Section 5.7: auto-bridge is configurable for all USDC recipients.
+- Other docs files (glossary.md, gas-model.md, bmm.md) verified already correct — no parallel text for C2–C5 corrections exists in docs (those are whitepaper-specific sections/figure).
+
+### Files Modified This Session (cumulative)
+- `packages/web/src/data/whitepaper/content.ts` — 9 corrections (batch 1) + 6 edits (batch 2)
+- `packages/web/src/data/whitepaper/figures/fee-model.ts` — 1 edit (batch 1) + 4 edits (batch 2)
+- `packages/docs/src/content/docs/architecture/icm-bridge.md` — 2 edits (C8 + C1 parallels)
+- `packages/web/public/archive/snowside-whitepaper-v0.4.pdf` — regenerated by web build (committed in c4ba2827)
+- `docs/HANDOFF.md` — this file
 
 ### Build Status
 - **Web build:** ✅ PASSES (exit 0, 3 pages built including PDF)
-- **PDF generation:** ✅ PASSES (whitepaper.pdf, 572KB)
+- **PDF generation:** ✅ PASSES (whitepaper.pdf, ~572KB)
+- **Docs build:** ✅ PASSES (14 pages + Pagefind search index + sitemap)
+- **Glyph verification:** ✅ All U+2212/U+2192 removed; confirmed rendering via pdftotext
 
 ### Next Steps
-1. **Review PDF output:** Open `packages/web/dist/whitepaper.pdf` and verify all 9 corrections render correctly
-2. **Commit and push:** `git add -A && git commit -m "whitepaper v0.4: apply 9 review corrections (Treasury terminology, USDC distribution)" && git push origin master`
-3. **Verify deploy:** Check https://snowside.network/whitepaper after Cloudflare Pages build completes
-4. **Test docs build:** `cd packages/docs && pnpm build` (docs site still has v0.4 text from Session 16 — may need parallel corrections)
-5. **Proceed with X post and AvaxTeam1 grant ticket** per Project Lead's note
+1. **Final PDF review:** Open `packages/web/dist/whitepaper.pdf` and visually confirm all 5 corrections render correctly. The v0.4 whitepaper is now ready to publish.
+2. **Confirm C4 wording with Project Lead:** Email said "Whitepaper's" but context indicates "Treasury's" is correct. Verify before publishing.
+3. **Verify deploys:** Check https://snowside.network/whitepaper and https://docs.snowside.network/architecture/icm-bridge after Cloudflare Pages builds complete.
+4. **Proceed with X post and AvaxTeam1 grant ticket** per Project Lead's note — v0.4 is finalized.
 
 ### Previous Session
 Session 16 (2026-08-17): Whitepaper v0.3 → v0.4 refactor. Treasury model, USDC bridging, Foundation architecture. See git log for details.
