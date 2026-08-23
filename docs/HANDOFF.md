@@ -72,16 +72,24 @@ the new canvas site and the existing pitch site.
   for both projects after poster resize, so crawlers immediately fetch 1200×630.
 
 ### Verification (via Cloudflare edge IP 172.67.184.230 — local resolver lagged)
-- canvas.snowside.network HTML: og:image → https://canvas.snowside.network/snowside-lean-canvas-poster.png
-- canvas poster: 1200×630 PNG ✅
+- canvas.snowside.network: custom domain **active** (certificate + validation both active)
+- canvas HTML: og:image → https://canvas.snowside.network/snowside-lean-canvas-poster.png
+- canvas poster: 1200×630 PNG (GIMP-corrected, 950336 bytes) ✅
 - canvas OG meta: width 1200, height 630 ✅
 - canvas PDF: application/pdf, 512403 bytes ✅
-- pitch.snowside.network poster: 1200×630 PNG ✅
+- pitch.snowside.network poster: 1200×630 PNG (GIMP-corrected, 1032326 bytes) ✅
 - pitch OG meta: width 1200, height 630 ✅
 
-### Commits (2 pushed to master)
+### Poster Crop Fix (end of session)
+- The first ImageMagick resize (2048×1152 → 1200×630 via `-resize 1200x630^ -gravity center -extent 1200x630`) cropped off the bottom text on both posters.
+- Project Lead re-exported both posters in GIMP with correct framing (1200×630, bottom text intact).
+- Re-copied from `~/Downloads/snowside-lean-canvas-poster.png` (950336 bytes) and `~/Downloads/snowside-pitch-poster.png` (1032326 bytes) into `packages/canvas/public/` and `packages/pitch/public/` respectively.
+- Rebuilt, redeployed, cache-purged, verified live. **Lesson:** for posters with text near edges, prefer manual framing in GIMP over ImageMagick center-crop.
+
+### Commits (3 pushed to master)
 1. `41afa496` — feat(canvas): add canvas.snowside.network Lean Canvas site + pitch OG poster
 2. `3dbb0d91` — fix(og): resize posters to 1200x630 (standard OG format)
+3. `81032a0f` — fix(og): replace cropped posters with GIMP-corrected versions (1200x630)
 
 ### Build Status
 - **Canvas build:** ✅ PASSES (1 page, ~600ms)
@@ -102,23 +110,26 @@ the new canvas site and the existing pitch site.
 - `packages/canvas/` — new package (10 files: config, layout, components, page, styles, public assets)
 - `packages/pitch/src/layouts/Base.astro` — OG image + dimensions + alts
 - `packages/pitch/src/styles/global.css` — tailwindcss ENOENT fix
-- `packages/pitch/public/snowside-pitch-poster.png` — new OG poster
+- `packages/pitch/public/snowside-pitch-poster.png` — new OG poster (GIMP-corrected)
 - `package.json` — canvas build/dev scripts
 - `pnpm-lock.yaml` — updated (wrangler + canvas deps)
+- `AGENTS.md` — documented packages/canvas, canvas.snowside.network, Pages projects list, wrangler OAuth DNS:Edit scope limitation, cache-purge API
 - `docs/HANDOFF.md` — this file
 
 ### Next Steps
 1. **Visually verify OG posters** by pasting https://canvas.snowside.network and
-   https://pitch.snowside.network into the social platform's card preview tool
+   https://pitch.snowside.network into a social card preview tool
    (e.g. https://socialsharepreview.com or platform debugger) to confirm the
-   1200×630 posters render as `summary_large_image` cards.
+   1200×630 GIMP-corrected posters render as `summary_large_image` cards with no
+   text cut off.
 2. **Verify canvas.snowside.network** in a browser — confirm the Lean Canvas PNG
    renders crisply and the PDF/PNG download links work.
-3. **Add link to canvas site** from the main web package (packages/web) footer/nav
-   if desired — currently no link exists from web → canvas (similar to pitch
-   isolation, but canvas is indexable so a link may be wanted).
-4. **Update AGENTS.md** to document the new `packages/canvas` package and the
-   `canvas.snowside.network` subdomain in the repo structure section.
+3. **Optional:** Add a link to `canvas.snowside.network` from the main web package
+   (packages/web) footer/nav — currently no link exists web → canvas (canvas is
+   indexable, unlike pitch, so a link may be desirable).
+4. **Optional:** Re-run `wrangler login` with "Edit Cloudflare DNS" scope checked
+   so future subdomain DNS records can be created via API without dashboard
+   workarounds.
 
 ### Previous Session
 Session 17 (2026-08-18): Whitepaper v0.4 final corrections (missing font glyphs

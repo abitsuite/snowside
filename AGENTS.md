@@ -3,6 +3,7 @@
 ## Monorepo structure
 - `packages/web` – Astro static site (landing page + whitepaper + /validators), deployed to Cloudflare Pages via `master`
 - `packages/pitch` – Astro static site (pitch.snowside.network), separate Cloudflare Pages project. **noindex, nofollow** — no links from web to pitch.
+- `packages/canvas` – Astro static site for the Snowside Lean Canvas (PNG viewer + PDF download). Subdomain: `canvas.snowside.network`. Separate Cloudflare Pages project (`snowside-canvas`). Indexable (no noindex).
 - `packages/docs` – Astro Starlight technical documentation (docs.snowside.network)
 - `packages/explorer` – EVM block explorer (Astro static site + Cloudflare Pages Functions). Contains Header (network switcher, search), Footer, Etherscan-style stats cards. Subdomains: `explorer.snowside.network` (mainnet), `explorer-testnet.snowside.network`, `explorer-signet.snowside.network`.
 - `packages/bridge` – Astro static site for BIP-300/301 deposits and withdrawals. Subdomain: `bridge.snowside.network`.
@@ -18,6 +19,7 @@ The Snowside monorepo uses language-specific top-level directories:
 packages/     — JavaScript/TypeScript (pnpm workspace)
   web/ Main website (Astro)
   pitch/ Grant pitch page (Astro)
+  canvas/ Lean Canvas viewer (Astro static, PNG + PDF download)
   docs/ Documentation site (Astro + Starlight)
   explorer/ EVM block explorer (Astro static + CF Pages Functions)
   bridge/ Bridge UI (Astro + Tailwind v4)
@@ -56,15 +58,17 @@ Never leave uncommitted work sitting locally at the end of a session.
 ## Build & deploy
 - Web build:     cd packages/web && pnpm build   # Astro static, output dist/
 - Pitch build:   cd packages/pitch && pnpm build # Astro static, output dist/
+- Canvas build:  cd packages/canvas && pnpm build # Astro static, output dist/
 - Docs build:    cd packages/docs && pnpm build  # Astro Starlight, output dist/
 - Explorer build: cd packages/explorer && pnpm build # Astro static, output dist/
 - Bridge build:  cd packages/bridge && pnpm build # Astro static, output dist/
-- Root build:    pnpm run build                  # runs web then pitch
+- Root build:    pnpm run build                  # runs web -> pitch -> canvas
 - Dev web:       pnpm run dev:web
 - Dev pitch:     pnpm run dev:pitch
+- Dev canvas:    pnpm run dev:canvas
 - Dev docs:      pnpm --filter packages-docs run dev
 - Dev explorer:  pnpm --filter packages-explorer run dev
-- Production URLs: https://snowside.network (web), https://pitch.snowside.network (pitch), https://docs.snowside.network (docs), https://explorer.snowside.network (explorer mainnet)
+- Production URLs: https://snowside.network (web), https://pitch.snowside.network (pitch), https://canvas.snowside.network (canvas), https://docs.snowside.network (docs), https://explorer.snowside.network (explorer mainnet)
 
 ## Avalanche L1 Network Infrastructure
 - **VPS:** rpc.snowside.network (Ubuntu 24.04, Nginx reverse proxy)
@@ -264,8 +268,15 @@ The signet block explorer (explorer-signet.snowside.network) was showing stale b
 - `/[network]/index.astro` — Dynamic routes for `/mainnet`, `/testnet`, `/signet`
 - `functions/_middleware.js` — Cloudflare Pages Functions middleware for subdomain routing
 
+## Pages (packages/canvas)
+- `/` — Lean Canvas page (index.astro): hero + full-res Lean Canvas PNG (4724x2233) inline viewer + download buttons (PDF, PNG, whitepaper).
+- Assets: `public/snowside-lean-canvas.png` (4724x2233, inline view), `public/snowside-lean-canvas.pdf` (1 page, download), `public/snowside-lean-canvas-poster.png` (1200x630 OG poster).
+- Layout: `src/layouts/Base.astro` (full OG + Twitter meta, 1200x630 poster). Components: `Nav.astro` (Download PDF button), `Footer.astro` (links to web, whitepaper, docs, GitHub).
+- Cloudflare Pages project: `snowside-canvas`. Custom domain: `canvas.snowside.network`.
+- Deploy: `cd packages/canvas && pnpm run deploy` (builds + `wrangler pages deploy --project-name snowside-canvas --branch master`).
+
 ## Analytics — Simple Analytics
-- All 4 packages (web, pitch, docs, explorer) have Simple Analytics installed or available.
+- All 5 packages (web, pitch, canvas, docs, explorer) have Simple Analytics installed or available.
 - Standard embed — no site ID needed, auto-detects domain.
 - Script URL: `https://scripts.simpleanalyticscdn.com/latest.js`
 - NoScript image: `https://queue.simpleanalyticscdn.com/noscript.gif`
@@ -292,6 +303,10 @@ The signet block explorer (explorer-signet.snowside.network) was showing stale b
 - **CRITICAL:** When changing dependencies (e.g., upgrading Astro), you MUST explicitly `git add pnpm-lock.yaml` and commit it. Cloudflare uses `--frozen-lockfile` and will fail with `ERR_PNPM_OUTDATED_LOCKFILE` if the lockfile doesn't match `package.json`.
 - `.gitignore` must exclude: `node_modules/`, `dist/`, `.astro/`, `.env*` (except `.env.example`).
 - Never commit `node_modules/` — if accidentally committed, run `git rm -r --cached node_modules`, add `.gitignore`, and amend the unpushed commit.
+- **Pages projects (aBitSuite account, ID `2cdd50405dc13f86476f4d03e1ad1282`, email hello@abitsuite.com):** `snowside` (web), `snowside-pitch` (pitch), `snowside-canvas` (canvas), `snowside-docs` (docs), `snowside-explorer` (explorer), `snowside-bridge` (bridge). OAuth token stored at `~/.config/.wrangler/config/default.toml`.
+- **Deploying a Pages project from CLI:** `cd <pkg> && pnpm exec wrangler pages deploy dist --project-name <snowside-*> --branch master --commit-dirty=true`. Use `--commit-dirty=true` to silence the uncommitted-changes warning.
+- **Custom domains:** Adding a custom domain to a Pages project via API (`POST /accounts/{id}/pages/projects/{project}/domains`) does NOT auto-create the DNS CNAME. The `wrangler login` OAuth token LACKS the `DNS:Edit` scope, so DNS records cannot be created/listed via API (error code 10000 "Authentication error"). Either: (a) create the CNAME in the Cloudflare dashboard, (b) re-run `wrangler login` and check "Edit Cloudflare DNS" scope on the consent screen, or (c) create a Cloudflare API Token with `Zone:DNS:Edit` and set `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` env vars.
+- **Cache purge after asset swap:** `POST /accounts/{id}/pages/projects/{project}/deployments/purge_cache` with the OAuth bearer token (`oauth_token` field in `~/.config/.wrangler/config/default.toml`) purges the Pages CDN so changed static assets (e.g., OG posters) are served immediately. The fresh deployment URL (`<hash>.pages.dev`) always serves the new file regardless.
 
 ## Whitepaper
 - **Current version: v0.4** (meta.ts `WHITEPAPER_VERSION = '0.4'`)
@@ -323,7 +338,7 @@ The following files were modified in the v0.3 → v0.4 refactor:
 - **Fee Model (v0.4):** Three-part fee model updated — Contract Fees are now optional/opt-in (not required), may be denominated in BTC or USDC, and the validator portion is replaced by a Snowside Treasury. Treasury distribution: Foundation retains 10%, Settlement Proposers receive 5% (configurable), Validators receive 85% (100% proportional to bonded BTC, no equal distribution). Contract Owner vesting: 50%→80% over 18 months. Settlement Proposers compensated from Treasury (not Base Fees) — 100% of Base Fees go to eCash miners via BMM.
 
 ## Favicon
-- All four packages (`web`, `pitch`, `docs`, `explorer`) use the same SVG favicon at `public/favicon.svg`.
+- All five packages (`web`, `pitch`, `canvas`, `docs`, `explorer`) use the same SVG favicon at `public/favicon.svg`.
 - Design: two snowmen side-by-side forming a literal "88" silhouette (Drivechain ID #88).
 - Dark rounded-square backdrop (#0a0f1a, rx=14) — required so white snowmen are visible in light browser themes.
 - If updating the favicon, update all four files and keep the SVG bodies identical.
@@ -331,7 +346,10 @@ The following files were modified in the v0.3 → v0.4 refactor:
 ## OG image
 - `packages/web/public/og-image-v2.png` — 1200x630px.
 - `packages/explorer` uses a copy at `packages/explorer/public/og-image.png`.
-- **Cache-busting:** When replacing the OG image, use a versioned filename (e.g., `og-image-v3.png`).
+- `packages/canvas/public/snowside-lean-canvas-poster.png` — 1200x630px (Lean Canvas OG poster).
+- `packages/pitch/public/snowside-pitch-poster.png` — 1200x630px (pitch OG poster).
+- **Cache-busting:** When replacing an OG image, purge the Cloudflare Pages cache via API (`POST /accounts/{id}/pages/projects/{project}/deployments/purge_cache`) or use a versioned filename.
+- **Cloudflare Pages cache note:** After redeploying a changed static asset, the main `*.pages.dev` / custom domain URL may serve the old file from CDN cache. The fresh deployment URL (`<hash>.pages.dev`) always serves the new file. Purge cache or wait for TTL expiry.
 
 ## retro9000 grant link
 - The Avalanche Foundation retro9000 grant announcement tweet: `https://x.com/AvalancheFDN/status/1932484367324229635?s=20`
@@ -381,6 +399,7 @@ The landing page alternates dark and light sections for visual rhythm.
 |------------|---------------------------------------|
 | web | cd packages/web && pnpm build |
 | pitch | cd packages/pitch && pnpm build |
+| canvas | cd packages/canvas && pnpm build |
 | docs | cd packages/docs && pnpm build |
 | explorer | cd packages/explorer && pnpm build |
 | bridge | cd packages/bridge && pnpm build |
