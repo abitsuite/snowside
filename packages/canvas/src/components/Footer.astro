@@ -1,0 +1,61 @@
+---
+// packages/canvas/src/components/Footer.astro
+const year = new Date().getFullYear();
+---
+
+<footer class="border-t border-white/5 bg-surface-0 px-6 py-12">
+  <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 sm:flex-row">
+    <div class="text-center sm:text-left">
+      <a href="/" class="font-mono text-lg font-bold text-white">
+        ❄️ Snowside
+      </a>
+      <p class="mt-1 font-mono text-xs text-slate-500">
+        The eCash Sidechain on Avalanche
+      </p>
+    </div>
+
+    <div class="flex flex-wrap items-center justify-center gap-4 text-sm">
+      <a
+        href="https://snowside.network"
+        class="text-slate-400 transition-colors hover:text-white"
+      >
+        Main Site
+      </a>
+      <a
+        href="https://snowside.network/whitepaper.pdf"
+        class="text-slate-400 transition-colors hover:text-white"
+      >
+        Whitepaper
+      </a>
+      <a
+        href="https://docs.snowside.network"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="text-slate-400 transition-colors hover:text-white"
+      >
+        Docs
+      </a>
+      <a
+        href="https://github.com/abitsuite/snowside"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="text-slate-400 transition-colors hover:text-white"
+      >
+        GitHub
+      </a>
+      <a
+        href="/snowside-lean-canvas.pdf"
+        download
+        class="text-slate-400 transition-colors hover:text-white"
+      >
+        PDF
+      </a>
+    </div>
+  </div>
+
+  <div class="mx-auto mt-8 max-w-6xl border-t border-white/5 pt-6 text-center">
+    <p class="font-mono text-xs text-slate-500">
+      © {year} Snowside. Open source. No token. Powered by Avalanche.
+    </p>
+  </div>
+</footer>

@@ -1,0 +1,78 @@
+---
+// packages/canvas/src/pages/index.astro
+import Base from '../layouts/Base.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+
+const title = 'Snowside — Lean Canvas | BTC Gas, USDC Bridge, Avalanche L1';
+const description = 'Snowside Lean Canvas: a one-page business-model overview of the eCash sidechain on Avalanche — native BTC gas via blind merged mining, USDC bridged via ICM, automated by NodΞRunr.';
+---
+
+<Base title={title} description={description}>
+  <Nav />
+
+  <!-- ═══ HERO ═══ -->
+  <section class="relative overflow-hidden pt-28 pb-12 bg-surface-0">
+    <div class="absolute inset-0 -z-10 bg-gradient-to-br from-surface-1 via-surface-0 to-aval-700/30"></div>
+    <div class="mx-auto max-w-4xl px-6 text-center">
+      <span class="inline-block rounded-full border border-aval-600/30 bg-aval-600/10 px-4 py-1.5 text-sm font-mono font-semibold text-snow-300">
+        One-Page Business Model
+      </span>
+      <h1 class="mt-6 text-4xl font-extrabold leading-tight text-white md:text-5xl">
+        Snowside Lean Canvas
+      </h1>
+      <p class="mx-auto mt-4 max-w-2xl text-lg text-slate-300">
+        The eCash sidechain on Avalanche — native BTC gas, USDC bridging, and
+        NodΞRunr automation, captured on a single page.
+      </p>
+    </div>
+  </section>
+
+  <!-- ═══ CANVAS IMAGE ═══ -->
+  <section class="bg-surface-0 pb-16">
+    <div class="mx-auto max-w-7xl px-4">
+      <!-- The full-resolution Lean Canvas PNG (4724x2233, ~2.12:1) -->
+      <div class="overflow-hidden rounded-xl border border-white/10 bg-surface-1 shadow-2xl">
+        <img
+          src="/snowside-lean-canvas.png"
+          alt="Snowside Lean Canvas — one-page business model overview (problem, solution, key metrics, unique value proposition, unfair advantage, channels, customer segments, cost structure, revenue streams)"
+          width="4724"
+          height="2233"
+          loading="eager"
+          class="block h-auto w-full"
+        />
+      </div>
+
+      <!-- Action bar -->
+      <div class="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
+        <a
+          href="/snowside-lean-canvas.pdf"
+          download
+          class="rounded-lg bg-aval-600 px-8 py-3 text-sm font-semibold text-white transition-colors hover:bg-aval-700"
+        >
+          ⬇ Download PDF
+        </a>
+        <a
+          href="/snowside-lean-canvas.png"
+          download
+          class="rounded-lg border border-slate-600 px-8 py-3 text-sm font-semibold text-slate-200 transition-colors hover:bg-surface-2"
+        >
+          ⬇ Download PNG
+        </a>
+        <a
+          href="https://snowside.network/whitepaper.pdf"
+          class="rounded-lg border border-slate-600 px-8 py-3 text-sm font-semibold text-slate-200 transition-colors hover:bg-surface-2"
+        >
+          Read the Whitepaper
+        </a>
+      </div>
+
+      <p class="mt-6 text-center text-xs text-slate-500">
+        High-resolution PNG (4724×2233) · PDF download (vector, 1 page) ·
+        <a href="https://canvas.snowside.network" class="text-snow-400 underline decoration-snow-400/30 hover:decoration-snow-400">canvas.snowside.network</a>
+      </p>
+    </div>
+  </section>
+
+  <Footer />
+</Base>

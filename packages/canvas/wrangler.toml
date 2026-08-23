@@ -1,0 +1,6 @@
+# packages/canvas/wrangler.toml
+# Cloudflare Pages project: snowside-canvas
+# Custom domain: canvas.snowside.network
+name = "snowside-canvas"
+pages_build_output_dir = "dist"
+compatibility_date = "2024-08-10"

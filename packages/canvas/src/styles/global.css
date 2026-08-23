@@ -1,4 +1,4 @@
-/* packages/pitch/src/styles/global.css */
+/* packages/canvas/src/styles/global.css */
 @import 'tailwindcss/index.css';
 
 @theme {
@@ -42,8 +42,8 @@ html {
 
 body {
   font-family: var(--font-sans);
-  background-color: var(--color-snow-50);
-  color: #1a2335;
+  background-color: var(--color-surface-0);
+  color: #e2e8f0;
 }
 
 ::selection {
