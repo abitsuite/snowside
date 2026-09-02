@@ -1,4 +1,50 @@
-# Snowside Handoff — 2026-08-23 (Session 18, Lean Canvas + OG Posters)
+# Snowside Handoff — 2026-09-02 (Session 19, VPS Migration + Backup System)
+
+## Session 19 summary — 2026-09-02
+
+### 1. Snowside stack migrated bchplease → new VPS `snowside`
+- New VPS: `ubuntu@snowside` / `root@snowside` (172.81.181.52, 4 vCPU / 7.8GB / 67GB, Ubuntu 24.04)
+- bchplease is fully shut down (all services stopped+disabled, incl. bitcoind/drynet4) — server left running, Project Lead decommissions manually
+- All 5 avalanchego nodes (2 bootstrap :9650/:9652 + 3 L1 :9656/:9658/:9654), nginx, snowside-federation Docker live on snowside
+- DNS `rpc.snowside.network` cut over; federation healthy (`federation_online: true`)
+- **Live blockchain IDs (AGENTS.md ones are STALE — networks redeployed Aug 19):**
+  - Mainnet: `5ox6qUHAswB18Je6riq69xUToXQ3wQu4H4uXSPE1xeVF38KDb` (chain 32904/0x8088)
+  - Testnet: `22Y9NRt9rdnh5qVMEeod9XLE9cJytvpqg4p82ac72tAu6t9fKL` (chain 33160/0x8188)
+  - Signet:  `2MYRvevRa4YSoQfdgHtn2kbjUvNRZsE29cj8rPZ2okCCDFgBwF` (chain 33416/0x8288)
+
+### 2. Base moved /root/ → /home/ubuntu/ (Project Lead requirement)
+- Everything lives under `/home/ubuntu/`: `.avalanche-cli/`, `snowside/`, `bin/`, `genesis/`, `backups/`, `docs/`
+- All avalanchego processes run as user `ubuntu` (NOT root)
+- `/root/` is clean. All flags.json / config.json / network.env / systemd unit rewritten
+- Gotcha: `avalanche network start` resolves base dir from `$HOME` — must run as `sudo -u ubuntu -H`
+
+### 3. Daily HOT backup system (zero-downtime)
+- Script: `/home/ubuntu/snowside/scripts/backup-snowside.sh`
+- Timer: `snowside-backup.timer` — daily 03:00 UTC (`systemctl list-timers snowside-backup.timer`)
+- Output: `/home/ubuntu/backups/snowside-YYYYMMDD-HHMMSS.tar.zst` + `.sha256` (~30 MB, from ~400 MB)
+- Tier 1 only: chain state (`local/`, current `runs/`), `subnets/`, `key/`, federation `.env`, scripts, genesis, nginx+ssl, systemd unit. Binaries excluded (re-downloadable).
+- HOT = crash-consistent (Pebble/LevelDB WAL replay on restore, same as power-loss recovery). Nodes NEVER stop.
+- **Two-pass rsync:** pass 1 bulk, pass 2 delta-only (excludes `*.log`) — shrinks the compaction race window from minutes to seconds.
+- Integrity: `zstd -t --long=31` + sha256 per snapshot. Retention: last 7 local copies.
+- Restore runbook: `/home/ubuntu/backups/RESTORE.md`
+- Download latest snapshot locally: see `/home/ubuntu/backups/DOWNLOAD-LATEST.txt`
+
+### ⚠️ NOTE FOR FUTURE SESSION: Cloudflare R2 backup storage
+Project Lead wants backups pushed off-box to **Cloudflare R2** (currently manual scp → MEGA).
+Suggested implementation when picked up:
+1. Create R2 bucket (e.g. `snowside-backups`) in the aBitSuite CF account (ID `2cdd50405dc13f86476f4d03e1ad1282`) + R2 API token (S3-compatible creds)
+2. Install `rclone` on snowside VPS, configure an `r2:` remote (S3 endpoint `https://<account-id>.r2.cloudflarestorage.com`)
+3. Add an upload step at the end of `backup-snowside.sh` (or a systemd `ExecStartPost=`) — e.g. `rclone copyto $ARCHIVE r2:snowside-backups/`
+4. Use R2 lifecycle rules for retention (keep local 7, keep R2 e.g. 30)
+5. Keep the MEGA manual flow as fallback until R2 is verified end-to-end
+
+### Known issues / next steps
+- Mainnet C-chain on `avalanche` VPS (170.75.160.146) still finishing storage-trie state sync (was 26,272/2,452,072 remaining at 07:02 UTC Sep 2) — then ~250K block execution → bootstrapped → ICTT unblocked (Project Lead's top priority)
+- AGENTS.md still contains stale blockchain IDs + stale bchplease references — needs a cleanup pass
+- Restore drill (boot a snapshot on alt ports) not yet performed
+- Old `avax-sync` VPS (170.75.170.236) teardown still pending
+
+---
 
 ## Session 18 summary — 2026-08-23
 
