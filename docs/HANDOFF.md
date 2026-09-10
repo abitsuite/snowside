@@ -1,4 +1,48 @@
-# Snowside Handoff — 2026-09-02 (Session 19, VPS Migration + Backup System)
+# Snowside Handoff — 2026-09-10 (Session 20, Avalanche Node Incident + Restart-Proofing)
+
+## Session 20 summary — 2026-09-10
+
+### 1. Incident: unattended-upgrades wiped out mainnet C-chain sync progress (AGAIN)
+Timeline (all from `avalanche` VPS logs / journal, 170.75.160.146):
+- Sep 4 15:10 UTC — Mainnet C-chain state sync COMPLETED; block execution began, reached 511,935 / 645,761 (79.3%)
+- Sep 8 12:32:47 — FATAL crash: `duplicate metrics collector registration attempted` (X Chain handler, avalanchego-internal bug, NOT OOM). systemd auto-restarted 12:33:17 (NRestarts=1). Node entered mandatory post-state-sync snapshot wipe (`Deleting state snapshot leftovers`, kind=storage)
+- Sep 8→9 — wipe ran 25h6m, deleted 1,052,960,000 entries, last entry Sep 9 16:48:47
+- Sep 10 06:04:49 — `apt-daily-upgrade.service` started; 06:05:03 unattended-upgrades began upgrading 23 packages INCLUDING glibc (`libc6`)
+- Sep 10 06:05:27 — systemd reexec; 06:05:29 needrestart sent SIGTERM to BOTH avalanchego units (graceful, exitCode 0); 06:07:00 SIGKILL; 06:07:02 auto-restart
+- Sep 10 06:12:13 — `starting state sync` FROM SCRATCH. The interrupted wipe voided the entire completed state sync.
+
+### 2. Root-cause facts (verified this session)
+- **avalanchego v1.14.2 state sync is ATOMIC — no resume.** The sync-completed marker is only durable after the post-sync wipe finishes. Restart during state sync OR wipe = full restart from zero. Log proof: `triesRemaining=2,277,705` after restart (original Aug 28 count: 2,452,072).
+- The killer was **needrestart** (installed, v3.11), triggered by unattended-upgrades' glibc upgrade — NOT a human, NOT a panic (the journal goroutine dump was shutdown noise).
+- No mainnet C-chain snapshot exists to restore from (backups cover Snowside L1s only; LunaNode copy plan was post-bootstrap).
+
+### 3. Prevention applied — Project Lead approved BOTH (`avalanche` VPS only)
+1. `/etc/needrestart/conf.d/avalanchego.conf` → `$nrconf{override_rc}{q(^avalanchego)} = 0;` — needrestart can NEVER restart any `avalanchego*` unit (even on manual apt runs).
+2. `/etc/apt/apt.conf.d/20auto-upgrades` → both `"0"` — unattended-upgrades fully disabled. Backup: `20auto-upgrades.bak-20260910`.
+3. Verified: `Unattended-Upgrade::Automatic-Reboot` already false (default).
+- AGENTS.md now carries the full **ZERO-RESTART RULE** section (HARD RULES 1–4) — read it before touching this box.
+
+### 4. Snowside VPS exposure — checked, safe
+- 5 avalanchego procs run via avalanche-cli, NO systemd units → needrestart cannot restart them.
+- Auto-reboot off. Unattended-upgrades deliberately LEFT ON (public-facing; worst case = seconds-long nginx/docker blip, not a sync wipe).
+
+### 5. Current node status (Sep 10 ~21:34 UTC)
+- All chains `isBootstrapped: false`.
+- C-chain: re-running state sync, `triesRemaining=2,272,484`, node-reported ETA ~60h (oscillates; first pass of this phase took ~7 days). After state sync, the wipe will run AGAIN (last pass: 25h+) — **ZERO-RESTART window; any restart = full reset again.** Flag loudly when C.log shows `Deleting state snapshot leftovers`.
+- X-chain: finished post-restart work Sep 10 06:12, waiting on C.
+- Disk `/mnt/avax-data`: 783G/984G used (84%), 151G free — regrowing during state sync; watch item.
+- Both node processes healthy (uptime ~15.5h at check time).
+
+### Known issues / next steps
+1. Monitor C-chain state sync → wipe window → `isBootstrapped: true` (Project Lead's top priority; ICTT blocked on this).
+2. On bootstrap: validator fee budget decision → node funding → genesis patch (new authority `0x895fEE1F9F364805d21d56add85fa6E2608d1c11`, mnemonic-derived at `m/44'/60'/88'/0/0`) → `avalanche blockchain create/deploy SnowsideMainnet --mainnet` → ICM → USDC ICTT.
+3. Post-bootstrap: two-pass rsync copy of mainnet db to second LunaNode-account VPS (EXCLUDE `staking/`).
+4. Peg-in broadcast (13.37 ECX, slot 88) still awaiting Project Lead's 4 answers (broadcast path, policy fallback, L2 destination confirm, crediting method).
+5. AGENTS.md stale-ID cleanup pass (Session 19 note) still pending: live blockchain IDs are in Session 19 section below.
+6. Restore drill not yet performed; old `avax-sync` VPS (170.75.170.236) teardown pending; bchplease manual decommission pending.
+7. Optional: R2 off-box backups; gpg-encrypt backups before MEGA/R2 (HD_MNEMONIC also controls chain authority now); multisig admin migration before Phase 2.
+
+---
 
 ## Session 19 summary — 2026-09-02
 

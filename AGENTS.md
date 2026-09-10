@@ -230,6 +230,25 @@ Deploy contract (if on DeployerAllowList):
         }
     }
 
+### Avalanche VPS (`avalanche`, 170.75.160.146) — Mainnet/Fuji Full Nodes
+- **Hardware/OS:** 6 vCPU / 16GB, 125GB local + 1TB block storage `/dev/vdc` at `/mnt/avax-data` (blockchain db). Logs + chainData on local disk: `/home/ubuntu/avax-local/<mainnet|fuji>/logs/`.
+- **Services (systemd, both `Restart=always`):** `avalanchego-mainnet.service` (v1.14.2, NodeID-Kf5bbEanWq9TsyoBXqnJzvc8Dn6mu5haS) and `avalanchego-fuji.service` (v1.15.0-fuji, NodeID-BxEPkQVNkC4ZYsez1GbyJVn9FVXzAzT15).
+- **Avalanche-CLI:** v1.9.6 at `/home/ubuntu/bin/avalanche` (same version as snowside).
+
+### ⚠️ CRITICAL: ZERO-RESTART RULE — State Sync Is Atomic (Session 20 incident)
+- **avalanchego v1.14.2 state sync has NO resume.** The sync-completed marker is only durable AFTER the post-sync snapshot wipe (`Deleting state snapshot leftovers`, `wipe.go`) finishes. Any restart during state sync OR during the wipe = the ENTIRE state sync restarts from scratch. There is no checkpoint, no partial credit.
+- **Incident (Sep 10 06:05 UTC):** Ubuntu unattended-upgrades upgraded glibc (`libc6` + 22 other packages) → needrestart stopped both avalanchego units (SIGTERM 06:05:29, SIGKILL 06:07:00, auto-restart 06:07:02) → the running wipe was interrupted at 1,052,960,000 entries / 25h6m elapsed → C-chain state sync restarted from scratch (triesRemaining=2,277,705; node-reported ETA ~60h). A prior crash (Sep 8 12:32, FATAL `duplicate metrics collector registration attempted` in X Chain handler — avalanchego-internal bug, NOT OOM) had already forced the first wipe pass. Total cost of the incident: days of sync progress.
+- **HARD RULES for the `avalanche` VPS (non-negotiable):**
+  1. NEVER `systemctl stop/restart` any `avalanchego-*` unit without explicit Project Lead approval.
+  2. NEVER run `apt upgrade`, `apt dist-upgrade`, or `unattended-upgrade` manually on this box without explicit Project Lead approval.
+  3. During a wipe window (C.log shows `Deleting state snapshot leftovers`): ZERO restarts and ZERO package operations of any kind.
+  4. Check `systemctl show avalanchego-mainnet -p NRestarts` for unexpected restarts before trusting process uptime (`ps` uptime is misleading — verify full args, the Fuji and Mainnet procs look alike).
+- **Prevention applied (Session 20, Project Lead approved BOTH):**
+  - `/etc/needrestart/conf.d/avalanchego.conf` → `$nrconf{override_rc}{q(^avalanchego)} = 0;` — needrestart can never restart any `avalanchego*` unit, even on manual apt runs.
+  - `/etc/apt/apt.conf.d/20auto-upgrades` → both `"0"` — unattended-upgrades fully disabled. Original backed up to `20auto-upgrades.bak-20260910`.
+  - `Unattended-Upgrade::Automatic-Reboot` was already false (default).
+- **Snowside VPS is NOT exposed to this failure class:** its 5 avalanchego procs run via avalanche-cli (NO systemd units), so needrestart cannot restart them; auto-reboot is off; unattended-upgrades deliberately left ON there (public-facing box — worst case is a seconds-long nginx/docker blip, not a state-sync wipe).
+
 ### Block Explorer Issue (Session 11)
 The signet block explorer (explorer-signet.snowside.network) was showing stale block height (build-time fetch in Astro frontmatter).
 **FIX (Session 12):** Rewrote explorer pages to use client-side `<script>` fetching with 15s auto-refresh. Block height now updates in real-time.
