@@ -372,7 +372,11 @@ jobs:
       - name: Build Tour
         run: pnpm --filter @snowside/tour run build
       - name: Deploy to Cloudflare Pages
-        run: npx wrangler pages deploy packages/tour/dist --project-name=snowside-tour --commit-dirty=true
+        # Must cd into packages/tour so wrangler finds the functions/ directory
+        # (Pages Functions middleware for SPA fallback). Deploying from repo root
+        # would miss the functions/ dir and /1, /2 etc. would 404.
+        working-directory: packages/tour
+        run: npx wrangler pages deploy dist --project-name=snowside-tour --commit-dirty=true
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
