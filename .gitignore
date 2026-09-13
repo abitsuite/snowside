@@ -63,3 +63,5 @@ packages/federation/src/test-wallet.ts
 .env
 *.env.local
 packages/tour/index.html
+coverage/
+**/coverage/

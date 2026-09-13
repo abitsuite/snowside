@@ -1,8 +1,41 @@
-/* packages/tour/styles/snow.css */
-/* CRITICAL: with theme:none, .slidev-page has width:100% but NO height.
-   Layouts using h-full resolve to 0 → invisible slides.
-   This rule gives the slide page a height. */
+/* packages/tour/styles/index.css */
+/* CRITICAL: with theme:none, several Slidev client-core CSS rules are
+   missing from the built stylesheet because they ship scoped to a Vue
+   data-v attribute in the DrawingPreview component, but the Play module
+   renders the same elements WITHOUT that attribute. These unscoped rules
+   restore the height chain: #app → #page-root → .slidev-slide-container →
+   .slidev-slide-content → .slidev-page → layout.
+   Without them, .slidev-slide-content collapses to 0 height → blank slide. */
+
+/* Slidev client-core classes (unscoped equivalents of the scoped rules
+   in DrawingPreview-CQR00dlG.css). These match the upstream @slidev/client
+   styles that a theme would normally provide. */
+.slidev-slide-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+.slidev-slide-content {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  overflow: hidden;
+  background-color: #121212; /* dark default; layouts override */
+}
+.dark .slidev-slide-content {
+  background-color: #121212;
+}
+
+/* .slidev-page: with theme:none, the base rule has width:100% but no height.
+   Layouts using h-full resolve to 0 → invisible slides. */
 .slidev-page {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
   height: 100%;
 }
 
