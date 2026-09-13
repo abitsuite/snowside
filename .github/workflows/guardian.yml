@@ -1,0 +1,387 @@
+# .github/workflows/guardian.yml
+#
+# Snowside Monorepo CI Suite
+# Runs on every push/PR to master across all packages.
+#
+# Model: each package gets its OWN labeled build job (visible as a
+# distinct entry in the Actions sidebar) so a failure is immediately
+# attributable. Each deploy-* job gates on its build job and only
+# runs on merged commits to master (PRs build but never deploy).
+#
+# All 7 Cloudflare Pages packages (web, pitch, canvas, docs, explorer,
+# bridge, tour) are deployed manually by this workflow — there is NO
+# Cloudflare Pages git integration on any of them (each was explicitly
+# "Disconnected" in the dashboard so this workflow is the sole deploy
+# path). The API Worker (packages/api) deploys via `wrangler deploy`.
+#
+# Secrets (Settings → Secrets and variables → Actions):
+#   CLOUDFLARE_API_TOKEN  — Pages:Edit + Workers Scripts:Edit
+#   CLOUDFLARE_ACCOUNT_ID — 2cdd50405dc13f86476f4d03e1ad1282
+#   CODECOV_TOKEN         — Codecov upload token
+
+name: Snowside CI Suite
+
+on:
+  push:
+    branches: ["master"]
+  pull_request:
+    branches: ["master"]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Force remaining JavaScript actions onto the Node.js 24 runtime
+  # (matches the sidecoin guardian; drop once codecov ships Node 24).
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+jobs:
+  # ── Build gates (one per package, labeled) ──────────────
+  #
+  # Each build job installs deps once and builds the package. No test
+  # suites exist yet — build success IS the quality gate. When tests
+  # are added later, they slot into the same job under the build step.
+  # ─────────────────────────────────────────────────────────
+
+  build-web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build Web
+        run: pnpm --filter snowside-web run build
+
+  build-pitch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build Pitch
+        run: pnpm --filter @snowside/pitch run build
+
+  build-canvas:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build Canvas
+        run: pnpm --filter @snowside/canvas run build
+
+  build-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build Docs
+        run: pnpm --filter packages-docs run build
+
+  build-explorer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build Explorer
+        run: pnpm --filter packages-explorer run build
+
+  build-bridge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build Bridge
+        run: pnpm --filter packages-bridge run build
+
+  build-tour:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build Tour
+        run: pnpm --filter @snowside/tour run build
+
+  build-api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build API Worker (dry-run compile check)
+        run: pnpm --filter packages-api exec wrangler deploy --dry-run
+
+  # ── Cloudflare Pages deploys (gate on build, only master) ─
+  #
+  # Each deploy-* job needs its own build job and only runs on
+  # merged commits to master. PRs build but never deploy.
+  # --commit-dirty=true silences the uncommitted-changes warning
+  # (CI runners have no git dirty state, but the flag is harmless).
+  # ─────────────────────────────────────────────────────────
+
+  deploy-web:
+    needs: build-web
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    environment:
+      name: production-web
+      url: https://snowside.network
+    steps:
+      - uses: actions/checkout@v5
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build Web
+        run: pnpm --filter snowside-web run build
+      - name: Deploy to Cloudflare Pages
+        run: npx wrangler pages deploy packages/web/dist --project-name=snowside --commit-dirty=true
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+  deploy-pitch:
+    needs: build-pitch
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    environment:
+      name: production-pitch
+      url: https://pitch.snowside.network
+    steps:
+      - uses: actions/checkout@v5
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build Pitch
+        run: pnpm --filter @snowside/pitch run build
+      - name: Deploy to Cloudflare Pages
+        run: npx wrangler pages deploy packages/pitch/dist --project-name=snowside-pitch --commit-dirty=true
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+  deploy-canvas:
+    needs: build-canvas
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    environment:
+      name: production-canvas
+      url: https://canvas.snowside.network
+    steps:
+      - uses: actions/checkout@v5
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build Canvas
+        run: pnpm --filter @snowside/canvas run build
+      - name: Deploy to Cloudflare Pages
+        run: npx wrangler pages deploy packages/canvas/dist --project-name=snowside-canvas --commit-dirty=true
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+  deploy-docs:
+    needs: build-docs
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    environment:
+      name: production-docs
+      url: https://docs.snowside.network
+    steps:
+      - uses: actions/checkout@v5
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build Docs
+        run: pnpm --filter packages-docs run build
+      - name: Deploy to Cloudflare Pages
+        run: npx wrangler pages deploy packages/docs/dist --project-name=snowside-docs --commit-dirty=true
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+  deploy-explorer:
+    needs: build-explorer
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    environment:
+      name: production-explorer
+      url: https://explorer.snowside.network
+    steps:
+      - uses: actions/checkout@v5
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build Explorer
+        run: pnpm --filter packages-explorer run build
+      - name: Deploy to Cloudflare Pages
+        run: npx wrangler pages deploy packages/explorer/dist --project-name=snowside-explorer --commit-dirty=true
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+  deploy-bridge:
+    needs: build-bridge
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    environment:
+      name: production-bridge
+      url: https://bridge.snowside.network
+    steps:
+      - uses: actions/checkout@v5
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build Bridge
+        run: pnpm --filter packages-bridge run build
+      - name: Deploy to Cloudflare Pages
+        run: npx wrangler pages deploy packages/bridge/dist --project-name=snowside-bridge --commit-dirty=true
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+  deploy-tour:
+    needs: build-tour
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    environment:
+      name: production-tour
+      url: https://tour.snowside.network
+    steps:
+      - uses: actions/checkout@v5
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build Tour
+        run: pnpm --filter @snowside/tour run build
+      - name: Deploy to Cloudflare Pages
+        run: npx wrangler pages deploy packages/tour/dist --project-name=snowside-tour --commit-dirty=true
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+  deploy-api:
+    needs: build-api
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    environment:
+      name: production-api
+      url: https://snowside.network/v1
+    steps:
+      - uses: actions/checkout@v5
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Deploy API Worker
+        run: pnpm --filter packages-api run deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

@@ -1,0 +1,55 @@
+# codecov.yml
+#
+# Snowside monorepo Codecov configuration.
+#
+# No packages have test suites yet, so there is no coverage to upload.
+# This config exists so that once tests are added to any package, the
+# guardian.yml workflow can upload coverage (using CODECOV_TOKEN secret)
+# and Codecov will apply these baseline settings.
+#
+# When tests are introduced, add a coverage upload step to the relevant
+# build-* job in .github/workflows/guardian.yml following the sidecoin
+# pattern:
+#
+#   - name: Upload Coverage
+#     uses: codecov/codecov-action@v5
+#     with:
+#       files: <package>/coverage/lcov.info
+#       flags: <package-name>
+#       fail_ci_if_error: false
+#       verbose: true
+#       token: ${{ secrets.CODECOV_TOKEN }}
+
+coverage:
+  status:
+    project:
+      default:
+        informational: true   # do not fail CI on coverage drops
+    patch:
+      default:
+        informational: true
+
+# Apply informational status to every package flag once tests exist.
+# Flags are set via the `flags:` field on each codecov-action upload.
+flag_management:
+  default_rules:
+    paths:
+      - packages/**
+    statuses:
+      - type: project
+        target: auto
+        informational: true
+      - type: patch
+        target: auto
+        informational: true
+
+ignore:
+  - "packages/web/public/**"        # static assets
+  - "packages/pitch/public/**"
+  - "packages/canvas/public/**"
+  - "packages/tour/public/**"
+  - "packages/explorer/public/**"
+  - "packages/bridge/public/**"
+  - "**/dist/**"                   # build outputs
+  - "**/.astro/**"
+  - "**/node_modules/**"
