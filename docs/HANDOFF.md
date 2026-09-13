@@ -1,6 +1,46 @@
-# Snowside Handoff — 2026-09-10 (Session 20, Avalanche Node Incident + Restart-Proofing)
+# Snowside Handoff — 2026-09-13 (Session 21, Tour Deploy + Guardian CI)
 
-## Session 20 summary — 2026-09-10
+## Session 21 summary — 2026-09-13
+
+### 1. packages/tour (Slidev) — SCAFFOLDED, BUILT, DEPLOYED, CI-automated
+- Slidev 0.49.29 + UnoCSS (`presetWind`) interactive 11-slide deck at `tour.snowside.network`.
+- Cloudflare Pages project `snowside-tour` created; custom domain `tour.snowside.network` live (user created CNAME manually — API token lacks `Zone:DNS:Edit`).
+- Post-build head injection (`scripts/inject-head.mjs`) for Simple Analytics + OG/Twitter meta + favicon + SPA `_redirects`. Empirically verified that Slidev v0.49.29 `seoMeta:` AND `head:` headmatter render client-side only (via unhead/Vue runtime) — neither appears in built static `index.html`; post-build injection is the ONLY reliable path for crawler-visible meta.
+- **Rendering bug (first slide blank, overview chrome floating top-right):** root causes verified against built CSS —
+  1. `.slidev-page` had `width:100%` but NO height (theme:none ships no theme CSS setting it) → `h-full` layouts resolved to 0-height invisible slides.
+  2. `styles/snow.css` was NEVER LOADED — the `style:` headmatter field is stored as a config string, not processed as a CSS import. Slidev's styles virtual module (`chunk-YP37OZJY.js`) auto-discovers only: `styles/index.{ts,js,css}`, `styles.css`, `style.css`. Renamed `snow.css` → `styles/index.css` (auto-discovered path).
+  3. UnoCSS `@apply` with custom shortcuts (e.g. `@apply slide-canvas`) does not expand in the build pipeline → `.slidev-layout` base rule silently dropped. Converted all `@apply` to plain CSS with literal values.
+  - Fix commit `d26914c6`: verified `.slidev-page{height:100%}` + `.slidev-layout h1{font-size:3rem...}` now present in built CSS.
+  - **NOTE:** user reports blank slide persists even after hard refresh + cache clear. Static HTML/CSS/JS confirmed correct on Cloudflare edge. Suspect remaining client-side rendering bug in the height chain between `#app` and `.slidev-page` — a missing intermediate container needing `height:100%`. DEBUGGING DEFERRED per user priority shift to CI.
+
+### 2. GitHub Actions guardian workflow — DEPLOYED, ALL JOBS GREEN
+- Workflow file: `.github/workflows/guardian.yml` (commit `397eb7b2`). Model follows sidecoin `guardian.yml` reference.
+- **8 build jobs** (quality gates, labeled in Actions sidebar): `build-{web,pitch,canvas,docs,explorer,bridge,tour,api}`. Each installs `--frozen-lockfile`, builds. API build uses `wrangler deploy --dry-run` (compile check, no upload). No test suites yet — build success IS the gate.
+- **8 deploy jobs** gating on their build job, `if: push && master`, `environment: production-*` with live URL: `deploy-{web,pitch,canvas,docs,explorer,bridge,tour,api}`.
+- All 7 Cloudflare Pages packages were disconnected from CF Pages git integration by the user — **this workflow is now the SOLE deploy path** for all of them. The API Worker deploys via `wrangler deploy`.
+- First run (`34753414848`): all 16 jobs green. `build-canvas` failed once on a transient corepack/undici `assert(!this.paused)` network hiccup during pnpm tarball download (Node 24 network bug); `gh run rerun --failed` → green.
+- Secrets used: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `CODECOV_TOKEN` (all set by user).
+
+### 3. Codecov configuration
+- `codecov.yml` at repo root: `informational: true` status (never fails CI on coverage drops), `flag_management` default rules for per-package flags, `ignore` rules for static assets / dist / .astro / node_modules.
+- No coverage uploads yet (no tests). When tests are added, slot `codecov-action@v5` upload step into the relevant `build-*` job following the sidecoin pattern.
+
+### 4. Cloudflare auth + credentials persistence
+- API token `cfut_Gvyh4...` (hello@abitsuite.com, account `2cdd50405dc13f86476f4d03e1ad1282`) verified via `wrangler whoami`. Token lacks `Zone:DNS:Edit` scope — DNS CNAME records must be created manually in the Cloudflare dashboard.
+- Credentials persisted at `~/.cloudflare.env` on host (chmod 600, sourced from `.bashrc` + `.profile`) and at `/home/abitsuite/.cloudflare.env` on aBitSuite VM.
+- `wrangler 4.120.0` installed as root `devDependencies` (commit `b878638b`); CI uses `npx wrangler` (pnpm hoists from root devDeps).
+
+### 5. aBitSuite VM SSH/NAT reconfiguration
+- VirtualBox headless VM `aBitSuite`: NIC switched bridged → NAT; port forward `2224→22` (matches APECS=2222, Sansbank=2223).
+- `openssh-server` installed + running on VM; host `~/.ssh/id_rsa.pub` installed to `/home/abitsuite/.ssh/authorized_keys`.
+- SSH config alias `abitsuite-vm` (HostName 127.0.0.1, Port 2224, User abitsuite, IdentityFile ~/.ssh/id_rsa) added to host `~/.ssh/config`.
+
+### 6. Slidev SKILL doc verified
+- Official Slidev SKILL.md (190 lines) at https://github.com/slidevjs/slidev/blob/main/skills/slidev/SKILL.md + 6 reference files read. Key finding: `seoMeta:` headmatter is presented as canonical OG/Twitter method but empirically renders client-side only in v0.49.29. `favicon:` frontmatter DOES render in static HTML.
+
+---
+
+## Session 20 summary — 2026-09-10 (Avalanche Node Incident + Restart-Proofing)
 
 ### 1. Incident: unattended-upgrades wiped out mainnet C-chain sync progress (AGAIN)
 Timeline (all from `avalanche` VPS logs / journal, 170.75.160.146):
