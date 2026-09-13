@@ -1,0 +1,20 @@
+{
+  "name": "@snowside/tour",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "slidev --open",
+    "build": "slidev build && node scripts/inject-head.mjs",
+    "export": "slidev export",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@slidev/cli": "0.49.29",
+    "@slidev/theme-default": "latest"
+  },
+  "devDependencies": {
+    "unocss": "^0.65.0",
+    "vue": "^3.5.0"
+  }
+}
