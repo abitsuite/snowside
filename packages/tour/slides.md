@@ -14,6 +14,8 @@ fonts:
 lineNumbers: false
 colorSchema: dark
 favicon: /favicon.svg
+# Custom styles auto-loaded by Slidev from styles/index.css
+# (Slidev discovers styles/index.{ts,js,css} or styles.css/style.css at root)
 # Simple Analytics + OG meta injected post-build by scripts/inject-head.mjs
 # (Slidev's `head:` frontmatter renders client-side only, not in initial HTML.)
 ---

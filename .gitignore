@@ -62,3 +62,4 @@ packages/federation/src/test-wallet.ts
 # Environment files
 .env
 *.env.local
+packages/tour/index.html
