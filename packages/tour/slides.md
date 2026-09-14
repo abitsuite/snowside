@@ -35,8 +35,10 @@ class: text-center
   <span class="tag">No Token</span>
 </div>
 
-<!-- OG banner shown on-screen as the hero image -->
-<img src="/snowside-tour-poster.png" alt="Snowside — The eCash Sidechain on Avalanche" class="cover-og" />
+<!-- On-screen banner: the simple web OG poster, short height, on a stretched contrast band -->
+<div class="cover-banner-band">
+  <img src="/cover-banner.png" alt="Snowside — The eCash Sidechain on Avalanche" class="cover-banner" />
+</div>
 
 ---
 

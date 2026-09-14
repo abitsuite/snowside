@@ -177,7 +177,7 @@ jobs:
       - name: Build API Worker (dry-run compile check)
         run: pnpm --filter packages-api exec wrangler deploy --dry-run
       - name: Test API Worker
-        run: pnpm --filter packages-api test -- --coverage --coverage.reporter=lcov
+        run: pnpm --filter packages-api test:coverage
       - name: Upload API Coverage
         uses: codecov/codecov-action@v5
         with:
