@@ -25,6 +25,16 @@ export default defineConfig({
     },
   },
   shortcuts: {
+    // Slidev client-core UI shortcuts (from @slidev/client/uno.config.ts).
+    // With theme:none, these are NOT inherited automatically. Without them,
+    // the built-in goto/overview dialogs (which use bg-main/border-main/
+    // bg-active) have no background or border → the slide-list autocomplete
+    // renders as an unstyled, visible list in the top-right corner.
+    'bg-main': 'bg-white dark:bg-[#121212]',
+    'bg-active': 'bg-gray-400/10',
+    'border-main': 'border-gray/20',
+    'text-main': 'text-[#181818] dark:text-[#ddd]',
+    // Custom Snowside shortcuts
     'slide-canvas': 'w-full h-full bg-ink-900 text-slate-100 font-sans',
     'accent-line': 'border-b-2 border-snow-400 w-12 mb-4',
     'lead': 'text-lg text-slate-300',

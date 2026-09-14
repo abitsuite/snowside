@@ -5,7 +5,6 @@ title: Snowside — Tour
 info: |
   Snowside — The eCash Sidechain on Avalanche.
   Native BTC gas, USDC bridging, NodΞRunr automation.
-class: slide-canvas
 highlighter: shiki
 mdc: true
 fonts:
@@ -18,9 +17,6 @@ favicon: /favicon.svg
 # (Slidev discovers styles/index.{ts,js,css} or styles.css/style.css at root)
 # Simple Analytics + OG meta injected post-build by scripts/inject-head.mjs
 # (Slidev's `head:` frontmatter renders client-side only, not in initial HTML.)
----
-
----
 layout: snow-cover
 class: text-center
 ---
