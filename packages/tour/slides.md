@@ -21,17 +21,22 @@ layout: snow-cover
 class: text-center
 ---
 
+<div class="cover-kicker">SNOWSIDE — TOUR</div>
+
 # Snowside
 
-The eCash Sidechain on Avalanche
+<p class="cover-sub">The eCash Sidechain on Avalanche</p>
 
 <p class="lead">Native BTC gas. Instant USDC bridging. Bitcoin-security, Avalanche speed.</p>
 
-<div class="flex gap-4 justify-center mt-8">
+<div class="flex gap-3 justify-center flex-wrap mt-6">
   <span class="tag">Avalanche L1</span>
   <span class="tag">Bitcoin Sidechain</span>
   <span class="tag">No Token</span>
 </div>
+
+<!-- OG banner shown on-screen as the hero image -->
+<img src="/snowside-tour-poster.png" alt="Snowside — The eCash Sidechain on Avalanche" class="cover-og" />
 
 ---
 
