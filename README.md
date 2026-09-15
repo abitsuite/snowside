@@ -146,10 +146,6 @@ jobs as each package gains tests.
 **Active development.** Mainnet L1 infrastructure in progress; ICTT (USDC
 bridging) is the next milestone.
 
-## License
-
-MIT.
-
 ## Links
 
 - Website: [snowside.network](https://snowside.network)
@@ -163,3 +159,12 @@ MIT.
 - X / Twitter: [@0xShomari](https://x.com/0xShomari)
 - Discord: [discord.gg/jVytngEWt](https://discord.gg/jVytngEWt)
 - Email: [shomari@abitsuite.com](mailto:shomari@abitsuite.com)
+
+## License
+
+Released under the [MIT License](LICENSE). Snowside is open source —
+free to use, modify, and distribute. No token, no ICO, no warranty.
+
+<p align="center">
+  <img src="https://snowside.network/favicon.svg" alt="Snowside" width="64" height="64" />
+</p>
