@@ -1,0 +1,63 @@
+---
+// packages/web/src/pages/about.astro
+import Base from '../layouts/Base.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<Base
+  title="About Snowside — The eCash.com Sidechain on Avalanche"
+  description="Snowside is built by 0xShomari and the aBitSuite team, in coordination with the eCash.com community. Learn about the project's mission, lineage, and Drivechain roots."
+>
+  <div class="bg-surface-0 text-slate-200 min-h-screen">
+    <Nav />
+
+    <section class="pt-32 pb-24 max-w-3xl mx-auto px-4">
+      <p class="font-mono text-sm font-semibold text-snow-400 uppercase tracking-widest mb-4">About</p>
+      <h1 class="text-4xl md:text-5xl font-bold text-white mb-8">Who is building Snowside</h1>
+
+      <div class="space-y-6 text-slate-300 leading-relaxed text-lg">
+        <p>
+          Snowside is an independent, open-source project by <strong class="text-white">0xShomari</strong>
+          and the <strong class="text-white">aBitSuite</strong> team. We build operational tooling that makes
+          Avalanche L1s — and Bitcoin/Ecash sidechains in particular — trivial to deploy and run.
+        </p>
+        <p>
+          The project's lineage runs through the Drivechain family of sidechains (BIP‑300/301), which
+          have long promised purpose-built, proof-of-work-secured execution environments. The upcoming
+          eCash.com hard-fork activates Drivechains on an eCash.com base layer, and Snowside is the
+          EVM sidechain built to run on it — native ECX gas, BMM security, USDC from day one.
+        </p>
+        <p>
+          Earlier EVM sidechain experiments (notably EthSide) were retired because standalone chain
+          management was too time-consuming for a single maintainer. Snowside solves that with
+          Avalanche's subscription model and operational automation — giving the community a chain
+          they can <strong class="text-snow-400">actually use</strong>, without babysitting.
+        </p>
+      </div>
+
+      <div class="mt-12 pt-8 border-t border-white/10">
+        <h2 class="text-2xl font-bold text-white mb-6">Drivechain roots</h2>
+        <p class="text-slate-300 leading-relaxed text-lg">
+          Drivechains (BIP‑300/301) let proof-of-work miners secure purpose-built sidechains via
+          hash-rate escrows and Blind Merged Mining. Snowside is Drivechain-native — slot 88 —
+          bringing that security model to a high-throughput EVM on Avalanche.
+        </p>
+      </div>
+
+      <div class="mt-12 flex flex-col sm:flex-row gap-4">
+        <a href="https://x.com/0xShomari" target="_blank" rel="noopener noreferrer" class="inline-block rounded-full px-6 py-3 text-sm font-semibold bg-aval-600 text-white hover:bg-aval-700 transition text-center">
+          X / Twitter
+        </a>
+        <a href="mailto:shomari@abitsuite.com" class="inline-block rounded-full px-6 py-3 text-sm font-semibold bg-surface-1 border border-white/10 text-white hover:bg-surface-2 transition text-center">
+          Email
+        </a>
+        <a href="https://github.com/abitsuite/snowside" target="_blank" rel="noopener noreferrer" class="inline-block rounded-full px-6 py-3 text-sm font-semibold bg-surface-1 border border-white/10 text-white hover:bg-surface-2 transition text-center">
+          GitHub
+        </a>
+      </div>
+    </section>
+
+    <Footer />
+  </div>
+</Base>

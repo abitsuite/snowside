@@ -19,19 +19,28 @@ const columns: FooterColumn[] = [
     links: [
       { label: 'About', href: '/#about' },
       { label: 'Technology', href: '/#tech' },
-      { label: 'Value Proposition', href: '/#value' },
+      { label: 'Resources', href: '/#resources' },
       { label: 'Roadmap', href: '/#roadmap' },
+    ],
+  },
+  {
+    heading: 'Portals',
+    links: [
+      { label: 'Bridge', href: 'https://bridge.snowside.network', external: true },
+      { label: 'Explorer', href: 'https://explorer.snowside.network', external: true },
+      { label: 'Documentation', href: 'https://docs.snowside.network', external: true },
+      { label: 'Interactive Tour', href: 'https://tour.snowside.network', external: true },
+      { label: 'Lean Canvas', href: 'https://canvas.snowside.network', external: true },
+      { label: 'Validators', href: '/validators' },
     ],
   },
   {
     heading: 'Resources',
     links: [
-      { label: 'Documentation', href: 'https://docs.snowside.network', external: true },
-      { label: 'GitHub', href: 'https://github.com/abitsuite/snowside', external: true },
       { label: 'Whitepaper', href: '/whitepaper' },
-      { label: 'Validators', href: '/validators' },
-      { label: 'NodΞRunr', href: 'https://layer1.run', external: true },
+      { label: 'GitHub', href: 'https://github.com/abitsuite/snowside', external: true },
       { label: 'Avalanche', href: 'https://avax.network', external: true },
+      { label: 'Drivechains', href: 'https://www.drivechain.info', external: true },
     ],
   },
   {
@@ -50,19 +59,20 @@ const columns: FooterColumn[] = [
     <div class="flex flex-col gap-12 lg:flex-row lg:justify-between">
       <!-- Brand -->
       <div class="max-w-xs">
-        <a href="/" class="font-mono text-xl font-bold text-white">
-          ❄️ Snowside
+        <a href="/" class="flex items-center gap-2 font-mono text-xl font-bold text-white">
+          <img src="/favicon.svg" alt="" width="28" height="28" class="rounded-md" />
+          Snowside
         </a>
         <p class="mt-4 font-mono text-sm font-semibold leading-snug text-slate-300">
-          The eCash Sidechain on Avalanche
+          The eCash.com Sidechain on Avalanche
         </p>
         <p class="mt-3 text-sm leading-relaxed text-slate-500">
-          Native BTC gas. USDC bridging. Powered by NodΞRunr.
+          Native ECX gas. USDC bridging. Powered by Avalanche + Drivechains.
         </p>
       </div>
 
       <!-- Link columns -->
-      <div class="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:gap-12">
+      <div class="grid grid-cols-2 gap-8 sm:grid-cols-4 lg:gap-12">
         {columns.map((column) => (
           <div>
             <h3 class="font-mono text-sm font-semibold text-white">
@@ -91,7 +101,7 @@ const columns: FooterColumn[] = [
     <!-- Bottom bar -->
     <div class="mt-12 border-t border-white/5 pt-8">
       <div class="font-mono text-sm text-slate-500">
-        © {year} Snowside. Open source. No token. Powered by Avalanche.
+        © {year} Snowside. Open source. No token. Powered by Avalanche + Drivechains.
       </div>
     </div>
   </div>

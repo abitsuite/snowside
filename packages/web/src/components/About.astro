@@ -3,23 +3,82 @@
 ---
 
 <section id="about" class="py-24 bg-surface-1">
-  <div class="max-w-4xl mx-auto px-4">
-    <h2 class="text-3xl font-bold text-white text-center mb-8">
-      A Bitcoin sidechain, powered by Avalanche
-    </h2>
-    <p class="text-slate-300 leading-relaxed max-w-3xl mx-auto text-center">
-      Snowside is a dedicated Avalanche Layer‑1 blockchain built to host Paul Sztorc's upcoming
-      eCash hard‑fork. It runs as a clean EVM sidechain where the native gas token is BTC itself—no
-      new minted tokens, no pre‑mine, just the same Bitcoin security via blind merged mining.
-    </p>
-    <p class="mt-4 text-slate-300 leading-relaxed max-w-3xl mx-auto text-center">
-      Unlike Paul's previous EthSide chain (which was abandoned due to maintenance overhead), Snowside
-      leverages Avalanche's subscription model and NodΞRunr automation to remain lean, resilient, and
-      trivially operable.
-    </p>
-    <p class="mt-4 text-slate-300 leading-relaxed max-w-3xl mx-auto text-center">
-      The name <strong class="text-snow-400">Snowside</strong> reflects our commitment to the Avalanche ecosystem and our
-      lineage within the family of Bitcoin sidechains that Paul already maintains.
-    </p>
+  <div class="max-w-6xl mx-auto px-4">
+    <div class="max-w-3xl mx-auto text-center mb-16">
+      <p class="font-mono text-sm font-semibold text-snow-400 uppercase tracking-widest mb-4">What is Snowside</p>
+      <h2 class="text-3xl md:text-4xl font-bold text-white mb-6">
+        An EVM sidechain for eCash.com, powered by Avalanche
+      </h2>
+      <p class="text-slate-300 leading-relaxed text-lg max-w-2xl mx-auto">
+        Snowside is a dedicated Avalanche Layer-1 blockchain built for the eCash.com hard-fork.
+        Native ECX gas, Drivechain security, and instant USDC bridging — no new tokens, no pre-mine.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- Native ECX Gas -->
+      <div class="bg-surface-2 rounded-2xl p-8 border border-white/5 hover:border-snow-400/30 transition group">
+        <div class="w-12 h-12 rounded-xl bg-snow-500/10 flex items-center justify-center mb-6 group-hover:bg-snow-500/20 transition">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6bb8e0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2v20M2 12h20M5 5l14 14M19 5L5 19" />
+          </svg>
+        </div>
+        <h3 class="text-xl font-semibold text-white mb-3">Native ECX Gas</h3>
+        <p class="text-slate-400 text-sm leading-relaxed">
+          The native gas token is ECX itself — no competing consensus token, no pre-mine. The
+          eCash.com economic model carries over directly to a high-throughput EVM.
+        </p>
+      </div>
+
+      <!-- Drivechain Security -->
+      <div class="bg-surface-2 rounded-2xl p-8 border border-white/5 hover:border-snow-400/30 transition group">
+        <div class="w-12 h-12 rounded-xl bg-aval-600/20 flex items-center justify-center mb-6 group-hover:bg-aval-600/30 transition">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#c8e6f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2l8 4v6c0 5-3.5 9-8 10-4.5-1-8-5-8-10V6l8-4z" />
+            <path d="M9 12l2 2 4-4" />
+          </svg>
+        </div>
+        <h3 class="text-xl font-semibold text-white mb-3">Drivechain Security</h3>
+        <p class="text-slate-400 text-sm leading-relaxed">
+          Blind Merged Mining brings eCash.com's proof-of-work security to an EVM execution layer —
+          without miners running sidechain software or understanding its internals.
+        </p>
+      </div>
+
+      <!-- USDC Day One -->
+      <div class="bg-surface-2 rounded-2xl p-8 border border-white/5 hover:border-snow-400/30 transition group">
+        <div class="w-12 h-12 rounded-xl bg-usdc/15 flex items-center justify-center mb-6 group-hover:bg-usdc/25 transition">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2775ca" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12h6M3 6h6M3 18h6" />
+            <path d="M9 4v16M15 4c3 0 5 3.5 5 8s-2 8-5 8" />
+          </svg>
+        </div>
+        <h3 class="text-xl font-semibold text-white mb-3">USDC Day One</h3>
+        <p class="text-slate-400 text-sm leading-relaxed">
+          Avalanche Interchain Messaging bridges USDC from the C-Chain from day one — stable
+          liquidity without exposure to volatile assets.
+        </p>
+      </div>
+    </div>
+
+    <!-- Stat strip -->
+    <div class="mt-10 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+      <div class="bg-surface-0/50 rounded-xl py-6 border border-white/5">
+        <div class="text-3xl font-bold text-snow-400">&lt;2s</div>
+        <div class="mt-1 text-xs font-mono text-slate-500 uppercase tracking-wide">Finality</div>
+      </div>
+      <div class="bg-surface-0/50 rounded-xl py-6 border border-white/5">
+        <div class="text-3xl font-bold text-snow-400">EVM</div>
+        <div class="mt-1 text-xs font-mono text-slate-500 uppercase tracking-wide">Compatible</div>
+      </div>
+      <div class="bg-surface-0/50 rounded-xl py-6 border border-white/5">
+        <div class="text-3xl font-bold text-snow-400">88</div>
+        <div class="mt-1 text-xs font-mono text-slate-500 uppercase tracking-wide">Drivechain ID</div>
+      </div>
+      <div class="bg-surface-0/50 rounded-xl py-6 border border-white/5">
+        <div class="text-3xl font-bold text-snow-400">0</div>
+        <div class="mt-1 text-xs font-mono text-slate-500 uppercase tracking-wide">New Tokens</div>
+      </div>
+    </div>
   </div>
 </section>
