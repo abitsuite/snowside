@@ -1,6 +1,10 @@
 # Snowside
 
-> Bitcoin security. Avalanche speed. A dedicated Avalanche Layer-1 for the eCash hard-fork.
+> eCash.com security. Avalanche speed. A dedicated Avalanche Layer-1 for the eCash.com hard-fork.
+
+[![Snowside — Interactive Tour](https://tour.snowside.network/snowside-tour-poster.png)](https://tour.snowside.network)
+
+**[▶ Take a Tour →](https://tour.snowside.network)** — a guided, visual walkthrough of how Snowside works end to end.
 
 [![CI Suite](https://github.com/abitsuite/snowside/actions/workflows/guardian.yml/badge.svg?branch=master)](https://github.com/abitsuite/snowside/actions/workflows/guardian.yml)
 [![Codecov](https://codecov.io/gh/abitsuite/snowside/branch/master/graph/badge.svg?token=CODECOV_TOKEN)](https://codecov.io/gh/abitsuite/snowside)
@@ -10,17 +14,19 @@
 
 ## What is Snowside?
 
-Snowside is a dedicated Avalanche Layer-1 blockchain built to host Paul Sztorc's
-upcoming eCash hard-fork. It runs as a clean EVM sidechain where the native gas
-token is BTC — no new tokens, no pre-mine, just Bitcoin security via blind merged mining.
+Snowside is a dedicated Avalanche Layer-1 blockchain built for the eCash.com
+hard-fork. It runs as a clean EVM sidechain where the native gas token is ECX —
+no new tokens, no pre-mine, just eCash.com security via Blind Merged Mining
+(BIP-301) on a Drivechain.
 
 ## Key Features
 
-- **Native BTC gas** — transaction fees paid in BTC via blind merged mining (BIP-301)
+- **Native ECX gas** — transaction fees paid in ECX via Blind Merged Mining (BIP-301)
+- **Drivechain-native** — BIP-300/301 hash-rate escrows are first-class, not bolted on
 - **Sub-second finality** — Avalanche Snowman consensus
 - **USDC bridging** — native Interchain Messaging (ICM) from C-Chain
 - **Full EVM compatibility** — Remix, Hardhat, Foundry work out-of-the-box
-- **Automated validation** — powered by [NodΞRunr](https://layer1.run)
+- **Operational automation** — [NodΞRunr](https://layer1.run) handles deployment & monitoring
 - **No token. No ICO.** — infrastructure, not an investment vehicle
 
 ## Deployed Endpoints
@@ -54,7 +60,7 @@ All packages are deployed to Cloudflare Pages / Workers by the
 - 📋 [Pitch Page](https://pitch.snowside.network) — grant pitch (`noindex, nofollow`)
 - 🖼️ [Lean Canvas](https://canvas.snowside.network) — one-page business model canvas (PNG viewer + PDF download)
 - 📚 [Technical Docs](https://docs.snowside.network) — architecture, BMM, gas model, ICM bridge, security model
-- 🎬 [Interactive Tour](https://tour.snowside.network) — 11-slide walkthrough (Slidev)
+- 🎬 [Interactive Tour](https://tour.snowside.network) — 12-slide walkthrough (Slidev)
 - 🔍 [Block Explorer](https://explorer.snowside.network) — mainnet / testnet / signet
 - 🌉 [Bridge](https://bridge.snowside.network) — deposits & withdrawals
 - 🔌 [API (OpenAPI)](https://snowside.network/v1) — Swagger UI + spec at `/v1/openapi.json`
@@ -85,7 +91,7 @@ rust/              — Rust packages
 
 contracts/         — Solidity smart contracts (Foundry)
   src/interfaces/  — Solidity interfaces for precompiles
-  src/peg/          — BTC peg contract (deposits/withdrawals)
+  src/peg/          — ECX peg contract (deposits/withdrawals)
   src/fees/         — Contract fee distribution
   test/             — Foundry tests
   script/           — Deployment scripts
@@ -137,12 +143,12 @@ jobs as each package gains tests.
 
 ## Status
 
-**Active development.** Mainnet L1 deployed and synced; ICTT (USDC bridging)
-next milestone.
+**Active development.** Mainnet L1 infrastructure in progress; ICTT (USDC
+bridging) is the next milestone.
 
 ## License
 
-MIT — same as [NodΞRunr](https://layer1.run).
+MIT.
 
 ## Links
 
@@ -152,9 +158,8 @@ MIT — same as [NodΞRunr](https://layer1.run).
 - Bridge: [bridge.snowside.network](https://bridge.snowside.network)
 - Tour: [tour.snowside.network](https://tour.snowside.network)
 - API: [snowside.network/v1](https://snowside.network/v1)
-- NodΞRunr: [layer1.run](https://layer1.run)
+- NodΞRunr (operational tooling): [layer1.run](https://layer1.run)
 - GitHub: [abitsuite/snowside](https://github.com/abitsuite/snowside)
 - X / Twitter: [@0xShomari](https://x.com/0xShomari)
 - Discord: [discord.gg/jVytngEWt](https://discord.gg/jVytngEWt)
 - Email: [shomari@abitsuite.com](mailto:shomari@abitsuite.com)
-- retro9000 Grant: [Avalanche Foundation announcement](https://x.com/AvalancheFDN/status/1932484367324229635?s=20)
