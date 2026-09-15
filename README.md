@@ -1,10 +1,6 @@
 # Snowside
 
-> eCash.com security. Avalanche speed. A dedicated Avalanche Layer-1 for the eCash.com hard-fork.
-
-[![Snowside — Interactive Tour](https://tour.snowside.network/snowside-tour-poster.png)](https://tour.snowside.network)
-
-**[▶ Take a Tour →](https://tour.snowside.network)** — a guided, visual walkthrough of how Snowside works end to end.
+[![Snowside — Interactive Tour](https://snowside.network/og-image-v2.png)](https://tour.snowside.network)
 
 [![CI Suite](https://github.com/abitsuite/snowside/actions/workflows/guardian.yml/badge.svg?branch=master)](https://github.com/abitsuite/snowside/actions/workflows/guardian.yml)
 [![Codecov](https://codecov.io/gh/abitsuite/snowside/branch/master/graph/badge.svg?token=CODECOV_TOKEN)](https://codecov.io/gh/abitsuite/snowside)
@@ -18,6 +14,8 @@ Snowside is a dedicated Avalanche Layer-1 blockchain built for the eCash.com
 hard-fork. It runs as a clean EVM sidechain where the native gas token is ECX —
 no new tokens, no pre-mine, just eCash.com security via Blind Merged Mining
 (BIP-301) on a Drivechain.
+
+**[▶ Take a Tour →](https://tour.snowside.network)** — a guided, visual walkthrough of how Snowside works end to end.
 
 ## Key Features
 
@@ -165,6 +163,4 @@ bridging) is the next milestone.
 Released under the [MIT License](LICENSE). Snowside is open source —
 free to use, modify, and distribute. No token, no ICO, no warranty.
 
-<p align="center">
-  <img src="https://snowside.network/favicon.svg" alt="Snowside" width="64" height="64" />
-</p>
+<img src="https://snowside.network/favicon.svg" alt="Snowside" width="64" height="64" />
