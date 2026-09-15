@@ -10,9 +10,9 @@
 
 ## What is Snowside?
 
-Snowside is a dedicated Avalanche Layer-1 blockchain built for the eCash.com
+Snowside is a dedicated Avalanche Layer-1 blockchain built for the eCash
 hard-fork. It runs as a clean EVM sidechain where the native gas token is ECX —
-no new tokens, no pre-mine, just eCash.com security via Blind Merged Mining
+no new tokens, no pre-mine, just eCash security via Blind Merged Mining
 (BIP-301) on a Drivechain.
 
 **[▶ Take a Tour →](https://tour.snowside.network)** — a guided, visual walkthrough of how Snowside works end to end.
