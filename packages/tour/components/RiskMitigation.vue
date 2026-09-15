@@ -4,11 +4,11 @@
 const risks = [
   {
     risk: 'Low initial validator count',
-    mitigation: 'Launch with at least 3 community validators. NodΞRunr reduces technical barriers to participation. Validator incentives funded by BTC gas fees.',
+    mitigation: 'Launch with community validators. Low operational cost via Avalanche9000 reduces technical barriers to participation. Validator incentives funded by ECX gas fees.',
   },
   {
     risk: 'BMM adoption by miners',
-    mitigation: 'BMM fees are denominated in BTC. Miners earn real revenue with zero additional hashing cost. The economic incentive is straightforward and self-sustaining.',
+    mitigation: 'BMM fees are denominated in ECX. Miners earn real revenue with zero additional hashing cost. The economic incentive is straightforward and self-sustaining.',
   },
   {
     risk: 'USDC bridge security',
@@ -20,21 +20,21 @@ const risks = [
   },
   {
     risk: 'Long-term maintainability',
-    mitigation: "EthSide was retired because manual operation was unsustainable. NodΞRunr's automation eliminates the maintenance burden that killed the predecessor.",
+    mitigation: "EthSide was retired because manual operation was unsustainable. Community-run validators and low operational cost eliminate the maintenance burden that killed the predecessor.",
   },
   {
     risk: 'Regulatory uncertainty',
-    mitigation: 'Snowside uses existing, established assets (BTC, USDC) — no new token issuance. The chain is fully open source and community-operated.',
+    mitigation: 'Snowside uses existing, established assets (ECX, USDC) — no new token issuance. The chain is fully open source and community-operated.',
   },
 ]
 </script>
 
 <template>
-  <div class="grid grid-cols-2 gap-4 mt-6 text-sm">
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 text-sm">
     <div
       v-for="r in risks"
       :key="r.risk"
-      class="bg-white/5 rounded-lg p-4"
+      class="snow-card"
     >
       <div class="flex items-start gap-3">
         <span class="mt-0.5 inline-block rounded bg-aval-500/10 px-2 py-0.5 text-xs font-mono font-bold text-aval-400">RISK</span>

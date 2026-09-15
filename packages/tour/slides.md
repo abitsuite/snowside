@@ -4,7 +4,7 @@ theme: none
 title: Snowside — Tour
 info: |
   Snowside — The eCash Sidechain on Avalanche.
-  Native BTC gas, USDC bridging, NodΞRunr automation.
+  Native ECX gas, USDC bridging.
 highlighter: shiki
 mdc: true
 fonts:
@@ -23,37 +23,56 @@ class: text-center
 
 <div class="cover-kicker">SNOWSIDE — TOUR</div>
 
-# Snowside
-
-<p class="cover-sub">The eCash Sidechain on Avalanche</p>
-
-<p class="lead">Native BTC gas. Instant USDC bridging. Bitcoin-security, Avalanche speed.</p>
-
-<div class="flex gap-3 justify-center flex-wrap mt-6">
-  <span class="tag">Avalanche L1</span>
-  <span class="tag">Bitcoin Sidechain</span>
-  <span class="tag">No Token</span>
-</div>
-
 <!-- On-screen banner: the simple web OG poster, short height, on a stretched contrast band -->
 <div class="cover-banner-band">
   <img src="/cover-banner.png" alt="Snowside — The eCash Sidechain on Avalanche" class="cover-banner" />
 </div>
 
 ---
+layout: snow-default
+---
 
 ## What is Snowside?
 
-A dedicated Avalanche Layer-1 blockchain built to host Paul Sztorc's upcoming eCash hard-fork. It runs as a clean EVM sidechain where the **native gas token is BTC** — no new tokens, no pre-mine, just Bitcoin security via blind merged mining.
+A dedicated Avalanche Layer-1 blockchain built to host Paul Sztorc's upcoming eCash hard-fork. It runs as a clean EVM sidechain where the **native gas token is ECX** — no new tokens, no pre-mine, just eCash security via blind merged mining.
 
-<div class="grid grid-cols-2 gap-6 mt-8">
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-8">
 
-- **Native BTC gas** — fees paid in BTC via BIP-301 blind merged mining
-- **Sub-second finality** — Avalanche Snowball consensus
-- **USDC bridging** — native Interchain Messaging from C-Chain
-- **Full EVM** — Remix, Hardhat, Foundry work out-of-the-box
-- **Automated validation** — powered by NodΞRunr
-- **No token. No ICO.** — infrastructure, not an investment vehicle
+<div class="snow-card">
+  <div class="snow-card-kicker">01 — Gas</div>
+  <h3>Native ECX gas</h3>
+  <p>Fees paid in ECX via BIP-301 blind merged mining.</p>
+</div>
+
+<div class="snow-card">
+  <div class="snow-card-kicker">02 — Finality</div>
+  <h3>Sub-second finality</h3>
+  <p>Avalanche Snowman consensus settles in under a second.</p>
+</div>
+
+<div class="snow-card">
+  <div class="snow-card-kicker">03 — Bridge</div>
+  <h3>USDC bridging</h3>
+  <p>Native Interchain Messaging from the Avalanche C-Chain.</p>
+</div>
+
+<div class="snow-card">
+  <div class="snow-card-kicker">04 — EVM</div>
+  <h3>Full EVM</h3>
+  <p>Remix, Hardhat, Foundry work out-of-the-box.</p>
+</div>
+
+<div class="snow-card">
+  <div class="snow-card-kicker">05 — Validation</div>
+  <h3>Community-run validators</h3>
+  <p>Community-operated validator set with low operational cost.</p>
+</div>
+
+<div class="snow-card">
+  <div class="snow-card-kicker">06 — Token</div>
+  <h3>No token. No ICO.</h3>
+  <p>Infrastructure, not an investment vehicle.</p>
+</div>
 
 </div>
 
@@ -63,30 +82,26 @@ layout: snow-default
 
 ## Two native assets, zero friction
 
-Bridging Bitcoin and stablecoin economies in one network.
+Bridging eCash and stablecoin economies in one network.
 
-<div class="grid grid-cols-2 gap-8 mt-10">
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-8 mt-10">
 
-<div class="bg-white/5 border border-snow-500/20 rounded-xl p-8">
-
-### ⚡ Native BTC Gas
-
-Transaction fees paid in real Bitcoin via blind merged mining. No new token, no pre-mine, no inflation.
-
+<div class="snow-card">
+  <div class="snow-card-kicker">Asset 01</div>
+  <h3>⚡ Native ECX Gas</h3>
+  <p>Transaction fees paid in real ECX via blind merged mining. No new token, no pre-mine, no inflation.</p>
 </div>
 
-<div class="bg-white/5 border border-aval-500/20 rounded-xl p-8">
-
-### 🌉 USDC Bridging
-
-Avalanche Interchain Messaging (ICM) bridges USDC from the C-Chain natively. Stable liquidity from day one.
-
+<div class="snow-card">
+  <div class="snow-card-kicker">Asset 02</div>
+  <h3>🌉 USDC Bridging</h3>
+  <p>Avalanche Interchain Messaging (ICM) bridges USDC from the C-Chain natively. Stable liquidity from day one.</p>
 </div>
 
 </div>
 
 <p class="text-center mt-8 text-slate-400 text-sm">
-  <strong class="text-snow-300">No competing token.</strong> Just BTC for gas and USDC for liquidity.
+  <strong class="text-snow-300">No competing token.</strong> Just ECX for gas and USDC for liquidity.
 </p>
 
 ---
@@ -95,43 +110,32 @@ layout: snow-default
 
 ## How it works
 
-Five layers of technology, one cohesive sidechain.
+Four layers of technology, one cohesive sidechain.
 
-<div class="grid grid-cols-5 gap-4 mt-8 text-sm">
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-8 text-sm">
 
-<div class="bg-ink-800 border border-white/5 rounded-lg p-4">
-
-**01 — BMM**
-Bitcoin miners commit to Snowside blocks without running them. They earn BTC fees while securing the chain with existing hash power.
-
+<div class="snow-card">
+  <div class="snow-card-kicker">01</div>
+  <h3>BMM</h3>
+  <p>eCash miners commit to Snowside blocks without running them. They earn ECX fees while securing the chain with existing hash power.</p>
 </div>
 
-<div class="bg-ink-800 border border-white/5 rounded-lg p-4">
-
-**02 — Avalanche L1**
-A dedicated validator set runs Snowside with sub-second finality. Validators are community-operated via NodΞRunr.
-
+<div class="snow-card">
+  <div class="snow-card-kicker">02</div>
+  <h3>Avalanche L1</h3>
+  <p>A dedicated validator set runs Snowside with sub-second finality. Validators are community-operated.</p>
 </div>
 
-<div class="bg-ink-800 border border-white/5 rounded-lg p-4">
-
-**03 — BTC Gas Flow**
-Users pay gas in BTC. Miners collect fees through BMM commitments. The loop closes entirely within Bitcoin.
-
+<div class="snow-card">
+  <div class="snow-card-kicker">03</div>
+  <h3>ECX Gas Flow</h3>
+  <p>Users pay gas in ECX. Miners collect fees through BMM commitments. The loop closes entirely within eCash.</p>
 </div>
 
-<div class="bg-ink-800 border border-white/5 rounded-lg p-4">
-
-**04 — ICM USDC Bridge**
-Avalanche ICM trustlessly bridges USDC from the C-Chain — no third-party bridges, no wrapped assets.
-
-</div>
-
-<div class="bg-ink-800 border border-white/5 rounded-lg p-4">
-
-**05 — NodΞRunr**
-Validators deploy, monitor, and update via NodΞRunr — the open-source daemon that won a $10k retro9000 grant.
-
+<div class="snow-card">
+  <div class="snow-card-kicker">04</div>
+  <h3>ICM USDC Bridge</h3>
+  <p>Avalanche ICM trustlessly bridges USDC from the C-Chain — no third-party bridges, no wrapped assets.</p>
 </div>
 
 </div>
@@ -142,41 +146,84 @@ layout: snow-default
 
 ## Why Avalanche is the perfect substrate
 
-<div class="grid grid-cols-3 gap-6 mt-8 text-sm">
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-8 text-sm">
 
-<div class="bg-white/5 border border-white/5 rounded-lg p-6">
+<div class="snow-card">
+  <div class="snow-card-kicker">01</div>
+  <h3>Sovereign validation</h3>
+  <p>Snowside runs its own validators, ensuring dedicated throughput for eCash operations.</p>
+</div>
 
-### Sovereign validation
-Snowside runs its own validators, ensuring dedicated throughput for eCash operations.
+<div class="snow-card">
+  <div class="snow-card-kicker">02</div>
+  <h3>Native interoperability</h3>
+  <p>Avalanche ICM allows trust-less bridging of USDC from the C-Chain without third-party bridges.</p>
+</div>
+
+<div class="snow-card">
+  <div class="snow-card-kicker">03</div>
+  <h3>Low operational cost</h3>
+  <p>Avalanche9000's subscription model makes community-run validation cheap and feasible.</p>
+</div>
+
+<div class="snow-card">
+  <div class="snow-card-kicker">04</div>
+  <h3>Tooling maturity</h3>
+  <p>Full EVM compatibility — Remix, Hardhat, The Graph, Foundry all work out-of-the-box.</p>
+</div>
+
+<div class="snow-card">
+  <div class="snow-card-kicker">05</div>
+  <h3>Proven L1 track record</h3>
+  <p>Multiple Avalanche L1s are already live in production. The infrastructure is battle-tested.</p>
+</div>
 
 </div>
 
-<div class="bg-white/5 border border-white/5 rounded-lg p-6">
+---
+layout: snow-default
+---
 
-### Native interoperability
-Avalanche ICM allows trust-less bridging of USDC from the C-Chain without third-party bridges.
+## Agentic Payments
 
+Snowside's low-fee ECX gas and native USDC bridging make it ideal for autonomous, machine-to-machine payments.
+
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-8 text-sm">
+
+<div class="snow-card">
+  <div class="snow-card-kicker">Protocol</div>
+  <h3>x402</h3>
+  <p>An open payment protocol built on the HTTP 402 <em>Payment Required</em> status code. Agents pay per-request, natively over HTTP — no gateways, no intermediaries.</p>
 </div>
 
-<div class="bg-white/5 border border-white/5 rounded-lg p-6">
-
-### Low operational cost
-Avalanche9000's subscription model makes community-run validation cheap and feasible.
-
+<div class="snow-card">
+  <div class="snow-card-kicker">Settlement</div>
+  <h3>USDC, low fees</h3>
+  <p>Stablecoin settlement via native ICM USDC. Sub-cent transaction fees and no price volatility — predictable per-call economics for agents.</p>
 </div>
 
-<div class="bg-white/5 border border-white/5 rounded-lg p-6">
-
-### Tooling maturity
-Full EVM compatibility — Remix, Hardhat, The Graph, Foundry all work out-of-the-box.
-
+<div class="snow-card">
+  <div class="snow-card-kicker">Autonomy</div>
+  <h3>Machines pay machines</h3>
+  <p>Autonomous AI agents discover, negotiate, and pay for services without human-in-the-loop approvals or custodial wallets.</p>
 </div>
 
-<div class="bg-white/5 border border-white/5 rounded-lg p-6">
+<div class="snow-card">
+  <div class="snow-card-kicker">Finality</div>
+  <h3>Instant settlement</h3>
+  <p>Sub-second Avalanche finality means a payment is confirmed before the response is served — no waiting on block confirmations.</p>
+</div>
 
-### Proven L1 track record
-Multiple Avalanche L1s are already live in production. The infrastructure is battle-tested.
+<div class="snow-card">
+  <div class="snow-card-kicker">Composability</div>
+  <h3>Full EVM</h3>
+  <p>x402 payment flows compose with any EVM contract — escrows, streaming, programmable spend policies — all on one chain.</p>
+</div>
 
+<div class="snow-card">
+  <div class="snow-card-kicker">No token tax</div>
+  <h3>ECX, not a toll token</h3>
+  <p>Gas is paid in ECX. No protocol token skim on every agent transaction — just the eCash security fee.</p>
 </div>
 
 </div>
@@ -187,7 +234,7 @@ layout: snow-default
 
 ## How Snowside compares
 
-Snowside vs. EthSide (Paul's retired chain) vs. Lightning Network
+Snowside vs. Lightning Network vs. Base
 
 <ComparisonTable />
 
@@ -215,18 +262,18 @@ layout: snow-default
 
 Revenue streams and yield for participants in the Snowside network.
 
-<div class="grid grid-cols-3 gap-6 mt-10">
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-10">
 
 <StakingRevenueCard
   title="Validator Staking"
-  apy="BTC gas fees"
-  note="Run a Snowside validator via NodΞRunr and earn a share of every transaction's BTC gas. Sovereign PoS with sub-second finality means consistent, predictable revenue."
+  apy="ECX gas fees"
+  note="Run a Snowside validator and earn a share of every transaction's ECX gas. Sovereign PoS with sub-second finality means consistent, predictable revenue."
 />
 
 <StakingRevenueCard
   title="Miner BMM Yield"
   apy="Sidechain fees"
-  note="Bitcoin miners commit to Snowside blocks through Blind Merged Mining — earn BTC fees from the sidechain with zero additional hashing cost. Pure incremental revenue on existing hash power."
+  note="eCash miners commit to Snowside blocks through Blind Merged Mining — earn ECX fees from the sidechain with zero additional hashing cost. Pure incremental revenue on existing hash power."
 />
 
 <StakingRevenueCard
@@ -238,7 +285,7 @@ Revenue streams and yield for participants in the Snowside network.
 </div>
 
 <p class="text-center mt-8 text-sm text-slate-400">
-  Three ways to earn. Zero new tokens. All revenue denominated in <span class="text-snow-300 font-mono">BTC</span> or <span class="text-snow-300 font-mono">USDC</span>.
+  Three ways to earn. Zero new tokens. All revenue denominated in <span class="text-snow-300 font-mono">ECX</span> or <span class="text-snow-300 font-mono">USDC</span>.
 </p>
 
 ---
@@ -247,25 +294,37 @@ layout: snow-default
 
 ## Frequently asked questions
 
-<div class="grid grid-cols-2 gap-6 mt-6 text-sm">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 text-sm">
 
-**What is Snowside?**
-An Avalanche L1 for Paul Sztorc's eCash hard-fork. BTC gas, USDC bridge, NodΞRunr automation.
+<div class="snow-card">
+  <h3>What is Snowside?</h3>
+  <p>An Avalanche L1 for Paul Sztorc's eCash hard-fork. ECX gas, USDC bridge, community-run validators.</p>
+</div>
 
-**Is there a token?**
-No. No token, no pre-mine, no ICO, no airdrop. The network runs on BTC and USDC only.
+<div class="snow-card">
+  <h3>Is there a token?</h3>
+  <p>No. No token, no pre-mine, no ICO, no airdrop. The network runs on ECX and USDC only.</p>
+</div>
 
-**How does BTC gas work?**
-Bitcoin miners commit to Snowside blocks via BMM. Users pay gas in BTC. Miners earn the fees.
+<div class="snow-card">
+  <h3>How does ECX gas work?</h3>
+  <p>eCash miners commit to Snowside blocks via BMM. Users pay gas in ECX. Miners earn the fees.</p>
+</div>
 
-**How is USDC bridged?**
-Trustlessly from Avalanche C-Chain via Interchain Messaging — a native Avalanche protocol, not a third-party bridge.
+<div class="snow-card">
+  <h3>How is USDC bridged?</h3>
+  <p>Trustlessly from Avalanche C-Chain via Interchain Messaging — a native Avalanche protocol, not a third-party bridge.</p>
+</div>
 
-**How do I run a validator?**
-Deploy via NodΞRunr — one-click setup, 24/7 monitoring, automatic updates.
+<div class="snow-card">
+  <h3>How do I run a validator?</h3>
+  <p>Deploy via NodΞRunr — one-click setup, 24/7 monitoring, automatic updates.</p>
+</div>
 
-**When does mainnet launch?**
-Targeted for Month 3 of the roadmap, following Fuji testnet and security audits.
+<div class="snow-card">
+  <h3>When does mainnet launch?</h3>
+  <p>Targeted for the Mainnet phase of the roadmap, following Betanet and security audits.</p>
+</div>
 
 </div>
 
@@ -275,24 +334,21 @@ layout: snow-connect
 
 # Connect with Us
 
-<p class="lead">Open source. No token. Powered by Avalanche. Supported by the Bitcoin sidechain community.</p>
+<p class="lead">Open source. No token. Powered by Avalanche. Supported by the eCash sidechain community.</p>
 
-<div class="grid grid-cols-2 gap-6 mt-10 max-w-2xl mx-auto">
+<div class="connect-grid">
 
-[📘 Read the Whitepaper](https://snowside.network/whitepaper.pdf)
-
-[💻 View on GitHub](https://github.com/abitsuite/snowside)
-
-[🐦 Follow on X](https://x.com/0xShomari)
-
-[💬 Join our Discord](https://discord.gg/jVytngEWt)
-
-[🌐 Visit snowside.network](https://snowside.network)
-
-[🏃 Run a Validator](https://layer1.run)
+<a class="snow-btn" href="https://snowside.network/whitepaper.pdf">📘 Read the Whitepaper</a>
+<a class="snow-btn" href="https://github.com/abitsuite/snowside">💻 View on GitHub</a>
+<a class="snow-btn" href="https://x.com/0xShomari">🐦 Follow on X</a>
+<a class="snow-btn" href="https://discord.gg/jVytngEWt">💬 Join our Discord</a>
+<a class="snow-btn" href="https://snowside.network">🌐 Visit snowside.network</a>
+<a class="snow-btn" href="https://layer1.run">🏃 Run a Validator</a>
 
 </div>
 
-<p class="mt-12 text-xs text-slate-500">
-  Snowside is an independent open-source project. Not affiliated with or endorsed by the Avalanche Foundation beyond the retro9000 grant for NodΞRunr.
+<p class="connect-footer">
+  Snowside is an independent open-source project.<br />
+  Not affiliated with or endorsed by the Avalanche Foundation.<br />
+  Powered by Avalanche. Secured by eCash. Open to all.
 </p>

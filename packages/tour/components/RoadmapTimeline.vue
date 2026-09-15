@@ -1,12 +1,12 @@
 <!-- packages/tour/components/RoadmapTimeline.vue -->
-<!-- Source: packages/pitch/src/pages/index.astro `roadmap` array (verified) -->
+<!-- Roadmap phases (verified): Devnet → Alphanet → Betanet → Mainnet → Ongoing -->
 <script setup lang="ts">
 const milestones = [
-  { month: 'Month 1', milestone: 'Fuji testnet launch with NodΞRunr template; automated validator setup; initial BMM integration testing' },
-  { month: 'Month 2', milestone: 'Security audit of eCash smart contracts; ICM USDC bridge integration with C-Chain; block explorer deployment' },
-  { month: 'Month 3', milestone: 'Mainnet launch with at least 3 community validators; public RPC endpoints; developer documentation released' },
-  { month: 'Month 4', milestone: 'Community AMA with Paul Sztorc; validator onboarding program; first eCash dApp deployments' },
-  { month: 'Ongoing', milestone: 'Validator growth, protocol maintenance via NodΞRunr, ecosystem development grant program' },
+  { month: 'Devnet', milestone: 'Internal development network. Genesis configuration, precompile integration, and BMM coordination precompile validation against the Subnet-EVM fork.' },
+  { month: 'Alphanet', milestone: 'Federated federation bootstrapping. eCash Alphanet BIP-300/301 deposit and withdrawal flow validation; NativeMinter and DeployerAllowList precompiles live.' },
+  { month: 'Betanet', milestone: 'Public testnet with community validators. Security audit of peg smart contracts; ICM USDC bridge integration with the Avalanche C-Chain; block explorer deployment.' },
+  { month: 'Mainnet', milestone: 'Mainnet launch with community validators; public RPC endpoints; developer documentation released; first eCash dApp deployments.' },
+  { month: 'Ongoing', milestone: 'Validator growth, protocol maintenance, ecosystem development. Continuous BMM adoption and USDC liquidity expansion.' },
 ]
 </script>
 

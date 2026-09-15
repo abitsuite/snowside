@@ -2,14 +2,14 @@
 <!-- Source: packages/pitch/src/pages/index.astro `comparison` array (verified) -->
 <script setup lang="ts">
 const rows = [
-  { feature: 'Consensus mechanism', snowside: 'Avalanche PoS + BMM', ethside: 'Bitcoin BMM only', lightning: 'Off-chain channels' },
-  { feature: 'Finality time', snowside: '< 1 second', ethside: '~ 10 minutes', lightning: 'Instant (payment)' },
-  { feature: 'Gas token', snowside: 'BTC', ethside: 'BTC', lightning: 'BTC' },
-  { feature: 'Smart contracts', snowside: 'Full EVM', ethside: 'Full EVM', lightning: 'Limited (scripts)' },
-  { feature: 'Stablecoin support', snowside: 'Native USDC via ICM', ethside: 'Manual bridging', lightning: 'None' },
-  { feature: 'Node operation', snowside: 'Automated (NodΞRunr)', ethside: 'Manual', lightning: 'Manual' },
-  { feature: 'Maintenance burden', snowside: 'Low', ethside: 'High (retired)', lightning: 'Medium' },
-  { feature: 'Validator sovereignty', snowside: 'Dedicated set', ethside: 'Shared with BTC', lightning: 'N/A' },
+  { feature: 'Consensus mechanism', snowside: 'Avalanche PoS + BMM', lightning: 'Off-chain channels', base: 'Ethereum PoS' },
+  { feature: 'Finality time', snowside: '< 1 second', lightning: 'Instant (payment)', base: '~ 2 seconds' },
+  { feature: 'Gas token', snowside: 'ECX', lightning: 'BTC', base: 'ETH' },
+  { feature: 'Smart contracts', snowside: 'Full EVM', lightning: 'Limited (scripts)', base: 'Full EVM' },
+  { feature: 'Stablecoin support', snowside: 'Native USDC via ICM', lightning: 'None', base: 'Native USDC' },
+  { feature: 'Node operation', snowside: 'Community-run', lightning: 'Manual', base: 'Manual' },
+  { feature: 'Maintenance burden', snowside: 'Low', lightning: 'Medium', base: 'Medium' },
+  { feature: 'Validator sovereignty', snowside: 'Dedicated set', lightning: 'N/A', base: 'Shared with Ethereum' },
 ]
 </script>
 
@@ -19,9 +19,9 @@ const rows = [
       <thead>
         <tr class="border-b border-white/10">
           <th class="py-3 pr-4 font-mono font-semibold text-slate-400">Feature</th>
-          <th class="py-3 pr-4 font-mono font-semibold text-aval-500">Snowside</th>
-          <th class="py-3 pr-4 font-mono font-semibold text-slate-500">EthSide</th>
-          <th class="py-3 font-mono font-semibold text-slate-500">Lightning</th>
+          <th class="py-3 pr-4 font-mono font-semibold text-snow-300">Snowside</th>
+          <th class="py-3 pr-4 font-mono font-semibold text-slate-400">Lightning</th>
+          <th class="py-3 font-mono font-semibold text-slate-400">Base</th>
         </tr>
       </thead>
       <tbody>
@@ -32,8 +32,8 @@ const rows = [
         >
           <td class="py-3 pr-4 font-medium text-slate-300">{{ row.feature }}</td>
           <td class="py-3 pr-4 font-semibold text-snow-300">{{ row.snowside }}</td>
-          <td class="py-3 pr-4 text-slate-500">{{ row.ethside }}</td>
-          <td class="py-3 text-slate-500">{{ row.lightning }}</td>
+          <td class="py-3 pr-4 text-slate-400">{{ row.lightning }}</td>
+          <td class="py-3 text-slate-400">{{ row.base }}</td>
         </tr>
       </tbody>
     </table>
