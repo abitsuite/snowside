@@ -23,16 +23,14 @@ class: text-center
 
 <div class="cover-kicker">SNOWSIDE — TOUR</div>
 
-<!-- On-screen banner: the simple web OG poster, short height, on a stretched contrast band -->
-<div class="cover-banner-band">
-  <img src="/cover-banner.png" alt="Snowside — The eCash Sidechain on Avalanche" class="cover-banner" />
-</div>
+<!-- On-screen banner: the simple web OG poster -->
+<img src="/cover-banner.png" alt="Snowside — The eCash Sidechain on Avalanche" class="cover-banner" />
 
 ---
 layout: snow-default
 ---
 
-## What is Snowside?
+## What Is Snowside?
 
 A dedicated Avalanche Layer-1 blockchain built to host Paul Sztorc's upcoming eCash hard-fork. It runs as a clean EVM sidechain where the **native gas token is ECX** — no new tokens, no pre-mine, just eCash security via blind merged mining.
 
@@ -80,7 +78,7 @@ A dedicated Avalanche Layer-1 blockchain built to host Paul Sztorc's upcoming eC
 layout: snow-default
 ---
 
-## Two native assets, zero friction
+## Two Native Assets, Zero Friction
 
 Bridging eCash and stablecoin economies in one network.
 
@@ -108,7 +106,7 @@ Bridging eCash and stablecoin economies in one network.
 layout: snow-default
 ---
 
-## How it works
+## How It Works
 
 Four layers of technology, one cohesive sidechain.
 
@@ -144,7 +142,7 @@ Four layers of technology, one cohesive sidechain.
 layout: snow-default
 ---
 
-## Why Avalanche is the perfect substrate
+## Why Avalanche Is the Perfect Substrate
 
 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-8 text-sm">
 
@@ -232,7 +230,7 @@ Snowside's low-fee ECX gas and native USDC bridging make it ideal for autonomous
 layout: snow-default
 ---
 
-## How Snowside compares
+## How Snowside Compares
 
 Snowside vs. Lightning Network vs. Base
 
@@ -242,7 +240,7 @@ Snowside vs. Lightning Network vs. Base
 layout: snow-default
 ---
 
-## Risks & mitigations
+## Risks & Mitigations
 
 <RiskMitigation />
 
@@ -250,7 +248,7 @@ layout: snow-default
 layout: snow-default
 ---
 
-## From testnet to mainnet
+## From Devnet to Mainnet and Beyond...
 
 <RoadmapTimeline />
 
@@ -292,7 +290,7 @@ Revenue streams and yield for participants in the Snowside network.
 layout: snow-default
 ---
 
-## Frequently asked questions
+## Frequently Asked Questions
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 text-sm">
 

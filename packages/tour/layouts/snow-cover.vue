@@ -13,12 +13,14 @@
   position: relative;
   z-index: 2;
   width: 100%;
+  height: 100%;
   max-width: 1080px;
   padding: 0 3.5rem;
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center; /* vertically center cover contents */
 }
 @media (max-width: 768px) {
   .snow-cover-inner {
