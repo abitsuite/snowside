@@ -84,6 +84,22 @@
               0 0 0 1px rgba(90, 157, 255, 0.10);
   margin-top: 1.25rem;
 }
+/* Cover tagline + subtitle (value-prop first, then descriptive positioning). */
+.snow-cover-root .cover-tagline {
+  font-size: 1.7rem;
+  font-weight: 800;
+  line-height: 1.15;
+  color: #ffffff;
+  margin-top: 1.5rem;
+  letter-spacing: -0.01em;
+}
+.snow-cover-root .cover-subtitle {
+  font-size: 1.05rem;
+  line-height: 1.5;
+  color: #b9c6da;
+  margin-top: 0.75rem;
+  max-width: 720px;
+}
 
 /* ── Reusable card (Screen-9-style structure across all slides) ── */
 .snow-card {
