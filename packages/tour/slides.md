@@ -3,7 +3,7 @@
 theme: none
 title: Snowside — Tour
 info: |
-  Snowside — Bitcoin security at Avalanche speed.
+  Bitcoin Security at Avalanche Speed
   The eCash Sidechain on Avalanche. Native ECX gas, USDC bridging.
 highlighter: shiki
 mdc: true
@@ -24,10 +24,10 @@ class: text-center
 <div class="cover-kicker">SNOWSIDE — TOUR</div>
 
 <!-- On-screen banner: the simple web OG poster -->
-<img src="/cover-banner.png" alt="Snowside — Bitcoin security at Avalanche speed." class="cover-banner" />
+<img src="/cover-banner.png" alt="Bitcoin Security at Avalanche Speed" class="cover-banner" />
 
-<h1 class="cover-tagline">Snowside — Bitcoin security at Avalanche speed.</h1>
-<p class="cover-subtitle">The eCash Sidechain on Avalanche. Native ECX gas. Instant USDC bridging. Powered by NodΞRunr automation.</p>
+<h1 class="cover-tagline">Bitcoin Security at Avalanche Speed</h1>
+<p class="cover-subtitle">The eCash Sidechain on Avalanche. Native ECX gas. Instant USDC bridging.</p>
 
 ---
 layout: snow-default
