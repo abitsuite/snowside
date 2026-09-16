@@ -65,7 +65,7 @@ NodeRunr automation and Avalanche infrastructure.
 ## Gas
 
 The fee paid for transaction execution on an EVM chain. On Snowside, gas is
-paid in BTC — not a new token.
+paid in ECX — not a new token.
 
 ## ICM (Interchain Messaging)
 
@@ -107,7 +107,7 @@ Avalanche's C-Chain via ICM — no wrapped representation, native settlement.
 
 ## Snowside Treasury
 
-The entity that captures the Treasury portion of Contract Fees from opted-in contracts. Distributes to the Snowside Foundation (10% retained), Settlement Proposers (5%), and Validators (85%, proportional to bonded BTC).
+The entity that captures the Treasury portion of Contract Fees from opted-in contracts. Distributes to the Snowside Foundation (10% retained), Settlement Proposers (5%), and Validators (85%, proportional to bonded ECX).
 
 ## Snowside Foundation
 
@@ -115,7 +115,7 @@ The governing body that manages the Snowside Treasury. Retains 10% of gross Cont
 
 ## Contract Fee
 
-An optional, opt-in fee on EVM contract calls. May be denominated in BTC or USDC. Split between Contract Owner (50% to 80% over 18-month vesting) and the Snowside Treasury.
+An optional, opt-in fee on EVM contract calls. May be denominated in ECX or USDC. Split between Contract Owner (50% to 80% over 18-month vesting) and the Snowside Treasury.
 
 ## Fallback Settlement Proposer
 

@@ -2,15 +2,15 @@
 
 import type { WhitepaperMeta } from './types';
 
-export const WHITEPAPER_VERSION = '0.4';
+export const WHITEPAPER_VERSION = '0.5';
 
 export const meta: WhitepaperMeta = {
   brand: 'Snowside',
   version: WHITEPAPER_VERSION,
   title: 'Snowside Whitepaper',
   subtitle: `version ${WHITEPAPER_VERSION}`,
-  date: 'August 2026',
-  tagline: 'Bitcoin Security • Avalanche Speed',
+  date: 'September 2026',
+  tagline: 'Bitcoin security at Avalanche speed.',
   author: '0xShomari',
   url: 'https://snowside.network',
 };

@@ -5,14 +5,14 @@ description: Snowside — an Avalanche Layer-1 for Paul Sztorc's eCash hard-fork
 
 Snowside is a dedicated Avalanche Layer-1 blockchain built to host Paul Sztorc's
 upcoming eCash hard-fork. It runs as a clean EVM sidechain where the native gas
-token is BTC itself — no new minted tokens, no pre-mine, just Bitcoin security
+token is ECX itself — no new minted tokens, no pre-mine, just Bitcoin security
 via blind merged mining.
 
 ## Key properties
 
 <CardGrid stagger>
-  <Card title="Native BTC Gas" icon="fuel">
-    Base Fees and Priority Fees paid in BTC. Contract Fees optional (BTC or USDC). No new token, no pre-mine.
+  <Card title="Native ECX Gas" icon="fuel">
+    Base Fees and Priority Fees paid in ECX. Contract Fees optional (ECX or USDC). No new token, no pre-mine.
   </Card>
   <Card title="Bitcoin Security" icon="shield">
     Blind Merged Mining (BIP-301) anchors Snowside to Bitcoin's hash power.

@@ -24,8 +24,8 @@ viem. The only change required is the RPC endpoint and chain ID.
 3. Write your contract in `src/Contract.sol`
 4. Deploy to Snowside testnet: `forge create src/Contract.sol:MyContract --rpc-url https://rpc.snowside.network/ext/bc/snowside-test/rpc --private-key $YOUR_PRIVATE_KEY`
 
-> **Note:** Gas is paid in BTC, but the EVM treats it identically to ETH (18
-> decimals). Your wallet needs a BTC balance on Snowside, not AVAX or ETH.
+> **Note:** Gas is paid in ECX, but the EVM treats it identically to ETH (18
+> decimals). Your wallet needs an ECX balance on Snowside, not AVAX or ETH.
 
 ## Deploying with Hardhat
 

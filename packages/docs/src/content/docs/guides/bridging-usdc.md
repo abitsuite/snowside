@@ -44,7 +44,7 @@ The reverse process is identical:
 
 1. Connect your wallet to Snowside
 2. Enter the amount of USDC to bridge back
-3. Submit the burn transaction (gas paid in BTC)
+3. Submit the burn transaction (gas paid in ECX)
 4. USDC is unlocked on C-Chain after finality
 
 ## How the bridge works

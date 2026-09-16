@@ -3,7 +3,7 @@
 //
 // Visual intent: eCash miners on the left include a small data commitment
 // in their coinbase tx. Settlement proposers on the right submit BMM
-// commitments and pay BTC fees back to miners. The key takeaway: zero
+// commitments and pay ECX fees back to miners. The key takeaway: zero
 // marginal cost for miners, full hashrate security for Snowside.
 
 import type { Figure } from '../types';
@@ -19,7 +19,7 @@ export const bmmFlow: Figure = {
   kind: 'figure',
   caption:
     'Figure: Blind Merged Mining. eCash miners include a compact header ' +
-    'commitment (zero marginal cost) and earn BTC fees from settlement ' +
+    'commitment (zero marginal cost) and earn ECX fees from settlement ' +
     'proposers. No additional hardware or software required.',
   height: 120,
 
@@ -66,7 +66,7 @@ export const bmmFlow: Figure = {
     doc.setFontSize(8);
     tx(AXIS);
     ctext('Submit BMM commitments', rightX + boxW / 2, cy + 8);
-    ctext('Pay BTC to miners', rightX + boxW / 2, cy + 20);
+    ctext('Pay ECX to miners', rightX + boxW / 2, cy + 20);
 
     // --- arrows ---
     const gapL = leftX + boxW + 6;
@@ -93,6 +93,6 @@ export const bmmFlow: Figure = {
     arrow(gapL, gapR, cy - 14, BTC_ORG, 'Header commitment');
 
     // bottom arrow: fees flow left
-    arrow(gapR, gapL, cy + 14, SNOW, 'BTC fee reward');
+    arrow(gapR, gapL, cy + 14, SNOW, 'ECX fee reward');
   },
 };

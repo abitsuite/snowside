@@ -12,7 +12,7 @@ of the eCash Drivechain (BIP-300/301) hard-fork.
 1. Snowside block producers create sidechain blocks
 2. Producers submit compact block header commitments to the Bitcoin mainchain
 3. Bitcoin miners include these commitments in their coinbase transactions
-4. The miner who includes a commitment earns a BTC fee from the block producer
+4. The miner who includes a commitment earns an ECX fee from the block producer
 
 Crucially, Bitcoin miners do **not** need to:
 
@@ -29,8 +29,8 @@ internals.
 
 The economic model is simple and self-sustaining:
 
-- Snowside users pay **BTC** for gas (transaction fees)
-- 100% of Base Fees are paid to eCash L1 miners via BMM. Settlement proposers are compensated from the Snowside Treasury (5% of Contract Fee capture). Validators receive Treasury distribution (85%, proportional to bonded BTC)
+- Snowside users pay **ECX** for gas (transaction fees)
+- 100% of Base Fees are paid to eCash L1 miners via BMM. Settlement proposers are compensated from the Snowside Treasury (5% of Contract Fee capture). Validators receive Treasury distribution (85%, proportional to bonded ECX)
 - Settlement proposers pay 100% of escrowed Base Fees to eCash miners via BMM and are compensated from the Treasury instead
 - Miners include commitments because the marginal cost is zero and the fee is positive
 

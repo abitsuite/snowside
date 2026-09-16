@@ -2,7 +2,7 @@
 // Vector figure for validator vs settlement proposer separation (section 4).
 //
 // Visual intent: Two distinct roles shown as parallel tiers — Validators
-// (top, run Snowball consensus, produce blocks, BTC bonding) and Settlement
+// (top, run Snowball consensus, produce blocks, ECX bonding) and Settlement
 // Proposers (bottom, submit BMM commitments, no bonding, permissionless).
 // Arrow shows finalized blocks flowing from validators to settlement proposers.
 
@@ -19,7 +19,7 @@ export const roleSeparation: Figure = {
   kind: 'figure',
   caption:
     'Figure: Role separation. Validators (top) run Snowball consensus and ' +
-    'produce blocks with BTC bonding. Settlement Proposers (bottom) submit ' +
+    'produce blocks with ECX bonding. Settlement Proposers (bottom) submit ' +
     'BMM commitments to eCash L1 \u2014 permissionless, no bonding required, ' +
     'compensated from the Snowside Treasury\u2019s captured Contract Fees.',
   height: 170,
@@ -51,7 +51,7 @@ export const roleSeparation: Figure = {
     doc.setFontSize(7.5);
     tx(AXIS);
     doc.text('Run Snowball consensus \u00b7 Produce + finalize blocks', boxX + 12, valY + 30);
-    doc.text('BTC bonding (Phase 2+) \u00b7 Subject to slashing', boxX + 12, valY + 42);
+    doc.text('ECX bonding (Phase 2+) \u00b7 Subject to slashing', boxX + 12, valY + 42);
     doc.text('Earn Priority Fees + Treasury distribution (85%)', boxX + 12, valY + 52);
 
     // --- Arrow: finalized blocks flow down ---

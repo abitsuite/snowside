@@ -48,17 +48,17 @@ for Settled confirmation.
 
 Ethereum L2s require wrapping BTC to use it as gas. They share a sequencer with
 other L2s, have multi-minute confirmation times, and offer no custom precompiles.
-Snowside provides native BTC gas, sovereign validators, sub-second finality, and
+Snowside provides native ECX gas, sovereign validators, sub-second finality, and
 custom precompiles.
 
 ### vs Avalanche C-Chain
 
 The C-Chain uses AVAX for gas and shares validators with all C-Chain users.
-Snowside has its own validator set, uses BTC for gas, and can implement custom
+Snowside has its own validator set, uses ECX for gas, and can implement custom
 precompiles for eCash-specific logic.
 
 ### vs Standalone Chain
 
-A standalone chain could theoretically implement BTC gas and custom precompiles,
+A standalone chain could theoretically implement ECX gas and custom precompiles,
 but it would lack Avalanche's ICM bridge for USDC, require expensive manual
 validator operations, and miss the operational automation provided by NodeRunr.

@@ -115,10 +115,10 @@ export const architectureDiagram: Figure = {
     const yIcm = cy + 16;
     arrow(rightX - 4, midX + boxW + 4, yIcm, USDC_BL, 'ICM bridge (USDC)', false);
 
-    // --- BTC gas note below Snowside ---
+    // --- ECX gas note below Snowside ---
     doc.setFont('NotoSans', 'italic');
     doc.setFontSize(7.5);
     tx(AXIS);
-    ctext('Native gas: BTC', midX + boxW / 2, boxY + boxH + 14);
+    ctext('Native gas: ECX', midX + boxW / 2, boxY + boxH + 14);
   },
 };

@@ -1,7 +1,7 @@
 // packages/web/src/data/whitepaper/figures/gas-flow.ts
-// Vector figure for BTC gas flow (section 5).
+// Vector figure for ECX gas flow (section 5).
 //
-// Visual intent: Users pay BTC for gas → block producers collect fees →
+// Visual intent: Users pay ECX for gas → block producers collect fees →
 // BMM miners receive settlement incentives. No new token. Pure Bitcoin
 // economic model preserved.
 
@@ -17,9 +17,9 @@ const AXIS    = [102, 102, 115] as const;
 export const gasFlow: Figure = {
   kind: 'figure',
   caption:
-    'Figure: BTC gas flow. Users pay BTC for transaction fees. Block ' +
+    'Figure: ECX gas flow. Users pay ECX for transaction fees. Block ' +
     'producers collect fees and distribute BMM settlement incentives to ' +
-    'Bitcoin miners. No new token is minted — the Bitcoin economic model ' +
+    'eCash miners. No new token is minted — the Bitcoin economic model ' +
     'is preserved end-to-end.',
   height: 110,
 
@@ -41,7 +41,7 @@ export const gasFlow: Figure = {
     const cy = boxY + boxH / 2;
 
     const boxes = [
-      { x: x0, color: SNOW, label: 'Users', sub: 'Pay BTC gas' },
+      { x: x0, color: SNOW, label: 'Users', sub: 'Pay ECX gas' },
       { x: x1, color: PURPLE, label: 'Producers', sub: 'Collect fees' },
       { x: x2, color: BTC_ORG, label: 'Miners', sub: 'BMM incentive' },
     ];
@@ -73,7 +73,7 @@ export const gasFlow: Figure = {
       ctext(label, (x1 + x2) / 2, ay - 6);
     };
 
-    arrow(x0 + boxW + 3, x1 - 3, cy, SNOW, 'BTC fees');
+    arrow(x0 + boxW + 3, x1 - 3, cy, SNOW, 'ECX fees');
     arrow(x1 + boxW + 3, x2 - 3, cy, BTC_ORG, 'Settlement');
 
     doc.setFont('NotoSans', 'italic');

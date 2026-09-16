@@ -2,7 +2,7 @@
 // Vector figure for the two-phase permissionless validation roadmap (section 12).
 //
 // Visual intent: Two horizontal phases shown left-to-right — Phase 1
-// (permissioned, seeded validators) and Phase 2 (permissionless, AVAX + BTC
+// (permissioned, seeded validators) and Phase 2 (permissionless, AVAX + ECX
 // bonding).
 
 import type { Figure } from '../types';
@@ -17,7 +17,7 @@ export const permissionlessRoadmap: Figure = {
   caption:
     'Figure: Two-phase permissionless validation roadmap. Phase 1: ' +
     'permissioned launch with seeded validators. Phase 2: open registration ' +
-    'with AVAX + BTC bonding and slashing.',
+    'with AVAX + ECX bonding and slashing.',
   height: 150,
 
   draw: ({ doc, x, y, width }) => {
@@ -53,7 +53,7 @@ export const permissionlessRoadmap: Figure = {
     ctext('Three-part fees active', p1X + boxW / 2, boxY + 64);
     ctext('BMM settlement open', p1X + boxW / 2, boxY + 76);
 
-    // Phase 2 — Permissionless + AVAX + BTC
+    // Phase 2 — Permissionless + AVAX + ECX
     fl(LIGHT);
     dr(SNOW_D);
     doc.setLineWidth(1.2);
@@ -67,7 +67,7 @@ export const permissionlessRoadmap: Figure = {
     ctext('Permissionless', p2X + boxW / 2, boxY + 26);
     doc.setFontSize(7);
     ctext('Open registration', p2X + boxW / 2, boxY + 40);
-    ctext('AVAX + 0.3 BTC bond', p2X + boxW / 2, boxY + 52);
+    ctext('AVAX + 0.3 ECX bond', p2X + boxW / 2, boxY + 52);
     ctext('Slashing active', p2X + boxW / 2, boxY + 64);
     ctext('Target: 10+ validators', p2X + boxW / 2, boxY + 76);
 

@@ -56,4 +56,4 @@ for Settled confirmation.
 
 - [Blind Merged Mining](/architecture/bmm) — how Bitcoin miners secure Snowside
 - [Avalanche Consensus](/architecture/consensus) — Snowman protocol deep dive
-- [BTC Gas Model](/architecture/gas-model) — why BTC is the only gas token
+- [ECX Gas Model](/architecture/gas-model) — why ECX is the only gas token
