@@ -16,7 +16,7 @@ const distDir = resolve(__dirname, '..', 'dist')
 const ORIGIN = 'https://tour.snowside.network'
 const OG_IMAGE = `${ORIGIN}/snowside-tour-poster.png`
 const TITLE = 'Snowside — Tour'
-const DESCRIPTION = 'Snowside — The eCash Sidechain on Avalanche. Native BTC gas, USDC bridging, NodΞRunr automation. Interactive tour.'
+const DESCRIPTION = 'Snowside — The eCash Sidechain on Avalanche. Native ECX gas, USDC bridging, NodΞRunr automation. Interactive tour.'
 
 // Head block to inject (placed before the closing </head>)
 const headInject = `

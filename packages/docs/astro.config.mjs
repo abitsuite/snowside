@@ -27,7 +27,7 @@ export default defineConfig({
             { label: 'Overview', slug: 'architecture/overview' },
             { label: 'Blind Merged Mining', slug: 'architecture/bmm' },
             { label: 'Avalanche Consensus', slug: 'architecture/consensus' },
-            { label: 'BTC Gas Model', slug: 'architecture/gas-model' },
+            { label: 'ECX Gas Model', slug: 'architecture/gas-model' },
             { label: 'ICM Bridge', slug: 'architecture/icm-bridge' },
             { label: 'Security Model', slug: 'architecture/security-model' },
           ],
