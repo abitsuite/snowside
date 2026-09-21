@@ -18,3 +18,33 @@ onlyBuiltDependencies:
 peerDependencyRules:
   allowedVersions:
     '@cloudflare/vitest-pool-workers>vitest': '5'
+
+# overrides: security fixes for TRANSITIVE dependencies that no direct dep
+# will bump on its own. Keyed by the VULNERABLE RANGE so the override only
+# applies where the old version was actually pulled in, and any package that
+# already resolved a safe version is left alone. Each target is the minimum
+# version that clears the advisory.
+#
+#   js-yaml  < 4.3.2   (high)   GHSA for the 4.x line; astro 7.3.3 pulls
+#                               ^4.3.0, so 4.0.9 lingered via other trees.
+#   nanoid   < 3.3.18  (high)   nanoid@3.3.16 came in under postcss@8.5.19.
+#   sharp    < 0.35.4  (high)   sharp@0.35.2 came in via miniflare (wrangler).
+#   smol-toml <= 1.7.0 (high)   pulled by @astrojs/internal-helpers.
+#   svgo     < 4.1.0   (high)   pulled by astro's image pipeline.
+#   devalue  < 5.9.1   (medium) pulled by astro.
+#   postcss  <= 8.5.22 (medium) 8.5.19 lingered under older vite/expressive-code
+#                               trees; 8.5.28 is the safe release.
+#
+# js-yaml@3.x is deliberately NOT overridden: 3.15.2 is a legacy v3 consumer
+# whose API differs from v4, so forcing a major bump would be a real breakage
+# rather than a security fix. It is not in the advisory's affected range.
+# @types/js-yaml@4.0.9 is likewise untouched: a type-only package with no
+# runtime code, and not the advisory's subject.
+overrides:
+  'js-yaml@>=4.0.0 <4.3.2': '4.3.2'
+  'nanoid@<3.3.18': '3.3.18'
+  'sharp@<0.35.4': '0.35.4'
+  'smol-toml@<=1.7.0': '1.8.0'
+  'svgo@>=4.0.0 <4.1.0': '4.1.0'
+  'devalue@<5.9.1': '5.9.4'
+  'postcss@<=8.5.22': '8.5.28'
