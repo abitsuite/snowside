@@ -321,72 +321,14 @@
   border-bottom: 1px solid rgba(255,255,255,0.05);
 }
 
-/* ── Responsive / mobile-friendly adjustments ─────────────────────
-   Slidev renders slides at a fixed aspect ratio by default. On small
-   screens the scaled-down content becomes unreadable and grids crowd.
-   These rules reduce padding + font sizes on narrow viewports so text
-   reflows and remains legible, and grids collapse to a single column. */
-@media (max-width: 768px) {
-  .slidev-layout {
-    padding: 1.25rem 1.25rem; /* py-5 px-5 */
-  }
-  .snow-bg h1 {
-    font-size: 1.75rem;
-  }
-  .snow-bg h2 {
-    font-size: 1.5rem;
-    line-height: 2rem;
-    margin-bottom: 1.5rem;
-  }
-  .snow-bg h3 {
-    font-size: 1.0625rem;
-  }
-  .snow-bg p {
-    font-size: 0.9rem;
-  }
-  .snow-card {
-    padding: 1rem;
-  }
-  .snow-revenue-card .snow-revenue-apy {
-    font-size: 1.375rem;
-  }
-  /* Force content grids to a single column on phones — UnoCSS `sm:`/`md:`
-     breakpoints target the Slidev stage element, not the real viewport,
-     so the utility classes alone do not reflow on mobile. */
-  .snow-bg .grid {
-    grid-template-columns: 1fr !important;
-  }
-  .snow-cover-root .cover-banner {
-    width: min(300px, 80%);
-  }
-}
-
-/* Connect buttons: keep 2 columns through tablet (the Slidev canvas is
-   scaled, so 2 side-by-side buttons remain legible down to ~640px). Only
-   collapse to a single column on actual phones, with extra spacing so
-   buttons are comfortable tap targets. */
-@media (max-width: 640px) {
-  .connect-grid {
-    grid-template-columns: 1fr !important;
-    gap: 0.75rem;
-    margin-top: 2rem;
-  }
-  .snow-btn {
-    padding: 0.9rem 1rem;
-  }
-  .connect-footer {
-    margin-top: 2.25rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .slidev-layout {
-    padding: 1rem 1rem;
-  }
-  .snow-bg h1 {
-    font-size: 1.5rem;
-  }
-  .connect-footer {
-    font-size: 0.75rem;
-  }
-}
+/* ── Mobile handling: NONE (uniform scaling only) ────────────────
+   Slidev renders every slide onto a FIXED 980x552 canvas and scales the
+   whole thing with ONE transform (SlideContainer: scale =
+   min(vw/980, vh/552)). Media queries evaluate against the REAL viewport,
+   not the scaled canvas, so the previous overrides were counterproductive:
+     - @media(max-width:768px) shrank canvas h2 36px->24px; after the 0.398
+       portrait scale that landed at 9.6px on screen (worse, not better).
+     - .snow-bg .grid{1fr!important} forced ~6 cards into a 552px canvas.
+   All viewport-based overrides were therefore removed. Mobile legibility
+   is left to Slidev's own uniform scaling; the purpose-built responsive
+   tour page is served from this same domain. */
