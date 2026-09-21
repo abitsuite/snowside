@@ -1,6 +1,52 @@
-# Snowside Handoff — 2026-09-13 (Session 21, Tour Deploy + Guardian CI)
+# Snowside Handoff — 2026-09-21 (Session 22, Tour Rebuilt Without Slidev)
 
-## Session 21 summary — 2026-09-13
+## Session 22 summary — 2026-09-21
+
+### 1. packages/tour — SLIDEV REMOVED ENTIRELY (commit `efbce7fe`)
+
+**Result:** `tour.snowside.network` now serves a zero-dependency static build. Slidev, Vite, Vue and UnoCSS are gone from the lockfile (verified: `grep -c slidev pnpm-lock.yaml` = 0, `unocss` = 0, `vue@` = 0). CI run `35586580971` — all 16 jobs success, `deploy-tour` live.
+
+**Why the rewrite:** Slidev scales a fixed 980×552 canvas via a single transform (`Math.min(w/980, h/552)`) and offers **no reflow mode**. A 16.8px paragraph therefore painted at ~6.7px on a 390×844 phone. Media queries cannot correct this because they evaluate against the real viewport, not the scaled canvas. The deck also used none of Slidev's features — 0 code fences, 0 `v-click`, 0 math, 0 transitions — while shipping ~936KB of framework assets for slide-splitting and keyboard nav.
+
+**Architecture (one document, two layouts):**
+
+| Mode | Applies when | Behaviour |
+|---|---|---|
+| deck | desktop, tablet, phone **landscape** | fixed 980×552 canvas, scaled uniformly, Slidev look preserved |
+| phone | phone **portrait** | reflowing, one slide per screen, horizontal swipe |
+
+**Breakpoint is scale-based, not width-based.** The switch fires when `s = min(vw/980, vh/552) < 0.65` (≈637px wide or 359px tall). Measured: phone portrait 0.367–0.439 (reflow); phone landscape 0.707–0.779 (deck); tablet 0.784–1.045 (deck); desktop 1.304–1.957 (deck). This deliberately keeps **every** tablet — including iPad mini portrait at 0.784 — on the deck, per the requirement to preserve the Slidev look on tablet. The threshold is asserted in three places that must stay in sync: `assets/tour.css`, `assets/tour.js` (`MOBILE_SCALE`), and the inline boot script in `scripts/build-tour.mjs` (runs before first paint to prevent FOUC on phones).
+
+**New files:**
+- `packages/tour/slides.mjs` — slide model (12 slides; kinds `cover`/`default`/`connect`)
+- `packages/tour/scripts/build-tour.mjs` — renderer → `dist/index.html`, `dist/404.html`, `dist/_redirects`
+- `packages/tour/scripts/serve.mjs` — local preview with production-parity routing
+- `packages/tour/assets/tour.css` — full stylesheet, 17 sections, 128 rules
+- `packages/tour/assets/tour.js` — vanilla runtime: keyboard, swipe, tap, dots, deep links, mode switching
+
+**Deleted:** `slides.md`, `layouts/`, `components/`, `styles/`, `uno.config.ts`, `scripts/inject-head.mjs`, `scripts/build-mobile.mjs`, `dist/mobile/`, and all Slidev/Vue/UnoCSS deps.
+
+**`/mobile` REMOVED.** No separate page, no banner, no redirect. The old URL now falls through the SPA fallback and loads the tour normally (verified: `GET /mobile` returns a body byte-identical to `GET /`).
+
+**Parity bugs found and fixed during the rewrite** (each verified against the still-deployed Slidev bundle `index-BdbVGs5m.css`, not assumed):
+1. **Cover cascade regression.** The original rules were scoped `.snow-cover-root .cover-tagline` (specificity 0-2-0). Written bare as `.cover-tagline` (0-1-0) they **lose** to `.snow-bg h1` (0-1-1), which would have painted the tagline at 3rem with h1 margins. Restored `.snow-cover-root` scoping on `.cover-kicker/.cover-banner/.cover-tagline/.cover-subtitle`.
+2. **Connect-lead cascade regression.** Same class: `.snow-connect-root .connect-lead` scoping restored.
+3. **`.slide-lead` deliberately left unstyled.** In the original build `.snow-bg p` (0-1-1) overrode the UnoCSS `.lead` shortcut (0-1-0), so these intros rendered at 1rem. Adding a rule would have diverged from the build being replaced. Documented in-file.
+4. **Nav-button/page-number collision** (the bug reported in the previous session) — controls are centred at the bottom, `.slide-number` keeps bottom-right unobstructed.
+5. **Duplicate `.deck-controls` rule removed** — it set `left`+`right`+`width` together, over-constraining the box against the `translateX(-50%)` centring.
+6. **Dots were `aria-hidden` but interactive** → now real `<button>`s with labels and keyboard focus; hidden via `display:none` on the deck so they leave the tab order there.
+7. **Tap-to-advance was advertised but inert** on phones (`onClick` returned early in mobile mode) → implemented.
+8. **Tab title was being rewritten** on load, clobbering the brand title. The runtime no longer touches `document.title`.
+
+**Preserved behaviours:** ~28KB HTML (was ~936KB of framework assets), Simple Analytics, OG/Twitter meta (1200×630 poster), favicon, deep links, `prefers-reduced-motion`, focus rings, and a `<noscript>` fallback that stacks all 12 slides into one scrollable page. `@media print` (980×552 per slide) replaces `slidev export`.
+
+**Verification (no browser available in this environment):** build clean; all JS parses (`node --check`); CSS braces balanced, 128 rules, 0 malformed declarations; all 51 classes used in the HTML are styled; 12 slides / 12 dot buttons / 12 `snow-bg`; `404.html` and `_redirects` emitted; mode predicate checked against 12 device profiles (all match intent); live checks confirm the Slidev CSS bundle is no longer referenced (`grep -c index-BdbVGs5m` = 0) and `/`, `/5`, `/mobile` all return 200.
+
+**Note — hono bump retained.** `packages/api` hono `4.5.0 → 4.13.8` was originally introduced to unblock Slidev. It is **kept**, because reverting was re-tested and `hono@4.5.0` carries a **HIGH** advisory (`npm audit`: 43 listed vulnerabilities). The bump is security-driven, independent of Slidev.
+
+---
+
+## Session 21 summary — 2026-09-13 (Tour Deploy + Guardian CI)
 
 ### 1. packages/tour (Slidev) — SCAFFOLDED, BUILT, DEPLOYED, CI-automated
 - Slidev 0.49.29 + UnoCSS (`presetWind`) interactive 11-slide deck at `tour.snowside.network`.

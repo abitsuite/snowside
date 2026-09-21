@@ -8,7 +8,7 @@
 - `packages/explorer` – EVM block explorer (Astro static site + Cloudflare Pages Functions). Contains Header (network switcher, search), Footer, Etherscan-style stats cards. Subdomains: `explorer.snowside.network` (mainnet), `explorer-testnet.snowside.network`, `explorer-signet.snowside.network`.
 - `packages/bridge` – Astro static site for BIP-300/301 deposits and withdrawals. Subdomain: `bridge.snowside.network`.
 - `packages/api` – Cloudflare Worker (Hono + Chanfana) serving OpenAPI at `/v1` and proxying to Drynet 4 Esplora.
-- `packages/tour` – Slidev (Vite + Vue 3 + Markdown) interactive slideshow tour. Subdomain: `tour.snowside.network`. Separate Cloudflare Pages project (`snowside-tour`). Indexable.
+- `packages/tour` – Zero-dependency static interactive tour (no framework, no bundler). Subdomain: `tour.snowside.network`. Separate Cloudflare Pages project (`snowside-tour`). Indexable.
 - `go/subnet-evm` – Subnet-EVM fork with BMM coordination precompile (Go)
 - `rust/bmm-bidder` – BMM bidder and settlement monitor (Rust)
 - `contracts/` – Solidity smart contracts (Foundry)
@@ -25,7 +25,7 @@ packages/     — JavaScript/TypeScript (pnpm workspace)
   explorer/ EVM block explorer (Astro static + CF Pages Functions)
   bridge/ Bridge UI (Astro + Tailwind v4)
   api/ Cloudflare Worker (Hono + Chanfana OpenAPI)
-  tour/ Interactive slideshow (Slidev + UnoCSS)
+  tour/ Interactive slideshow (zero-dependency static build)
 
 go/ — Go packages
   subnet-evm/   Subnet-EVM fork with BMM coordination precompile
@@ -64,7 +64,7 @@ Never leave uncommitted work sitting locally at the end of a session.
 - Docs build:    cd packages/docs && pnpm build  # Astro Starlight, output dist/
 - Explorer build: cd packages/explorer && pnpm build # Astro static, output dist/
 - Bridge build:  cd packages/bridge && pnpm build # Astro static, output dist/
-- Tour build:    cd packages/tour && pnpm build   # Slidev static SPA, output dist/ (+ head injection)
+- Tour build:    cd packages/tour && pnpm build   # node scripts/build-tour.mjs, output dist/
 - Root build:    pnpm run build                  # runs web -> pitch -> canvas
 - Dev web:       pnpm run dev:web
 - Dev pitch:     pnpm run dev:pitch
@@ -298,14 +298,16 @@ The signet block explorer (explorer-signet.snowside.network) was showing stale b
 - Deploy: `cd packages/canvas && pnpm run deploy` (builds + `wrangler pages deploy --project-name snowside-canvas --branch master`).
 
 ## Pages (packages/tour)
-- `/` — Interactive 11-slide tour (Slidev SPA). Deck is `slides.md`: Title, What is Snowside, Two native assets, How it works, Why Avalanche, Comparison, Risks, Roadmap, Opportunities, FAQ, Connect with Us.
-- Stack: Slidev 0.49.29 (Vite + Vue 3 + Markdown) + UnoCSS (`presetWind`). Static SPA build → `dist/`.
-- **Head injection:** `scripts/inject-head.mjs` runs post-build to inject Simple Analytics + OG/Twitter meta (1200x630 poster) + local favicon into `index.html`/`404.html` (Slidev's `head:` frontmatter renders client-side only). `_redirects` SPA fallback written by both Slidev and the inject script.
-- Layouts: `snow-cover`, `snow-default`, `snow-section`, `snow-connect`. Components: `ComparisonTable.vue`, `RoadmapTimeline.vue`, `RiskMitigation.vue`, `StakingRevenueCard.vue`.
-- Content provenance: all slide text grounded in `packages/pitch/src/pages/index.astro` (`whyAvalanche`, `comparison`, `risks`, `roadmap`, `faqs` arrays). Slides 9 (Opportunities) and 11 (Connect) are new.
+- `/` — Interactive 12-slide tour. **ONE document serves all viewports**; there is no `/mobile` page. Slide order: Cover, What is Snowside, Two native assets, How it works, Why Avalanche, Agentic Payments, Comparison, Risks, Roadmap, Opportunities, FAQ, Connect with Us.
+- Stack: **zero dependencies.** No Slidev/Vite/Vue/UnoCSS, no bundler. `scripts/build-tour.mjs` (plain Node) renders `dist/index.html` from `content.mjs` + `slides.mjs`; `assets/tour.css` + `assets/tour.js` are copied in. ~28KB HTML total.
+- **Two layouts, one document:** `data-mode="deck"` (fixed 980×552 canvas, Slidev look) vs `data-mode="mobile"` (reflowing, one slide per screen). **The switch is scale-based, not width-based:** mobile when `min(vw/980, vh/552) < 0.65`. This keeps ALL tablets and landscape phones on the deck; only portrait phones reflow. Threshold is duplicated in `assets/tour.css`, `assets/tour.js` (`MOBILE_SCALE`) and the inline boot script in `scripts/build-tour.mjs` — **change all three together.**
+- **Head is built in,** not injected post-build: Simple Analytics, OG/Twitter meta (1200x630 poster), favicon, an inline pre-paint mode boot script (prevents FOUC on phones), and a `<noscript>` fallback that stacks all slides into one page.
+- `content.mjs` is the single source of truth for copy (16 exports). `slides.mjs` is the slide model. Editing copy means editing **`content.mjs` only**.
+- **CSS cascade caution:** cover/connect rules are scoped `.snow-cover-root` / `.snow-connect-root` because bare class selectors lose to `.snow-bg h1` / `.snow-bg p`. `.slide-lead` is intentionally unstyled to match the original cascade. See comments in `assets/tour.css`.
+- Requires a global `node` binary only (no package deps at all). Local preview: `pnpm serve` (port 4321).
 - Cloudflare Pages project: `snowside-tour`. Custom domain: `tour.snowside.network`.
 - Deploy: `cd packages/tour && pnpm build && pnpm exec wrangler pages deploy dist --project-name snowside-tour --branch master --commit-dirty=true`.
-- PDF export: `cd packages/tour && pnpm export` (for grant/AMA offline use).
+- PDF export: print the page (`@media print` renders one 980×552 page per slide); replaces `slidev export`.
 
 ## Analytics — Simple Analytics
 - All 6 packages (web, pitch, canvas, docs, explorer, tour) have Simple Analytics installed or available.
@@ -313,7 +315,7 @@ The signet block explorer (explorer-signet.snowside.network) was showing stale b
 - Script URL: `https://scripts.simpleanalyticscdn.com/latest.js`
 - NoScript image: `https://queue.simpleanalyticscdn.com/noscript.gif`
 - **Web & Pitch:** `<script is:inline async defer ...>` + `<noscript><img ...>` in `Base.astro` `<head>`. The `is:inline` directive is required so Astro does not bundle the external script.
-- **Tour (Slidev):** injected post-build by `packages/tour/scripts/inject-head.mjs` into `dist/index.html` + `dist/404.html` (Slidev's `head:` frontmatter renders client-side only, so analytics must be in the static HTML).
+- **Tour:** written into the generated `dist/index.html` by `scripts/build-tour.mjs` (there is no post-build injection step any more).
 
 ## Tailwind CSS v4 with Astro
 - **CRITICAL:** Use `@tailwindcss/postcss` (NOT `@tailwindcss/vite`). The Vite plugin has a rolldown incompatibility (`Missing field tsconfigPaths`) that breaks on Cloudflare Pages build servers even when it passes locally.
