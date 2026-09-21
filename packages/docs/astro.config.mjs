@@ -9,7 +9,7 @@ export default defineConfig({
   integrations: [
     starlight({
       title: 'Snowside Docs',
-      description: 'Technical documentation for the eCash sidechain on Avalanche',
+      description: 'The eCash Sidechain on Avalanche. Native ECX Gas • Native USDC Liquidity.',
       social: [
         { icon: 'github', label: 'GitHub', href: 'https://github.com/abitsuite/snowside' },
         { icon: "x.com", label: "X", href: 'https://x.com/SnowsideNetwork' },

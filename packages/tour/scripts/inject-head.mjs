@@ -14,9 +14,9 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const distDir = resolve(__dirname, '..', 'dist')
 
 const ORIGIN = 'https://tour.snowside.network'
-const OG_IMAGE = `${ORIGIN}/snowside-tour-poster.png`
-const TITLE = 'Snowside — Tour'
-const DESCRIPTION = 'Snowside — The eCash Sidechain on Avalanche. Native ECX gas, USDC bridging, NodΞRunr automation. Interactive tour.'
+const OG_IMAGE = `${ORIGIN}/cover-banner.png`
+const TITLE = 'Snowside — Bitcoin Security at Avalanche Speed'
+const DESCRIPTION = 'The eCash Sidechain on Avalanche. Native ECX Gas • Native USDC Liquidity.'
 
 // Head block to inject (placed before the closing </head>)
 const headInject = `
@@ -35,7 +35,7 @@ const headInject = `
   <meta property="og:image:type" content="image/png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="Snowside tour — the eCash sidechain on Avalanche" />
+  <meta property="og:image:alt" content="Snowside — Bitcoin Security at Avalanche Speed" />
   <meta property="og:locale" content="en_US" />
 
   <!-- Twitter / X -->
@@ -45,7 +45,7 @@ const headInject = `
   <meta name="twitter:title" content="${TITLE}" />
   <meta name="twitter:description" content="${DESCRIPTION}" />
   <meta name="twitter:image" content="${OG_IMAGE}" />
-  <meta name="twitter:image:alt" content="Snowside tour — the eCash sidechain on Avalanche" />
+  <meta name="twitter:image:alt" content="Snowside — Bitcoin Security at Avalanche Speed" />
 `
 
 // SPA fallback for Cloudflare Pages (Slidev already writes _redirects, but
