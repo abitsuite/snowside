@@ -1,13 +1,10 @@
 <!-- packages/tour/components/RoadmapTimeline.vue -->
-<!-- Roadmap phases (verified): Devnet → Alphanet → Betanet → Mainnet → Ongoing -->
+<!-- Data lives in packages/tour/content.mjs (shared by deck + responsive page).
+     Roadmap phases (verified): Devnet → Alphanet → Betanet → Mainnet → Ongoing -->
 <script setup lang="ts">
-const milestones = [
-  { month: 'Devnet', milestone: 'Internal development network. Genesis configuration, precompile integration, and BMM coordination precompile validation against the Subnet-EVM fork.' },
-  { month: 'Alphanet', milestone: 'Federated federation bootstrapping. eCash Alphanet BIP-300/301 deposit and withdrawal flow validation; NativeMinter and DeployerAllowList precompiles live.' },
-  { month: 'Betanet', milestone: 'Public testnet with community validators. Security audit of peg smart contracts; ICM USDC bridge integration with the Avalanche C-Chain; block explorer deployment.' },
-  { month: 'Mainnet', milestone: 'Mainnet launch with community validators; public RPC endpoints; developer documentation released; first eCash dApp deployments.' },
-  { month: 'Ongoing', milestone: 'Validator growth, protocol maintenance, ecosystem development. Continuous BMM adoption and USDC liquidity expansion.' },
-]
+import { roadmap } from '../content.mjs'
+
+const milestones = roadmap.phases
 </script>
 
 <template>

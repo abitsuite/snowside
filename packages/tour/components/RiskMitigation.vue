@@ -1,32 +1,10 @@
 <!-- packages/tour/components/RiskMitigation.vue -->
-<!-- Source: packages/pitch/src/pages/index.astro `risks` array (verified) -->
+<!-- Data lives in packages/tour/content.mjs (shared by deck + responsive page).
+     Source: packages/pitch/src/pages/index.astro `risks` array (verified). -->
 <script setup lang="ts">
-const risks = [
-  {
-    risk: 'Low initial validator count',
-    mitigation: 'Launch with community validators. Low operational cost via Avalanche9000 reduces technical barriers to participation. Validator incentives funded by ECX gas fees.',
-  },
-  {
-    risk: 'BMM adoption by miners',
-    mitigation: 'BMM fees are denominated in ECX. Miners earn real revenue with zero additional hashing cost. The economic incentive is straightforward and self-sustaining.',
-  },
-  {
-    risk: 'USDC bridge security',
-    mitigation: 'ICM is a native Avalanche protocol, not a third-party bridge. It uses the full security of the Avalanche consensus — the same mechanism securing billions in TVL on the C-Chain.',
-  },
-  {
-    risk: 'eCash specification changes',
-    mitigation: 'Direct coordination with Paul Sztorc ensures the L1 configuration tracks the eCash spec. Smart contracts are upgradeable during the initial testnet phase.',
-  },
-  {
-    risk: 'Long-term maintainability',
-    mitigation: "EthSide was retired because manual operation was unsustainable. Community-run validators and low operational cost eliminate the maintenance burden that killed the predecessor.",
-  },
-  {
-    risk: 'Regulatory uncertainty',
-    mitigation: 'Snowside uses existing, established assets (ECX, USDC) — no new token issuance. The chain is fully open source and community-operated.',
-  },
-]
+import { risks as risksData } from '../content.mjs'
+
+const risks = risksData.items
 </script>
 
 <template>

@@ -5,3 +5,16 @@ onlyBuiltDependencies:
   - esbuild
   - sharp
   - vue-demi
+
+# pnpm 10 reads ONLY this file; the "pnpm" field in package.json is ignored.
+#
+# peerDependencyRules: @cloudflare/vitest-pool-workers@0.22.0 (the LATEST
+# release) declares peer vitest@^4.1.0, but this repo pins vitest@5.0.0.
+# The suite is verified working with that combination (packages/api:
+# 22/22 tests pass), so the mismatch is a stale version RANGE in the
+# pool-workers manifest, not a functional incompatibility. Allowing it here
+# keeps strict-peer-dependencies=true for every OTHER dependency, instead of
+# disabling the guard repo-wide.
+peerDependencyRules:
+  allowedVersions:
+    '@cloudflare/vitest-pool-workers>vitest': '5'

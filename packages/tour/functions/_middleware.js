@@ -13,6 +13,13 @@
 // Pages Functions middleware is the reliable alternative: it intercepts
 // every request and, for non-asset paths that don't resolve to a static file,
 // returns index.html.
+//
+// NOTE on /mobile: the responsive tour page is emitted by
+// scripts/build-mobile.mjs as a REAL static file at dist/mobile/index.html.
+// It must therefore be served directly and never rewritten to the Slidev
+// index.html. That works with the rule below because the static asset lookup
+// below (context.next()) finds the file and returns 200, so the 404 branch is
+// not taken. This is load-bearing: do not add /mobile to any rewrite list.
 export async function onRequest(context) {
   const url = new URL(context.request.url)
   const path = url.pathname
