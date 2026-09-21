@@ -15,7 +15,7 @@ const distDir = resolve(__dirname, '..', 'dist')
 
 const ORIGIN = 'https://tour.snowside.network'
 const OG_IMAGE = `${ORIGIN}/cover-banner.png`
-const TITLE = 'Snowside — Bitcoin Security at Avalanche Speed'
+const TITLE = 'Bitcoin Security at Avalanche Speed'
 const DESCRIPTION = 'The eCash Sidechain on Avalanche. Native ECX Gas • Native USDC Liquidity.'
 
 // Head block to inject (placed before the closing </head>)

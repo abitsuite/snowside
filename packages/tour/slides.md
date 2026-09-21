@@ -1,7 +1,8 @@
 ---
 # packages/tour/slides.md
 theme: none
-title: Snowside — Tour
+title: Bitcoin Security at Avalanche Speed
+titleTemplate: '%s'
 info: |
   Bitcoin Security at Avalanche Speed
   The eCash Sidechain on Avalanche. Native ECX gas, USDC bridging.
