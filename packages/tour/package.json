@@ -4,17 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "slidev --open",
-    "build": "slidev build && node scripts/inject-head.mjs && node scripts/build-mobile.mjs",
-    "export": "slidev export",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "@slidev/cli": "53.0.0",
-    "@slidev/theme-default": "latest"
-  },
-  "devDependencies": {
-    "unocss": "^66.10.4",
-    "vue": "^3.5.42"
+    "build": "node scripts/build-tour.mjs",
+    "serve": "node scripts/serve.mjs",
+    "deploy": "pnpm run build && pnpm exec wrangler pages deploy dist --project-name snowside-tour --branch master --commit-dirty=true"
   }
 }

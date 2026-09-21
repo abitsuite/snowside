@@ -2,19 +2,21 @@
 //
 // SINGLE SOURCE OF TRUTH for Snowside Tour content.
 //
-// This module is consumed by BOTH tour displays:
-//   1. the Slidev deck   (slides.md -> <script setup> imports)
-//   2. the responsive page (mobile.html -> inline module script)
+// Consumed by slides.mjs (the slide model), which in turn feeds
+// scripts/build-tour.mjs (the renderer). Both tour layouts — the desktop +
+// tablet deck and the phone slideshow — are generated from the same slide
+// list, so a copy change made here cannot drift between them.
 //
 // It is deliberately NOT consumed by packages/pitch. The pitch page owns its
 // own copy of the comparison/roadmap/risk data; sharing is scoped to the two
-// tour displays only, per project direction.
+// tour layouts only, per project direction.
 //
-// Provenance: text was moved verbatim out of slides.md (12-slide deck) and
-// out of the deck's Vue components (ComparisonTable.vue, RiskMitigation.vue,
-// RoadmapTimeline.vue). The comparison + roadmap arrays in turn trace back to
-// packages/pitch/src/pages/index.astro (`comparison`, `roadmap`), which the
-// tour components already cited. When updating tour copy, edit THIS file.
+// Provenance: text was moved verbatim out of the former slides.md deck (12
+// slides) and out of that deck's Vue components (ComparisonTable.vue,
+// RiskMitigation.vue, RoadmapTimeline.vue). The comparison + roadmap arrays in
+// turn trace back to packages/pitch/src/pages/index.astro (`comparison`,
+// `roadmap`), which the tour components already cited. When updating tour copy,
+// edit THIS file.
 
 /* ------------------------------------------------------------------ *
  * Slide 1 — cover
@@ -271,10 +273,9 @@ export const comparison = {
 /* ------------------------------------------------------------------ *
  * Slide 8 — Risks & Mitigations
  *
- * NOTE: the deck renders this via components/RiskMitigation.vue. That
- * component's inline array is the authoritative copy (6 risks); the text
- * below was moved from it verbatim. A different 5-item list previously
- * existed in slides.md prose and is superseded.
+ * NOTE: the authoritative copy is the 6-risk list below, moved verbatim out
+ * of the former components/RiskMitigation.vue. A different 5-item list
+ * previously existed in slides.md prose and is superseded.
  * ------------------------------------------------------------------ */
 export const risks = {
   heading: 'Risks & Mitigations',
@@ -316,10 +317,9 @@ export const risks = {
 /* ------------------------------------------------------------------ *
  * Slide 9 — Roadmap
  *
- * NOTE: the deck renders this via components/RoadmapTimeline.vue. That
- * component's inline array is the authoritative copy (5 phases); the text
- * below was moved from it verbatim. The component's own source comment
- * records the provenance: "Devnet \u2192 Alphanet \u2192 Betanet \u2192 Mainnet \u2192 Ongoing".
+ * NOTE: the authoritative copy is the 5-phase list below, moved verbatim out
+ * of the former components/RoadmapTimeline.vue, whose own source comment
+ * records the provenance: "Devnet → Alphanet → Betanet → Mainnet → Ongoing".
  * ------------------------------------------------------------------ */
 export const roadmap = {
   heading: 'From Devnet to Mainnet and Beyond...',
@@ -439,7 +439,7 @@ export const connect = {
 }
 
 /* ------------------------------------------------------------------ *
- * Page identity (shared by both displays)
+ * Page identity (shared by both layouts)
  * ------------------------------------------------------------------ */
 export const BRAND_TITLE = 'Snowside Tour'
 export const BRAND_TAGLINE = 'Bitcoin Security at Avalanche Speed'

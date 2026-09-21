@@ -40,7 +40,7 @@ All packages are deployed to Cloudflare Pages / Workers by the
 | `packages/docs` | [docs.snowside.network](https://docs.snowside.network) | Technical documentation (Astro + Starlight) |
 | `packages/explorer` | [explorer.snowside.network](https://explorer.snowside.network) | EVM block explorer (Astro + Pages Functions) |
 | `packages/bridge` | [bridge.snowside.network](https://bridge.snowside.network) | BIP-300/301 bridge UI (Astro) |
-| `packages/tour` | [tour.snowside.network](https://tour.snowside.network) | Interactive tour slideshow (Slidev) |
+| `packages/tour` | [tour.snowside.network](https://tour.snowside.network) | Interactive tour slideshow (zero-dependency static build) |
 | `packages/api` | [snowside.network/v1](https://snowside.network/v1) | OpenAPI + Esplora proxy (Cloudflare Worker, Hono + Chanfana) |
 
 ### Network RPC Endpoints (Avalanche L1)
@@ -58,7 +58,7 @@ All packages are deployed to Cloudflare Pages / Workers by the
 - 📋 [Pitch Page](https://pitch.snowside.network) — grant pitch (`noindex, nofollow`)
 - 🖼️ [Lean Canvas](https://canvas.snowside.network) — one-page business model canvas (PNG viewer + PDF download)
 - 📚 [Technical Docs](https://docs.snowside.network) — architecture, BMM, gas model, ICM bridge, security model
-- 🎬 [Interactive Tour](https://tour.snowside.network) — 12-slide walkthrough (Slidev)
+- 🎬 [Interactive Tour](https://tour.snowside.network) — 12-slide walkthrough (deck on desktop/tablet, slideshow on phones)
 - 🔍 [Block Explorer](https://explorer.snowside.network) — mainnet / testnet / signet
 - 🌉 [Bridge](https://bridge.snowside.network) — deposits & withdrawals
 - 🔌 [API (OpenAPI)](https://snowside.network/v1) — Swagger UI + spec at `/v1/openapi.json`
@@ -78,7 +78,7 @@ packages/          — JavaScript/TypeScript (pnpm workspace)
   explorer/        — EVM block explorer (Astro + CF Pages Functions)
   bridge/          — Bridge UI (Astro + Tailwind v4)
   api/             — Cloudflare Worker (Hono + Chanfana OpenAPI)
-  tour/            — Interactive slideshow (Slidev + UnoCSS)
+  tour/            — Interactive slideshow (zero-dependency static build)
   federation/      — Custodial federation service (Node.js + viem)
 
 go/                — Go packages
