@@ -1,7 +1,7 @@
 ---
 # packages/tour/slides.md
 theme: none
-title: Snowside
+title: Snowside Tour
 titleTemplate: '%s — Bitcoin Security at Avalanche Speed'
 info: |
   Bitcoin Security at Avalanche Speed
@@ -22,7 +22,7 @@ layout: snow-cover
 class: text-center
 ---
 
-<div class="cover-kicker">SNOWSIDE — TOUR</div>
+<div class="cover-kicker">SNOWSIDE TOUR</div>
 
 <!-- On-screen banner: the simple web OG poster -->
 <img src="/cover-banner.png" alt="Bitcoin Security at Avalanche Speed" class="cover-banner" />

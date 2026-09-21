@@ -15,7 +15,7 @@ const distDir = resolve(__dirname, '..', 'dist')
 
 const ORIGIN = 'https://tour.snowside.network'
 const OG_IMAGE = `${ORIGIN}/cover-banner.png`
-const TITLE = 'Snowside — Bitcoin Security at Avalanche Speed'
+const TITLE = 'Snowside Tour — Bitcoin Security at Avalanche Speed'
 const DESCRIPTION = 'The eCash Sidechain on Avalanche. Native ECX Gas • Native USDC Liquidity.'
 
 // Head block to inject (placed before the closing </head>)
@@ -25,8 +25,8 @@ const headInject = `
   <noscript><img src="https://queue.simpleanalyticscdn.com/noscript.gif" alt="" referrerpolicy="no-referrer-when-downgrade" /><\/noscript>
 
   <!-- Open Graph -->
-  <meta property="og:site_name" content="Snowside" />
   <meta property="og:title" content="${TITLE}" />
+  <meta property="og:site_name" content="Snowside Tour" />
   <meta property="og:description" content="${DESCRIPTION}" />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="${ORIGIN}/" />
@@ -35,7 +35,7 @@ const headInject = `
   <meta property="og:image:type" content="image/png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="Snowside — Bitcoin Security at Avalanche Speed" />
+  <meta property="og:image:alt" content="Snowside Tour — Bitcoin Security at Avalanche Speed" />
   <meta property="og:locale" content="en_US" />
 
   <!-- Twitter / X -->
@@ -45,7 +45,7 @@ const headInject = `
   <meta name="twitter:title" content="${TITLE}" />
   <meta name="twitter:description" content="${DESCRIPTION}" />
   <meta name="twitter:image" content="${OG_IMAGE}" />
-  <meta name="twitter:image:alt" content="Snowside — Bitcoin Security at Avalanche Speed" />
+  <meta name="twitter:image:alt" content="Snowside Tour — Bitcoin Security at Avalanche Speed" />
 `
 
 // SPA fallback for Cloudflare Pages (Slidev already writes _redirects, but
