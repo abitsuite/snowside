@@ -33,6 +33,7 @@
 // Both displays come from ONE slide list (slides.mjs), so they cannot drift.
 
 import { writeFileSync, mkdirSync, readFileSync, cpSync, existsSync } from 'node:fs'
+import { createHash } from 'node:crypto'
 import { resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { slides, totalSlides } from '../slides.mjs'
@@ -294,6 +295,26 @@ const dotsHtml = slides
   .map((s, i) => `        <button type="button" class="dot${i === 0 ? ' active' : ''}" data-dot="${i}" aria-label="Go to slide ${i + 1}${s.label ? ': ' + esc(s.label) : ''}"></button>`)
   .join('\n')
 
+/* ------------------------------------------------------------------ *
+ * Content-hashed asset names
+ * ------------------------------------------------------------------ *
+ * Cloudflare Pages serves /assets/* with `cache-control: public,
+ * max-age=14400, must-revalidate`. Under a fixed filename that means a
+ * browser which already has tour.css keeps the OLD stylesheet for up to four
+ * hours after a deploy — a stale rule silently overrides the new one and the
+ * page looks like the change was never made.
+ *
+ * Hashing the filename sidesteps the whole class of bug: a changed file gets a
+ * new URL, so it cannot be served from any cache, while an unchanged file keeps
+ * its URL and stays cached. The hash is the first 8 hex characters of the
+ * file's SHA-256, which is plenty for a two-file bundle.
+ */
+const assetHash = (file) =>
+  createHash('sha256').update(readFileSync(resolve(assetsDir, file))).digest('hex').slice(0, 8)
+
+const cssHref = `/assets/tour.${assetHash('tour.css')}.css`
+const jsSrc = `/assets/tour.${assetHash('tour.js')}.js`
+
 const head = `  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>${esc(PAGE_TITLE)}</title>
@@ -305,7 +326,7 @@ const head = `  <meta charset="utf-8" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@200;400;600;700;800&family=JetBrains+Mono:wght@200;400;600;700&display=swap" type="text/css" />
 
-  <link rel="stylesheet" href="/assets/tour.css" />
+  <link rel="stylesheet" href="${cssHref}" />
 
   <!-- Mode boot: runs BEFORE first paint so a reflowing phone never flashes the
        deck (and a tablet or desktop never flashes the reflow layout). Kept
@@ -392,7 +413,7 @@ ${dotsHtml}
     </style>
   </noscript>
 
-  <script src="/assets/tour.js"></script>`
+  <script src="${jsSrc}"></script>`
 
 const html = `<!DOCTYPE html>
 <html lang="en" data-mode="deck">
@@ -411,9 +432,24 @@ ${body}
 mkdirSync(distDir, { recursive: true })
 mkdirSync(resolve(distDir, 'assets'), { recursive: true })
 
-// CSS + JS
-cpSync(resolve(assetsDir, 'tour.css'), resolve(distDir, 'assets', 'tour.css'))
-cpSync(resolve(assetsDir, 'tour.js'), resolve(distDir, 'assets', 'tour.js'))
+// CSS + JS, written under content-hashed names (see assetHash above).
+writeFileSync(
+  resolve(distDir, cssHref.replace('/assets/', 'assets/')),
+  readFileSync(resolve(assetsDir, 'tour.css'))
+)
+writeFileSync(
+  resolve(distDir, jsSrc.replace('/assets/', 'assets/')),
+  readFileSync(resolve(assetsDir, 'tour.js'))
+)
+
+// Legacy unhashed copies.
+// index.html is served max-age=0, must-revalidate, so it is always fresh — but
+// a browser holding a pre-upgrade copy still asks for /assets/tour.css by its
+// old name. Without these the request 404s and the page renders unstyled.
+// They are rewritten on every build, so they cannot serve stale CSS to an
+// existing HTML that still points at them.
+writeFileSync(resolve(distDir, 'assets', 'tour.css'), readFileSync(resolve(assetsDir, 'tour.css')))
+writeFileSync(resolve(distDir, 'assets', 'tour.js'), readFileSync(resolve(assetsDir, 'tour.js')))
 
 // public/ (favicon, cover banner, poster) -> dist/
 if (existsSync(publicDir)) {
@@ -430,4 +466,5 @@ writeFileSync(resolve(distDir, '404.html'), html, 'utf8')
 writeFileSync(resolve(distDir, '_redirects'), '/*    /index.html   200\n', 'utf8')
 
 console.log(`[build-tour] wrote dist/index.html (${slides.length} slides; layout switches on viewport scale)`)
+console.log(`[build-tour] assets: ${cssHref} + ${jsSrc}`)
 console.log(`[build-tour] wrote dist/404.html + dist/_redirects`)
