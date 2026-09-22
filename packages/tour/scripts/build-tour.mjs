@@ -68,6 +68,16 @@ const esc = (s) =>
 const escKeepEm = (s) =>
   esc(s).replace(/&lt;em&gt;/g, '<em>').replace(/&lt;\/em&gt;/g, '</em>')
 
+// The cover subtitle may carry an explicit <br />, so the second half of the
+// line sits on its own row instead of wrapping wherever the canvas happens to
+// run out of width ("The eCash Sidechain on Avalanche." / "Native ECX Gas ...").
+// Two forms are accepted: a literal <br />, and a bare newline, so the copy
+// reads naturally in content.mjs.
+const escKeepBr = (s) =>
+  esc(s)
+    .replace(/&lt;br\s*\/?&gt;/g, '<br />')
+    .replace(/\n/g, '<br />')
+
 // Inline **bold** in prose leads.
 const inline = (s) =>
   escKeepEm(s).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
@@ -230,7 +240,7 @@ function renderSlide(slide, i) {
             <div class="cover-kicker">${esc(slide.kicker)}</div>
             <img src="${esc(slide.banner)}" alt="${esc(slide.bannerAlt)}" class="cover-banner" />
             <h1 class="cover-tagline">${esc(slide.tagline)}</h1>
-            <p class="cover-subtitle">${esc(slide.subtitle)}</p>
+            <p class="cover-subtitle">${escKeepBr(slide.subtitle)}</p>
           </div>
         </div>
       </section>`

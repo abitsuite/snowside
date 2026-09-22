@@ -258,10 +258,11 @@ img { max-width: 100%; height: auto; }
    cover tagline would render at 3rem and inherit the wrong margins. */
 .snow-cover-root .cover-kicker {
   font-family: var(--font-mono);
-  font-size: 0.8rem;
+  font-size: 1.5rem;
+  font-weight: 700;
   letter-spacing: 0.35em;
   color: var(--snow-400);
-  margin-bottom: 0.75rem;
+  margin-bottom: 1rem;
   text-transform: uppercase;
 }
 .snow-cover-root .cover-banner {
@@ -282,9 +283,14 @@ img { max-width: 100%; height: auto; }
   margin: 1.5rem 0 0;
   letter-spacing: -0.01em;
 }
+/* Subtitle layout: one sentence per row. The explicit <br /> from content.mjs
+   does the break; this only tightens the row spacing, since a 1.5 line-height
+   on two short lines reads as a gap.
+   MOBILE: the phone layout is narrow and the second row is long, so it is
+   allowed to wrap again there (see the MOBILE-SUBTITLE ESCAPE below). */
 .snow-cover-root .cover-subtitle {
   font-size: 1.05rem;
-  line-height: 1.5;
+  line-height: 1.4;
   color: #b9c6da;
   margin: 0.75rem 0 0;
   max-width: 720px;
@@ -725,6 +731,13 @@ html, body { overflow: hidden; }
 [data-mode="mobile"] .cover-tagline { font-size: 1.4rem; }
 [data-mode="mobile"] .cover-subtitle { font-size: 0.95rem; }
 [data-mode="mobile"] .cover-banner { width: min(300px, 78%); }
+/* MOBILE-SUBTITLE ESCAPE.
+   The cover subtitle's hard <br /> is sized for the 980px deck. On a 360-430px
+   phone that second row ("Native ECX Gas • Native USDC Liquidity.") would
+   wrap mid-phrase, giving three ragged lines. The <br /> is a rendered
+   element, so hiding it restores ordinary wrapping and the sentence pairs
+   flow together. Deck mode keeps the explicit break. */
+[data-mode="mobile"] .cover-subtitle br { display: none; }
 [data-mode="mobile"] .snow-revenue-apy { font-size: 1.4rem; }
 
 /* Revive the roadmap rules for mobile (rail stays horizontal-friendly). */
