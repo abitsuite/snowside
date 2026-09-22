@@ -307,15 +307,15 @@ const head = `  <meta charset="utf-8" />
 
   <link rel="stylesheet" href="/assets/tour.css" />
 
-  <!-- Mode boot: runs BEFORE first paint so a phone never flashes the deck
-       (and a desktop never flashes the reflow layout). Kept inline and tiny
-       on purpose. Threshold must match assets/tour.js (MOBILE_SCALE) and
-       the documented value in assets/tour.css. -->
+  <!-- Mode boot: runs BEFORE first paint so a reflowing phone never flashes the
+       deck (and a tablet or desktop never flashes the reflow layout). Kept
+       inline and tiny on purpose. Threshold must match assets/tour.js
+       (MOBILE_SCALE) and the documented value in assets/tour.css. -->
   <script>
     (function () {
       var w = window.innerWidth, h = window.innerHeight
       var scale = Math.min(w / 980, h / 552)
-      var mode = scale < 0.65 ? 'mobile' : 'deck'
+      var mode = scale < 0.60 ? 'mobile' : 'deck'
       document.documentElement.setAttribute('data-mode', mode)
       if (mode === 'deck') {
         document.documentElement.style.setProperty('--scale', String(scale))

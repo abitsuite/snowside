@@ -27,7 +27,7 @@ export const cover = {
   bannerAlt: 'Bitcoin Security at Avalanche Speed',
   tagline: 'Bitcoin Security at Avalanche Speed',
   subtitle:
-    'The eCash Sidechain on Avalanche.<br />Native ECX Gas \u2022 Native USDC Liquidity.',
+    'The eCash Sidechain on Avalanche<br />Native ECX Gas \u2022 Native USDC Liquidity',
 }
 
 /* ------------------------------------------------------------------ *

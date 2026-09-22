@@ -37,14 +37,22 @@
   // already shows position via .slide-number on desktop and .mobile-counter on
   // phones. Rewriting it here previously clobbered that title on first load.
 
-  // Phone breakpoint. The tour does NOT switch purely on width: the deck is a
-  // fixed 980x552 canvas scaled by s = min(vw/980, vh/552) (Slidev's formula),
-  // and a phone in LANDSCAPE has a generous s (844x390 -> 0.707) where the
-  // deck is perfectly legible. Reflow is only wanted when that scale collapses
-  // in phone-portrait orientation. Threshold 0.65 == 637px wide or 359px tall;
-  // keep in sync with assets/tour.css and the inline boot script in
+  // Reflow breakpoint. The tour does NOT switch purely on width: the deck is a
+  // fixed 980x552 canvas scaled by s = min(vw/980, vh/552).
+  //
+  // TABLETS STAY ON THE DECK. That is deliberate: the deck is where the cover
+  // shows its enlarged "SNOWSIDE TOUR" kicker and the explicit two-line
+  // subtitle, and it is what preserves the Slidev look on tablet. Only a
+  // narrow, portrait PHONE reflows.
+  //
+  // Threshold 0.60 == 588px wide or 331px tall. It sits below every tablet
+  // scale measured (narrowest is a 7" 600x1024 at 0.612) and above every
+  // phone-portrait scale (largest is 430x932 at 0.439).
+  //   reflows  phone portrait 0.367-0.439
+  //   deck     phone landscape 0.707-0.779 | tablet 0.612-1.218 | desktop 1.304+
+  // Keep in sync with assets/tour.css and the inline boot script in
   // scripts/build-tour.mjs.
-  var MOBILE_SCALE = 0.65
+  var MOBILE_SCALE = 0.60
 
   function deckScale() {
     return Math.min(window.innerWidth / 980, window.innerHeight / 552)

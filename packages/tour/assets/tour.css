@@ -565,21 +565,27 @@ img { max-width: 100%; height: auto; }
  * block in the document head, which stacks every slide into a long page).
  * ------------------------------------------------------------------ *
  * WHICH MODE APPLIES
- * The mobile layout is selected when the deck's own scale factor drops so
- * low that text is unreadable — i.e. a phone held in portrait. The scale is
- *     s = Math.min(viewW / 980, viewH / 552)          (Slidev's formula)
- * and the switch happens below s = 0.65, i.e. 980 * 0.65 = 637px of width
- * or 552 * 0.65 = 359px of height. The same threshold is applied by the
- * inline boot script and by assets/tour.js; keep the three in sync.
+ * The reflow layout is selected when the deck's own scale factor drops so low
+ * that text is unreadable — in practice only a narrow, portrait phone. The
+ * scale is
+ *     s = Math.min(viewW / 980, viewH / 552)
+ * and the switch happens below s = 0.60, i.e. 980 * 0.60 = 588px of width or
+ * 552 * 0.60 = 331px of height. The same threshold is applied by the inline
+ * boot script and by assets/tour.js; keep the three in sync.
+ *
+ * TABLETS DELIBERATELY KEEP THE DECK. The deck is where the cover shows its
+ * enlarged "SNOWSIDE TOUR" kicker and its explicit two-line subtitle, and the
+ * deck is what preserves the Slidev look on tablet. The threshold is therefore
+ * placed BELOW every tablet scale and ABOVE every phone-portrait scale.
  *
  * Measured s values (so the choice is auditable):
  *   phone portrait   360x800 -> 0.367 | 390x844 -> 0.398 | 430x932 -> 0.439
  *   phone landscape  844x390 -> 0.707 | 932x430 -> 0.779
- *   tablet           768x1024 -> 0.784 | 820x1180 -> 0.837 | 1024x768 -> 1.045
+ *   tablet           600x1024 -> 0.612 | 768x1024 -> 0.784 | 820x1180 -> 0.837
+ *                    1024x768 -> 1.045 | 1194x834 -> 1.218
  *   desktop          1280x720 -> 1.304 | 1440x900 -> 1.469
- * So portrait phones reflow; phones in LANDSCAPE and every tablet keep the
- * deck, because at 0.7+ the canvas is legible and the wide viewport suits a
- * fixed-ratio slide. (Pinch-zoom is enabled as an escape hatch.)
+ * So portrait phones reflow; phone LANDSCAPE, every tablet and every desktop
+ * keep the deck. (Pinch-zoom is enabled as an escape hatch in both modes.)
  * ================================================================== */
 html, body { overflow: hidden; }
 
