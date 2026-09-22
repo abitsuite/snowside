@@ -239,7 +239,7 @@ function renderSlide(slide, i) {
           <div class="cover-inner snow-cover-root">
             <div class="cover-kicker">${esc(slide.kicker)}</div>
             <img src="${esc(slide.banner)}" alt="${esc(slide.bannerAlt)}" class="cover-banner" />
-            <h1 class="cover-tagline">${esc(slide.tagline)}</h1>
+            <h1 class="cover-tagline">${escKeepBr(slide.tagline)}</h1>
             <p class="cover-subtitle">${escKeepBr(slide.subtitle)}</p>
           </div>
         </div>
