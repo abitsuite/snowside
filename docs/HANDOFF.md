@@ -1,4 +1,47 @@
-# Snowside Handoff — 2026-09-21 (Session 22, Tour Rebuilt Without Slidev)
+# Snowside Handoff — 2026-10-07 (Session 23, Infrastructure Data Loss + Rebuild)
+
+## Session 23 summary — 2026-10-07
+
+### 1. Infrastructure data-loss event (Oct 2026)
+A hosting provider data failure destroyed BOTH VPSes and everything on them:
+- `avalanche` (170.75.160.146): mainnet C-chain state-sync progress (2.26M tries in), Fuji db, CLI v1.9.6 install, staking + BLS keys (NodeID-Kf5bbEanWq9TsyoBXqnJzvc8Dn6mu5haS)
+- `snowside` (172.81.181.52): all 3 L1 chains + 5 nodes, nginx, snowside-federation container, ALL on-box backup snapshots
+- **No off-box backups existed** (R2 had been deferred). Lesson is now permanent policy: **OFF-BOX BACKUPS FROM DAY ONE on every host, no deferrals.**
+- Also lost: HD_MNEMONIC (→ authority `0x895fEE1F...` unrecoverable; federation wallet funds unrecoverable), ICM deployer key (→ Registry `0xB8e7...A6F` not reproducible), awm-relayer key.
+- Survives: everything in git (AGENTS.md/HANDOFF), all Cloudflare assets (D1 bridge DB, API worker, all Pages sites), and the Project Lead-held private key for the NEW authority: **`0xE5104794FB44D45b0f821d77a685A17ee2E35b9C`**.
+
+### 2. `snowside-sync` (172.81.181.52) — dedicated IBD box, CONFIGURED & RUNNING
+- 8 vCPU / 62 GiB RAM / 500G vda + 1TB vdc — both NVMe-class (measured ~7,200–8,600 4K-randwrite IOPS @ ~120µs; the old box managed ~600 IOPS @ 5.5ms+ — the sync bottleneck is removed)
+- avalanchego **v1.14.2** (same version as the lost node — no version roulette), systemd `avalanchego-mainnet.service` (`Restart=always`), state-sync + pruning chain config, db on vdc, logs/chainData on vda
+- Fresh NodeID: `NodeID-HhtdACE7m9XfiRgQHb2dGchvW8WYMod1V` (new staking/BLS keys — nothing was registered to the old ones)
+- Armored: needrestart override + unattended-upgrades OFF + ufw (22, 9651 only)
+- Status at 13:54 UTC: P-chain bootstrapping; C-chain state sync not yet started (vdc 262M used)
+- Role: **IBD ONLY** → retire after the synced db is migrated to the new `snowside`
+
+### 3. NEW `snowside` (170.75.160.146) — reviewed, DISK MISMATCH ❌
+- 6 vCPU / 15 GiB / **125 GB local only** / Ubuntu 24.04.5 LTS / fast disk (~8,500 IOPS @ 115µs) / clean (nothing installed)
+- **125 GB cannot hold the mainnet db (~300–400 GiB pruned)** — needs a 1TB volume attached (or reprovision) before the db migration can happen
+- unattended-upgrades ARMED on this box — Session-20 armoring must be applied BEFORE any avalanchego runs here
+- IP note: the provider reassigned 170.75.160.146 (the old `avalanche` IP) to this box. `rpc.snowside.network` DNS still points at 172.81.181.52 (`snowside-sync`) — Project Lead repoints on request
+
+### 4. Rebuild plan (agreed)
+1. IBD on `snowside-sync` (running) → monitor P → X → C state sync
+2. Project Lead attaches 1TB to new `snowside` (or reprovisions) → configure it (armoring FIRST, then avalanchego v1.14.2 + CLI v1.9.6 + nginx)
+3. Two-pass rsync db migration `snowside-sync` → `snowside` (brief clean stop for the final delta pass; the trie phase is restart-safe — the WIPE window is the only fragile phase)
+4. Redeploy the 3 L1s from genesis (all parameters documented in AGENTS.md; NEW blockchain IDs; NEW authority `0xE5104794...`; NO ewoq anywhere)
+5. nginx + federation rebuild + R2 backups day one → DNS repoint → retire `snowside-sync`
+6. Peg-in (13.37 ECX, slot 88) revisits AFTER L1s exist — chain 32904 is gone, and destination `0x27a9b30D...` was on it
+
+### Known issues / next steps
+- [ ] 1TB volume for new `snowside` (Project Lead)
+- [ ] Armoring pending on new `snowside` (do at config time, before avalanchego)
+- [ ] Monitor IBD on `snowside-sync`
+- [ ] R2 off-box backups from day one (mandatory, no deferral)
+- [ ] L1 genesis reconstruction from AGENTS.md parameters at redeploy time
+
+---
+
+# Session 22 archive — 2026-09-21 (Tour Rebuilt Without Slidev)
 
 ## Session 22 summary — 2026-09-21
 
