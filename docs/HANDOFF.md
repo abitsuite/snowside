@@ -12,11 +12,11 @@ A hosting provider data failure destroyed BOTH VPSes and everything on them:
 
 ### 2. `snowside-sync` (172.81.181.52) — dedicated IBD box, CONFIGURED & RUNNING
 - 8 vCPU / 62 GiB RAM / 500G vda + 1TB vdc — both NVMe-class (measured ~7,200–8,600 4K-randwrite IOPS @ ~120µs; the old box managed ~600 IOPS @ 5.5ms+ — the sync bottleneck is removed)
-- avalanchego **v1.14.2** (same version as the lost node — no version roulette), systemd `avalanchego-mainnet.service` (`Restart=always`), state-sync + pruning chain config, db on vdc, logs/chainData on vda
-- Fresh NodeID: `NodeID-HhtdACE7m9XfiRgQHb2dGchvW8WYMod1V` (new staking/BLS keys — nothing was registered to the old ones)
-- Armored: needrestart override + unattended-upgrades OFF + ufw (22, 9651 only)
-- Status at 13:54 UTC: P-chain bootstrapping; C-chain state sync not yet started (vdc 262M used)
-- Role: **IBD ONLY** → retire after the synced db is migrated to the new `snowside`
+- ⚠️ **CRITICAL: v1.14.2 was tried first and could NOT connect (0 peers, 30 min).** The **Helicon network upgrade activated on Mainnet Sep 22, 2026** (v1.15.0 release notes: "All Mainnet nodes must upgrade before 11 AM ET, September 22nd 2026") — v1.14.2 is permanently incompatible. **v1.15.1 ("Helicon.1 — Improved Snapshot Performance") installed instead** (rpcchainvm 46), plus subnet-evm v1.15.1 plugin at `/mnt/avax-data/mainnet/plugins/srEXiWaHuhNyGwPUi444Tu47ZEDwxTWrbQiuD7FmgSAQ6X7Dy`.
+- Chain config: `{"state-sync-enabled": true, "pruning-enabled": true, "state-scheme": "hashdb"}` — hashdb set explicitly because post-Helicon firewood cannot state-sync (FATAL). Post-Helicon state-sync rules (official): restart mid-sync = restart from beginning; disabling state sync after partial sync = unrecoverable FATAL → db wipe.
+- systemd `avalanchego-mainnet.service` (`Restart=always`), db on vdc, logs/chainData on vda. Fresh NodeID: `NodeID-HhtdACE7m9XfiRgQHb2dGchvW8WYMod1V`. Armored: needrestart override + unattended-upgrades OFF + ufw (22, 9651 only).
+- Status at 14:16 UTC: **355 peers connected**, network health passing, P-chain fetching blocks (465k/25.6M, node ETA ~2h), C-chain state sync follows automatically. NRestarts=0.
+- Role: **IBD ONLY** → retire after the synced db volume is transferred to `snowside` (detach/attach — no rsync needed; NodeID + staking keys ride the volume; new unit on `snowside` uses `--public-ip=170.75.160.146`)
 
 ### 3. NEW `snowside` (170.75.160.146) — reviewed, DISK MISMATCH ❌
 - 6 vCPU / 15 GiB / **125 GB local only** / Ubuntu 24.04.5 LTS / fast disk (~8,500 IOPS @ 115µs) / clean (nothing installed)
@@ -25,8 +25,8 @@ A hosting provider data failure destroyed BOTH VPSes and everything on them:
 - IP note: the provider reassigned 170.75.160.146 (the old `avalanche` IP) to this box. `rpc.snowside.network` DNS still points at 172.81.181.52 (`snowside-sync`) — Project Lead repoints on request
 
 ### 4. Rebuild plan (agreed)
-1. IBD on `snowside-sync` (running) → monitor P → X → C state sync
-2. Project Lead attaches 1TB to new `snowside` (or reprovisions) → configure it (armoring FIRST, then avalanchego v1.14.2 + CLI v1.9.6 + nginx)
+1. IBD on `snowside-sync` (running v1.15.1) → monitor P → X → C state sync
+2. Configure new `snowside` at migration time (armoring FIRST, then avalanchego **v1.15.1** + CLI + nginx — v1.14.2 is dead on mainnet). NOTE: Avalanche-CLI v1.9.6 compatibility with avalanchego v1.15.x networks is UNVERIFIED — check for a newer CLI release before L1 redeployment
 3. **VOLUME-TRANSFER migration (supersedes rsync):** after the sync FULLY completes (isBootstrapped true + post-sync wipe finished — never during a wipe window), cleanly stop the node, unmount, DETACH the 1TB vdc from `snowside-sync` and ATTACH it to `snowside`. The db travels on the disk (UUID `a83114af-e5f2-435b-8a83-1b7efd9e903d`, ext4, `/mnt/avax-data/mainnet/` incl. staking/keys — NodeID-HhtdACE7... travels with it). New systemd unit on `snowside` must use `--public-ip=170.75.160.146`. Downtime = minutes.
 4. Redeploy the 3 L1s from genesis (all parameters documented in AGENTS.md; NEW blockchain IDs; NEW authority `0xE5104794...`; NO ewoq anywhere)
 5. nginx + federation rebuild + R2 backups day one → DNS repoint → retire `snowside-sync`
