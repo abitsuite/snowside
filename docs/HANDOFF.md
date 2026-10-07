@@ -27,7 +27,7 @@ A hosting provider data failure destroyed BOTH VPSes and everything on them:
 ### 4. Rebuild plan (agreed)
 1. IBD on `snowside-sync` (running) → monitor P → X → C state sync
 2. Project Lead attaches 1TB to new `snowside` (or reprovisions) → configure it (armoring FIRST, then avalanchego v1.14.2 + CLI v1.9.6 + nginx)
-3. Two-pass rsync db migration `snowside-sync` → `snowside` (brief clean stop for the final delta pass; the trie phase is restart-safe — the WIPE window is the only fragile phase)
+3. **VOLUME-TRANSFER migration (supersedes rsync):** after the sync FULLY completes (isBootstrapped true + post-sync wipe finished — never during a wipe window), cleanly stop the node, unmount, DETACH the 1TB vdc from `snowside-sync` and ATTACH it to `snowside`. The db travels on the disk (UUID `a83114af-e5f2-435b-8a83-1b7efd9e903d`, ext4, `/mnt/avax-data/mainnet/` incl. staking/keys — NodeID-HhtdACE7... travels with it). New systemd unit on `snowside` must use `--public-ip=170.75.160.146`. Downtime = minutes.
 4. Redeploy the 3 L1s from genesis (all parameters documented in AGENTS.md; NEW blockchain IDs; NEW authority `0xE5104794...`; NO ewoq anywhere)
 5. nginx + federation rebuild + R2 backups day one → DNS repoint → retire `snowside-sync`
 6. Peg-in (13.37 ECX, slot 88) revisits AFTER L1s exist — chain 32904 is gone, and destination `0x27a9b30D...` was on it

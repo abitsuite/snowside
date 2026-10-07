@@ -236,7 +236,7 @@ Deploy contract (if on DeployerAllowList):
 ### Node Infrastructure (rebuilt after Oct 2026 data-loss event — Session 23)
 - **Oct 2026:** a hosting provider data failure destroyed BOTH previous VPSes and all on-box data (mainnet sync progress, all 3 L1 chains + nodes, federation container, all on-box backup snapshots, HD_MNEMONIC, staking/BLS keys). Full record: docs/HANDOFF.md Session 23.
 - **snowside-sync (172.81.181.52)** — dedicated IBD box (retired after sync + db migration): 8 vCPU / 62GB / 500G vda + 1TB vdc, NVMe-class (~7–8.5k write IOPS @ ~120µs measured). avalanchego v1.14.2, systemd `avalanchego-mainnet.service` (`Restart=always`), state-sync + pruning, db `/mnt/avax-data/mainnet/db` (vdc), logs/chainData `/home/ubuntu/avax-local/mainnet/` (vda). NodeID-HhtdACE7m9XfiRgQHb2dGchvW8WYMod1V.
-- **snowside (170.75.160.146)** — new permanent L1 host: 6 vCPU / 15GB / 125G local (**1TB volume PENDING** before it can hold the mainnet db).
+- **snowside (170.75.160.146)** — new permanent L1 host: 6 vCPU / 15GB / 125G local + **1TB volume transferred from snowside-sync after IBD completes** (detach/attach — db, staking keys and NodeID-HhtdACE7... ride the volume; new unit gets `--public-ip=170.75.160.146`).
 - **Authority key:** `0xE5104794FB44D45b0f821d77a685A17ee2E35b9C` (Project-Lead-held; replaces `0x895fEE1F...`, lost in the data-loss event).
 - **OFF-BOX BACKUPS (R2) ARE MANDATORY FROM DAY ONE on all new hosts.** The deferred-backup decision is what turned a data-loss event into a total loss.
 - **IPs were provider-reassigned** (not by design); `rpc.snowside.network` DNS to be pointed at the new `snowside` when configured.
