@@ -11,13 +11,19 @@
   - New systemd unit with `--public-ip=170.75.160.200`; enabled + running, NRestarts=0.
   - **NodeID-HhtdACE7m9XfiRgQHb2dGchvW8WYMod1V PRESERVED** (staking keys traveled with the data).
   - **P-chain IBD resumed with ZERO lost progress**: 12.4M/25.6M executed (48%) → remaining 13.2M blocks, node ETA ~11h. (LevelDB compacted the copied db first — 52→39→51G oscillation is normal.)
-- **`snowside` (L1 host) on the NEW account: NOT YET CREATED.** The old-account `snowside` (170.75.160.146, 6 vCPU/15G/125G) still exists but was never configured. Plan: build the production host fresh on the new account; db gets there by rsync from the new snowside-sync (volume-transfer trick only works within one account).
+- **`snowside` (L1 host) on the NEW account: CREATED & PROVISIONED.** 172.81.178.61 — 6 vCPU / 15 GiB / 125G vda (OS+software only; db arrives later via volume detach/attach from snowside-sync — same account, works). Old-account `snowside` (170.75.160.146) verified blank, safe to terminate.
+  - Installed: docker 29.8.2 (hello-world verified), nginx 1.28.3 (enabled), avalanche-CLI v1.9.6 + avalanchego v1.15.1 (`/home/ubuntu/bin/`), rclone v1.60.1
+  - Staged: subnet-evm v1.15.1 plugin (`/home/ubuntu/staging/plugins/`), chain config (state-sync+pruning+hashdb), dirs (`snowside/scripts`, `backups`, `genesis`, `avax-local`)
+  - systemd: `avalanchego-mainnet.service` with `--public-ip=172.81.178.61`, data-dir `/mnt/avax-data/mainnet` — installed but **NOT enabled** (starts only after volume lands)
+  - Backup system restored from local /tmp copies: `backup-snowside.sh` + `RESTORE.md` in `/home/ubuntu/snowside/`, daily 03:00 UTC timer **ENABLED** (failures expected/harmless until `~/.avalanche-cli` exists). **rclone → R2 NOT configured — needs Project Lead credentials.**
+  - Runbook on box: `/home/ubuntu/MIGRATION.md` (volume detach/attach procedure)
 
 ### Known issues / next steps
-- [ ] Project Lead: terminate `snowside-sync-old` (172.81.181.52) and the old-account `snowside` (170.75.160.146) whenever ready — both fully inventoried, nothing left on either
-- [ ] Project Lead: create new-account `snowside` production host (specs in AGENTS.md)
-- [ ] Monitor IBD on new `snowside-sync` (170.75.160.200)
-- [ ] DNS: `rpc.snowside.network` points at 172.81.181.52 (old) — repoint to new production host at cutover
+- [ ] Project Lead: terminate `snowside-sync-old` (172.81.181.52) and `snowside-old` (170.75.160.146) — both inventoried clean
+- [ ] Project Lead: provide R2 credentials (or run `rclone config` on snowside) — the ONLY missing backup piece
+- [ ] Monitor IBD on `snowside-sync` (170.75.160.200)
+- [ ] When IBD completes: follow `/home/ubuntu/MIGRATION.md` (detach volume → attach to snowside → enable node → L1 redeploys → nginx → federation)
+- [ ] DNS: repoint `rpc.snowside.network` → 172.81.178.61 at cutover
 
 ---
 
