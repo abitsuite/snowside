@@ -18,8 +18,12 @@
   - Backup system restored from local /tmp copies: `backup-snowside.sh` + `RESTORE.md` in `/home/ubuntu/snowside/`, daily 03:00 UTC timer **ENABLED** (failures expected/harmless until `~/.avalanche-cli` exists). **rclone → R2 NOT configured — needs Project Lead credentials.**
   - Runbook on box: `/home/ubuntu/MIGRATION.md` (volume detach/attach procedure)
 
+- **Fuji testnet ADDED to snowside-sync (Session 24, Project Lead request):** second avalanchego instance `avalanchego-fuji.service` — ports 9652/9653, db `/mnt/avax-data/fuji/db`, logs `/home/ubuntu/avax-local/fuji/`, same chain config (state-sync+pruning+hashdb). Fresh NodeID-8W5LUpuegyhRTvhmVwWeNMeXPq55mTS26. Enabled + running. NOTE: Fuji db lives on the same 1TB vdc → it detaches/migrates WITH mainnet; decide at migration time whether to rsync Fuji separately or re-sync on `snowside`.
+- `snowside-old` (170.75.160.146) **terminated by Project Lead** — old account fully decommissioned.
+
 ### Known issues / next steps
-- [ ] Project Lead: terminate `snowside-sync-old` (172.81.181.52) and `snowside-old` (170.75.160.146) — both inventoried clean
+- [x] Project Lead terminated `snowside-old` (170.75.160.146)
+- [ ] Project Lead: terminate `snowside-sync-old` (172.81.181.52) — inventoried clean
 - [ ] Project Lead: provide R2 credentials (or run `rclone config` on snowside) — the ONLY missing backup piece
 - [ ] Monitor IBD on `snowside-sync` (170.75.160.200)
 - [ ] When IBD completes: follow `/home/ubuntu/MIGRATION.md` (detach volume → attach to snowside → enable node → L1 redeploys → nginx → federation)
