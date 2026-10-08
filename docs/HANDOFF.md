@@ -1,3 +1,26 @@
+# Snowside Handoff — 2026-10-08 (Session 24, Account Migration)
+
+## Session 24 summary — 2026-10-08
+
+### LunaNode account migration (old acct → new `abitsuite` acct)
+- New SSH key: `~/.ssh/lunanode_abitsuite_key` (ed25519, Project-Lead-held; registered in the new account's key panel). Old account keys: `lunanode_apecs_key`.
+- **`snowside-sync` migration COMPLETE (old → new account):**
+  - OLD: 172.81.181.52 (`snowside-sync-old`) — stopped cleanly, fully inventoried (nothing of value left: no docker/crons/users/other data), temp migration key removed both sides. **SAFE TO TERMINATE** (Project Lead action).
+  - NEW: 170.75.160.200 (`snowside-sync`) — 8 vCPU / 62 GiB / 500G vda + 1TB vdc (ext4, UUID `a3d3e0f3-a7a2-4f8a-906f-d1bbe3972d17`, `/mnt/avax-data`). Armored (needrestart + unattended-upgrades OFF), ufw (22/9651).
+  - Transfer: rsync pull (temp ed25519 key, deleted after). 52G `/mnt/avax-data/mainnet/` (db + staking keys + subnet-evm v1.15.1 plugin), `/home/ubuntu/bin/avalanchego` v1.15.1, chainData/C/config.json. Verification pass: **0 differing files**.
+  - New systemd unit with `--public-ip=170.75.160.200`; enabled + running, NRestarts=0.
+  - **NodeID-HhtdACE7m9XfiRgQHb2dGchvW8WYMod1V PRESERVED** (staking keys traveled with the data).
+  - **P-chain IBD resumed with ZERO lost progress**: 12.4M/25.6M executed (48%) → remaining 13.2M blocks, node ETA ~11h. (LevelDB compacted the copied db first — 52→39→51G oscillation is normal.)
+- **`snowside` (L1 host) on the NEW account: NOT YET CREATED.** The old-account `snowside` (170.75.160.146, 6 vCPU/15G/125G) still exists but was never configured. Plan: build the production host fresh on the new account; db gets there by rsync from the new snowside-sync (volume-transfer trick only works within one account).
+
+### Known issues / next steps
+- [ ] Project Lead: terminate `snowside-sync-old` (172.81.181.52) and the old-account `snowside` (170.75.160.146) whenever ready — both fully inventoried, nothing left on either
+- [ ] Project Lead: create new-account `snowside` production host (specs in AGENTS.md)
+- [ ] Monitor IBD on new `snowside-sync` (170.75.160.200)
+- [ ] DNS: `rpc.snowside.network` points at 172.81.181.52 (old) — repoint to new production host at cutover
+
+---
+
 # Snowside Handoff — 2026-10-07 (Session 23, Infrastructure Data Loss + Rebuild)
 
 ## Session 23 summary — 2026-10-07
