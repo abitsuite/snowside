@@ -21,6 +21,8 @@
 - **Fuji testnet ADDED to snowside-sync (Session 24, Project Lead request):** second avalanchego instance `avalanchego-fuji.service` — ports 9652/9653, db `/mnt/avax-data/fuji/db`, logs `/home/ubuntu/avax-local/fuji/`, same chain config (state-sync+pruning+hashdb). Fresh NodeID-8W5LUpuegyhRTvhmVwWeNMeXPq55mTS26. Enabled + running. NOTE: Fuji db lives on the same 1TB vdc → it detaches/migrates WITH mainnet; decide at migration time whether to rsync Fuji separately or re-sync on `snowside`.
 - `snowside-old` (170.75.160.146) **terminated by Project Lead** — old account fully decommissioned.
 
+- **Mainnet bootstrap mechanics — SOURCE-VERIFIED (v1.15.1 `snow/engine/snowman/bootstrap/bootstrapper.go:666-752`):** after a chain executes its blocks, it (a) restarts bootstrapping at DEBUG log level (invisible in chain logs — explains P's ~92h silent gap; EXPECTED, not a stall), then (b) marks itself done on the **subnet-wide BootstrapTracker** and waits — **no chain starts consensus until ALL chains (P/X/C) finish** (verified: P.log has 0 "waiting for the remaining chains" lines because it took the DEBUG-logged restart path). **Consequences:** P parked-done since Oct 8 12:23; C will NOT serve RPC when its state sync finishes — it waits for X; **X is the pacing item**: DAG chains have NO state sync, execution is single-threaded (box load 2.4/8 cores — CPU headroom irrelevant), measured ~6,000 ops/h (147,757/4,141,251 as of Oct 12 05:21), node-reported ETA ~664h (~27-28 days). NO restart helps X; a restart would nuke C's trie sync. Migration/cutover/L1 redeploy all gated on X.
+
 ### Known issues / next steps
 - [x] Project Lead terminated `snowside-old` (170.75.160.146)
 - [ ] Project Lead: terminate `snowside-sync-old` (172.81.181.52) — inventoried clean
