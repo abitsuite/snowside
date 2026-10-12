@@ -22,13 +22,13 @@
 - **snowside-sync (170.75.160.200): TERMINATED by Project Lead** (nothing of value left; inventoried).
 
 ### Known issues / next steps
-- [ ] Project Lead: detach vdc from snowside-sync → attach to snowside; then assistant mounts /mnt/backups, moves backup target, wipes old db copies
+- [x] vdc attached to snowside → mounted `/mnt/backups` (fstab UUID entry, `rw,noatime,nofail`; write-tested). Backup script target moved `/home/ubuntu/backups` → `/mnt/backups`. Pre-migration db copies preserved at `/mnt/backups/legacy-pre-migration-2026-10-12/` (301G) — delete once R2 backups verified live
+- [x] `tmp-migrate-delete-me` key destroyed both ends (authorized_keys = admin key only); snowside-sync units disabled, temp artifacts removed — **DECLARED SAFE TO TERMINATE (Session 25)**
 - [ ] Project Lead: terminate `snowside-sync` (170.75.160.200) AND `snowside-sync-old` (172.81.181.52, old acct)
-- [ ] Remove `tmp-migrate-delete-me` from snowside authorized_keys (after vdc move)
 - [ ] Project Lead: provide R2 credentials (or run `rclone config` on snowside) — the ONLY missing backup piece
 - [ ] Monitor on snowside: X execution (node ETA ~18h at move time) + C state sync (fresh, fast SSD)
 - [ ] When bootstrapped: L1 redeploys (check for avalanche-CLI > v1.9.6 first), nginx `rpc.snowside.network` + certbot, federation rebuild, DNS repoint
-- [ ] AGENTS.md: update hardware specs (c.8), storage lessons
+- [x] AGENTS.md: updated hardware specs (c.8), STORAGE LAW, Helicon chainData gotcha, snowside-sync retired
 
 ---
 
