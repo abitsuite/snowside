@@ -24,8 +24,9 @@
 ### Known issues / next steps
 - [x] vdc attached to snowside → mounted `/mnt/backups` (fstab UUID entry, `rw,noatime,nofail`; write-tested). Backup script target moved `/home/ubuntu/backups` → `/mnt/backups`. Pre-migration db copies preserved at `/mnt/backups/legacy-pre-migration-2026-10-12/` (301G) — delete once R2 backups verified live
 - [x] `tmp-migrate-delete-me` key destroyed both ends (authorized_keys = admin key only); snowside-sync units disabled, temp artifacts removed — **DECLARED SAFE TO TERMINATE (Session 25)**
-- [ ] Project Lead: terminate `snowside-sync` (170.75.160.200) AND `snowside-sync-old` (172.81.181.52, old acct)
-- [ ] Project Lead: provide R2 credentials (or run `rclone config` on snowside) — the ONLY missing backup piece
+- [x] Project Lead terminated `snowside-sync` (170.75.160.200) — Session 25
+- [ ] Project Lead: terminate `snowside-sync-old` (172.81.181.52, old acct)
+- [ ] **FUTURE TO-DO (deferred by Project Lead, Session 25):** R2 off-box backups — rclone installed on snowside, needs credentials / `rclone config`. Until then the only backup tier is local `/mnt/backups` (vdc) — same-risk-box caveat stands
 - [ ] Monitor on snowside: X execution (node ETA ~18h at move time) + C state sync (fresh, fast SSD)
 - [ ] When bootstrapped: L1 redeploys (check for avalanche-CLI > v1.9.6 first), nginx `rpc.snowside.network` + certbot, federation rebuild, DNS repoint
 - [x] AGENTS.md: updated hardware specs (c.8), STORAGE LAW, Helicon chainData gotcha, snowside-sync retired
