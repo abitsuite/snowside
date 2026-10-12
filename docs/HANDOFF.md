@@ -1,3 +1,37 @@
+# Snowside Handoff — 2026-10-12 (Session 25, Storage Root Cause + Production Consolidation)
+
+## Session 25 summary — 2026-10-12
+
+### ⚠️ ROOT CAUSE OF ALL SYNC SLOWNESS — block storage fsync latency (fio-VERIFIED)
+- **LunaNode 1TB block storage (vdc) = 16 fsync-durable write IOPS** (~62ms/fsync). Measured with `fio --rw=randwrite --bs=4k --fdatasync=1` — the access pattern LevelDB batch commits actually use.
+- **My Session-24 benchmark ("8,600 IOPS @ 120µs") was WRONG**: it measured buffered/page-cache writes, not durable writes. Lesson: **NEVER trust a storage class for avalanchego without an fdatasync benchmark.**
+- Everything slow traces to this: X-chain executing ~6k ops/h (~27-day ETA), C trie crawl, the old box's 25h+ wipe, the Sep-10 incident's cost. Consensus = fsync per block forever → **a validator can NEVER run on this storage** (falls behind tip permanently).
+- Local SSDs measured: snowside-sync vda = **841** fsync-IOPS; snowside c.8 SSD = **1,345** fsync-IOPS (52–84x the block storage).
+
+### snowside resized m.16 → c.8 (Project Lead, panel)
+- **Now: 8 vCPU / 39 GiB / 500G local SSD** (484G usable root). $160/mo. Chosen over s.32 ($200, 32G/12vCPU) and m.64 ($200, 65G/8vCPU): RAM is the binding constraint for mainnet consensus + 3 L1 validators + federation + nginx; 40G is the sweet spot; execution is single-thread-bound so extra cores are waste.
+
+### MIGRATION EXECUTED — everything consolidated onto `snowside` (172.81.178.61)
+- Mainnet stopped on snowside-sync (Project-Lead-approved: **C state-sync progress sacrificed** — it restarted fresh on snowside; X progress persisted and resumed; P was already parked-done).
+- Transfer: LAN rsync (172.16.0.17 → 172.16.0.3, ~0.5ms), 4 parallel streams ≈ **52MB/s aggregate** (single stream capped ~30MB/s). Mainnet 246G (132,402 files) + Fuji 55G (28,819 files). **Both verified 1:1 via dry-run rsync (0 diffs).**
+- Temp key `tmp-migrate-delete-me` used for box-to-box SSH — **REMOVE from snowside authorized_keys after vdc move completes.**
+- Mainnet live on snowside: NodeID-HhtdACE7 preserved, 556 peers immediately, X resumed at 3.83M ops remaining (node ETA improved **649h → ~18h**), C state sync restarted (fast SSD now), P re-parked after executing the 225-block delta in <1s.
+- **Fuji chainData lesson (SAE/ACP-194):** execution results live under `--chain-data-dir`, NOT `--data-dir`. First Fuji boot on snowside FATAL'd (`missing execution results for asynchronous block`) until the 25M chainData was copied from snowside-sync's vda. Fuji now live: all chains bootstrapped, NodeID-8W5LU preserved.
+- **Paths on snowside:** mainnet `--data-dir=/home/ubuntu/avax-data/mainnet`, chainData+logs `/home/ubuntu/avax-local/mainnet/`; fuji `--data-dir=/home/ubuntu/avax-data/fuji` (ports 9652/9653, ufw 9653 added). Both units ENABLED (Restart=always).
+- **vdc (1TB) demoted to backup tier**: unmounted from snowside-sync, fstab cleaned; Project Lead detaches → attaches to snowside → mount as `/mnt/backups` (UUID `a3d3e0f3-a7a2-4f8a-906f-d1bbe3972d17`; still holds the pre-migration db copies — mount READ-ONLY first, verify, THEN wipe/repurpose). Backup script target moves from `/home/ubuntu/backups` → `/mnt/backups` after mount.
+- **snowside-sync (170.75.160.200): TERMINATED by Project Lead** (nothing of value left; inventoried).
+
+### Known issues / next steps
+- [ ] Project Lead: detach vdc from snowside-sync → attach to snowside; then assistant mounts /mnt/backups, moves backup target, wipes old db copies
+- [ ] Project Lead: terminate `snowside-sync` (170.75.160.200) AND `snowside-sync-old` (172.81.181.52, old acct)
+- [ ] Remove `tmp-migrate-delete-me` from snowside authorized_keys (after vdc move)
+- [ ] Project Lead: provide R2 credentials (or run `rclone config` on snowside) — the ONLY missing backup piece
+- [ ] Monitor on snowside: X execution (node ETA ~18h at move time) + C state sync (fresh, fast SSD)
+- [ ] When bootstrapped: L1 redeploys (check for avalanche-CLI > v1.9.6 first), nginx `rpc.snowside.network` + certbot, federation rebuild, DNS repoint
+- [ ] AGENTS.md: update hardware specs (c.8), storage lessons
+
+---
+
 # Snowside Handoff — 2026-10-08 (Session 24, Account Migration)
 
 ## Session 24 summary — 2026-10-08
