@@ -21,8 +21,15 @@
 - **vdc (1TB) demoted to backup tier**: unmounted from snowside-sync, fstab cleaned; Project Lead detaches → attaches to snowside → mount as `/mnt/backups` (UUID `a3d3e0f3-a7a2-4f8a-906f-d1bbe3972d17`; still holds the pre-migration db copies — mount READ-ONLY first, verify, THEN wipe/repurpose). Backup script target moves from `/home/ubuntu/backups` → `/mnt/backups` after mount.
 - **snowside-sync (170.75.160.200): TERMINATED by Project Lead** (nothing of value left; inventoried).
 
+### ⚠️ Disk-full incident + resolution (Oct 13–14)
+- **Oct 13 23:51 UTC:** root SSD filled to 0 bytes → avalanchego-mainnet self-protected (`FATAL low on disk space` at the 3% floor, config `requiredAvailableDiskSpacePercentage=3`), db closed cleanly (no corruption), systemd restarted it 31s later (NRestarts=1). Cause: X execution writes + C wipe/LevelDB compaction churn burned 174G→0 in ~32h.
+- **Cost:** C was **3h45m from completing state sync** (`triesRemaining: 341,181`) — atomicity rule reset it to zero; pre-sync wipe + full 2.52M-trie re-fetch running again. X lost nothing (ops persist across restarts).
+- **Fix (Oct 14, Project-Lead-approved):** Fuji db (55G) moved root SSD → `/mnt/backups/fuji-node` on vdc (verified 1:1, 29,147 files, dry-run exit 0; unit `--data-dir` edited; re-bootstrapped P/X/C True in ~3 min). Root free: 109G → **163G**. **TEMPORARY storage-law exception: Fuji lives on 16-fsync-IOPS vdc until mainnet finishes, then moves back to SSD.** Fuji = testnet, non-critical; mainnet db integrity dominated the trade.
+- **New lessons:** (a) `pgrep -f` + `kill` in a loop self-matches the invoking shell's own command line (contains the pattern) → killed my own SSH session — same hazard class as `pkill -f`; use exact PIDs and keep the pattern out of the killing command's own cmdline. (b) Long remote copies: launch with `nohup … &` (or tmux) — an SSH client timeout does NOT reliably kill the remote process (it survived here), and duplicate rsyncs to one destination are redundant but non-corrupting (atomic temp+rename).
+
 ### Known issues / next steps
 - [x] vdc attached to snowside → mounted `/mnt/backups` (fstab UUID entry, `rw,noatime,nofail`; write-tested). Backup script target moved `/home/ubuntu/backups` → `/mnt/backups`. Pre-migration db copies preserved at `/mnt/backups/legacy-pre-migration-2026-10-12/` (301G) — delete once R2 backups verified live
+- [ ] **Move Fuji db back to root SSD after mainnet bootstrap completes** (reverse of the Oct 14 emergency move)
 - [x] `tmp-migrate-delete-me` key destroyed both ends (authorized_keys = admin key only); snowside-sync units disabled, temp artifacts removed — **DECLARED SAFE TO TERMINATE (Session 25)**
 - [x] Project Lead terminated `snowside-sync` (170.75.160.200) — Session 25
 - [ ] Project Lead: terminate `snowside-sync-old` (172.81.181.52, old acct)
