@@ -1,3 +1,51 @@
+# Snowside Handoff — 2026-10-19 (Session 26, Mainnet db → vdc + Federation Groundwork)
+
+## Session 26 summary — 2026-10-19
+
+### ⚠️ Disk-full crash-loop: 4 more crashes (NRestarts 1→5) — root cause: 484G SSD physically too small
+- Crash timeline (all identical: `FATAL node/node.go:1482 low on disk space`; LevelDB closed cleanly each time, no corruption): Oct 13 23:51 · Oct 14 23:00 · Oct 17 08:47 · Oct 17 17:04 · Oct 18 02:31 (all UTC).
+- **Every crash reset C's in-flight state sync to zero** (atomicity rule). C was ~3h45m from done at crash #1 and inside the final account-trie phase (ETA ~1–22m) around the later ones — days of progress repeatedly lost.
+- Measured Oct 18: mainnet db alone = **430G and still growing** on the 484G root SSD; C's final trie burst + post-sync wipe churn pushes the fs to 0 bytes. The Oct-14 Fuji→vdc move (freed 55G) and the Oct-15 legacy-db wipe (freed 246G) each only bought ~1–2.5 days before the next crash.
+
+### Option A executed (Oct 15): legacy mainnet db wiped from vdc
+- Deleted `/mnt/backups/legacy-pre-migration-2026-10-12/mainnet/db` (246G); `plugins/` (63M) + `staking/` (16K) preserved on vdc. The pre-migration fallback's role was expired.
+- Controlled stop for this op: `systemctl stop` timed out → SIGKILL (C reset again — counted above).
+- **New hazards (both hit):** (a) rsync under `nohup … &` still died of broken pipe — the generator wrote progress to the dead SSH stdout; use `setsid … > log 2>&1 < /dev/null &`. (b) A partial copy silently filled the root SSD to ENOSPC; the "73G free" df reported during that window was phantom deleted-but-open space held by the SIGKILL'd process — real free was ~0. After the final mainnet restart, df agreed with du (412G real).
+
+### MAINNET DB MOVED TO VDC (Oct 19, Project-Lead-approved: "ONLY option is to move back to vdc")
+- rsync `/home/ubuntu/avax-data/mainnet/` → `/mnt/backups/mainnet-node/`: 431G in ~2.2h (~52MB/s avg; vdc bulk-write is fine — it's fsync that's slow). **Verified 1:1** via dry-run `rsync -aHni --delete` → 0 diffs.
+- Unit edited: `--data-dir=/mnt/backups/mainnet-node` (chainData + logs stay on SSD at `/home/ubuntu/avax-local/mainnet/`), daemon-reload, source deleted → **root SSD 479G free (2% used)**.
+- Node live Oct 19 01:59 UTC: 574 peers, health passing, NodeID-HhtdACE7 preserved. P ✅, X ✅ (finished executing Oct 16 01:26; re-executed only 64 blocks after the move). **C restarted state sync from scratch** (atomicity): accepted state summary 02:05, block-synced to height 97,927,168, entered pre-sync wipe 02:05:28.
+- **STORAGE LAW exception #2 (mainnet itself, Project-Lead-approved):** the db cannot fit on the 484G SSD during state sync, so mainnet now runs on 16-fsync-IOPS vdc — slow-but-completes over fast-and-crash-loops. **POST-BOOTSTRAP DECISION REQUIRED:** move the (post-sync, pruned, smaller) db back to SSD or resize the plan — a consensus validator on 62ms/fsync storage will fall behind tip.
+- vdc layout now: `mainnet-node/` (431G LIVE), `fuji-node/` (56G, stopped), `legacy-pre-migration-2026-10-12/` (55G fuji + mainnet plugins/staking only). 410G free → C has no disk ceiling for the rest of the sync.
+- Backup script verified safe: it tars `~/.avalanche-cli` + federation secrets + scripts + genesis + nginx + systemd only — NOT the node dbs, so no backup-of-db-onto-own-volume loop.
+
+### Fuji corruption (Oct 15) — STOPPED & DISABLED pending post-mainnet repair
+- Root cause: Oct 15 19:20 `systemctl restart avalanchego-fuji` (done to release phantom space) ran while the root SSD was at ENOSPC → Fuji C-chain blockdb unrecoverable corruption ("index header claims to have more data than is actually on disk").
+- First repair attempt (deleting C chainData `yH8D7…`, 955M) made it worse: db↔chainData mismatch — `missing execution results for asynchronous block: block 59516332 … no blocks written yet` (db on vdc remembers last-executed block; fresh chainData has no results).
+- **Fuji stopped + disabled Oct 19** (it was crash-looping, serving nothing, and stealing the same 16 vdc IOPS mainnet C needs). **Repair queued AFTER mainnet bootstrap:** full wipe of `/mnt/backups/fuji-node/db` + `/home/ubuntu/avax-local/fuji/chainData` → fresh re-sync; OR move Fuji to its own box (Project Lead: "we may have to move Fuji to its own box after the sync is completed"). Unit is DISABLED — re-enable explicitly at repair time.
+
+### Federation groundwork (packages/federation) — DONE
+- Code survived in git intact (5 src files, 1,274 lines); `tsc --noEmit` passes.
+- Docker image pre-built on snowside: `snowside-federation:latest` (530MB, node 22.23.3 runs); source staged at `/home/ubuntu/federation/`. One `docker compose up` away once L1s exist.
+- Secrets inventory: `HD_MNEMONIC` (MUST regenerate — old one lost in the data-loss event), `EWOQ_PRIVATE_KEY` = NativeMinter admin key (on mainnet = `0xE5104794FB44D45b0f821d77a685A17ee2E35b9C`, Project-Lead-held), `FEDERATION_TOKEN` ✅ already on Cloudflare Worker, `*_RPC` placeholders until L1 redeploy, `*_ESPLORA` testnet/signet hard-coded (mainnet empty).
+- **Stale hard-codes to fix post-redeploy:** chain IDs 32904/33160/33416 at `src/index.ts:51-53` (dead chains — new L1s get new IDs); `EWOQ_PRIVATE_KEY` env name is a mainnet hazard (rename → `MINTER_PRIVATE_KEY`); `src/test-mint.ts:5` contains a hard-coded dev private key — strip from the production image.
+
+### Sync status at handoff (Oct 19 ~02:15 UTC)
+- P ✅ · X ✅ · **C 🔄 restarted Oct 19 02:05 UTC on vdc** (pre-sync wipe → ~2.5M-trie fetch → post-sync wipe → execution). No ETA predictions; prior full trie attempts on SSD ran ~30h+ and vdc will be slower — but there is no longer a disk ceiling that can crash it. Historical pre-sync wipes on SSD took ~2–2.4h.
+- Root SSD 479G free; vdc 410G free; RAM 3G/39G; 574 peers.
+
+### Known issues / next steps
+- [ ] Monitor C's state sync on vdc to completion (wipe → tries → wipe → execution). No more disk-full risk; only slowness risk.
+- [ ] POST-BOOTSTRAP: decide mainnet db placement (back to SSD if it fits post-pruning, or larger plan) — validator cannot stay on 16-IOPS storage long-term.
+- [ ] POST-BOOTSTRAP: repair Fuji (wipe `/mnt/backups/fuji-node/db` + chainData, re-sync) OR move Fuji to its own box (Project Lead decision). Unit currently DISABLED.
+- [ ] Post-redeploy federation fixes: chain IDs (`index.ts:51-53`), `EWOQ_PRIVATE_KEY` rename, strip `test-mint.ts` key from prod image; regenerate `HD_MNEMONIC`.
+- [ ] Project Lead: terminate `snowside-sync-old` (172.81.181.52, old acct).
+- [ ] FUTURE TO-DO (deferred): R2 off-box backups — rclone installed, needs credentials.
+- [ ] When bootstrapped: L1 redeploys (check for avalanche-CLI > v1.9.6 first), nginx `rpc.snowside.network` + certbot, federation live, DNS repoint.
+
+---
+
 # Snowside Handoff — 2026-10-12 (Session 25, Storage Root Cause + Production Consolidation)
 
 ## Session 25 summary — 2026-10-12
