@@ -1,4 +1,19 @@
-# Snowside Handoff — 2026-10-25 (MAINNET BOOTSTRAP COMPLETE)
+# Snowside Handoff — 2026-10-25 (Mainnet db → SSD, volume removed; cost $219→$160)
+
+## Session 27 — 2026-10-25: mainnet db moved back to SSD, block-storage volume eliminated
+
+**Cost decision executed (Project Lead approved):** with the post-compaction db at 385G and 479G free on the c.8 SSD, the db no longer needed block storage. Moved back, volume detached, fstab cleaned.
+
+- **Move:** node stopped 01:53 UTC (approved stop/start) → rsync 385G vdc→`/home/ubuntu/avax-data/mainnet/` in 1h55m @ ~57MB/s → dry-run verify (`rsync -aHni --delete`, zero diffs) → unit repointed (`--data-dir=/home/ubuntu/avax-data/mainnet`) → started 03:57 UTC → caught up 7,576 blocks in ~7 min → **P/X/C all bootstrapped True, 582 peers, NRestarts=0**
+- **Volume eliminated:** vdc contents wiped (mainnet-node 385G redundant + fuji-node 56G slated-for-repair + legacy 55G) → unmounted → fstab entry removed (backup at `/etc/fstab.bak-pre-vdc-removal`). **USER ACTION: delete the 1000GB volume in the LunaNode panel** → cost drops $219/mo → **$160/mo**
+- **Backup target relocated:** `backup-snowside.sh` `BACKUP_DIR` now `/home/ubuntu/backups` (SSD)
+- **Final disk state:** root SSD 389G used / **96G free** (below the 100G sync-era guideline — acceptable post-sync: db is pruning-bounded; see caveat below)
+- **⚠️ Caveat (recorded):** a future from-scratch mainnet re-sync on the bare SSD would run razor-thin (sync peak was ~440–450G). If that day comes: re-attach a volume or burst-rent storage BEFORE starting the sync.
+- **Fuji:** unchanged — stopped/disabled, full wipe + re-sync pending. Burst c.4 rental when needed (approved pattern) instead of a permanent second box.
+
+---
+
+# Previous: 2026-10-25 (MAINNET BOOTSTRAP COMPLETE)
 
 ## 🎉 MAINNET BOOTSTRAP COMPLETE — 2026-10-23 18:01 UTC
 
