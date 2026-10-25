@@ -1,4 +1,17 @@
-# Snowside Handoff — 2026-10-19 (Session 26, Mainnet db → vdc + Federation Groundwork)
+# Snowside Handoff — 2026-10-25 (MAINNET BOOTSTRAP COMPLETE)
+
+## 🎉 MAINNET BOOTSTRAP COMPLETE — 2026-10-23 18:01 UTC
+
+**The rebuild's gating milestone is DONE.** After 3+ weeks and 5 disk-full crash-resets, the mainnet node finished state sync on vdc with **zero restarts** (NRestarts=0 across the entire 4.6-day run) and is now live in consensus:
+
+- **Timeline:** state sync started Oct 19 02:05 → pre-sync wipe done 03:23 (1h18m) → account trie done 05:05 → commit/flush ~8.5h → storage tries (2.4M) done Oct 23 ~10:00 (~24,400 tries/h sustained) → block execution 394,910 blocks in 7h24m (finished 17:30) → **consensus started 18:01:41 UTC** (lastAcceptedHeight 98,355,925)
+- **Verified Oct 25 01:38 UTC:** `isBootstrapped` P/X/C **all True**, 597 peers, C-chain RPC serving at tip (`eth_blockNumber` = 0x5de9778 = 98,355,064), NRestarts=0
+- **Post-compaction db size: 385G** (was 431G+ pre-sync; compaction pruned ~110G off vdc usage). Root SSD has 479G free → **the pruned db now fits on the SSD with ~94G headroom** — the post-bootstrap placement decision is now actionable (move back to SSD = tight but possible, vs. resize plan vs. stay on vdc)
+- **This unblocks:** Fuji repair (wipe db+chainData → re-sync, or own box) · DNS repoint + nginx + certbot · L1 redeploys from genesis (authority 0xE5104794...) · ICM → USDC ICTT → federation go-live
+
+---
+
+# Previous: Session 26 — 2026-10-19 (Mainnet db → vdc + Federation Groundwork)
 
 ## Session 26 summary — 2026-10-19
 
