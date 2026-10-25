@@ -1,6 +1,19 @@
-# Snowside Handoff — 2026-10-25 (Mainnet db → SSD, volume removed; cost $219→$160)
+# Snowside Handoff — 2026-10-25 (Mainnet db → SSD, volume removed, Fuji dedicated box live)
 
-## Session 27 — 2026-10-25: mainnet db moved back to SSD, block-storage volume eliminated
+## Session 27 — 2026-10-25 (PM): dedicated Fuji box provisioned + syncing
+
+**Decision (Project Lead):** Fuji is REQUIRED permanently (Betanet = official/unofficial testnet for testing). Chose **c.2 ($40/mo — 2 vCPU / 9G / 193G SSD)** over c.4 ($80): disk was the only hard gate (Fuji db ~56G + OS → m.4 35G and m.8 70G both dead; c.2's 200G fits with re-sync headroom). Total infra: **$200/mo** ($160 c.8 + $40 c.2) — still under the old $219.
+
+- **snowside-fuji = 170.75.160.200** (recycled snowside-sync IP; stale host key removed from known_hosts). Ubuntu 26.04.1, specs verified (2 vCPU / 9G / 193G).
+- **Provisioned:** packages updated/upgraded (pre-avalanchego, the sanctioned window) · **fio-VERIFIED 1,424 fsync-durable IOPS** (SSD-class, STORAGE LAW compliant) · ZERO-RESTART hardening (needrestart override `/etc/needrestart/conf.d/avalanchego.conf` + unattended-upgrades disabled `/etc/apt/apt.conf.d/20auto-upgrades`) · avalanchego **v1.15.1** in `/home/ubuntu/bin/` · C chain config state-sync+pruning+hashdb · systemd unit enabled · ufw (22, 9651 tcp+udp).
+- **Node live:** started 10:07 UTC, `active`, NRestarts=0, **NodeID-CpGgARD7bidReR7bPCr7k23aSBtq8Q2eA** (new identity — old NodeID-8W5LU retired with the wiped db). Fresh full sync from zero on 2 vCPU — expect days; no ETA promises.
+- **Old Fuji remnants on snowside:** unit file remains but disabled (harmless); vdc db wiped with the volume.
+
+---
+
+# Previous: 2026-10-25 (AM)
+
+## Session 27 — 2026-10-25 (AM): mainnet db moved back to SSD, block-storage volume eliminated
 
 **Cost decision executed (Project Lead approved):** with the post-compaction db at 385G and 479G free on the c.8 SSD, the db no longer needed block storage. Moved back, volume detached, fstab cleaned.
 
