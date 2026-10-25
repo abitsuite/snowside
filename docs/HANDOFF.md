@@ -1,4 +1,17 @@
-# Snowside Handoff — 2026-10-25 (Mainnet db → SSD, volume removed, Fuji dedicated box live)
+# Snowside Handoff — 2026-10-25 (Session 27 COMPLETE — next: Federation + BIP-300)
+
+## ⏭️ NEXT SESSION AGENDA (Project Lead directive, end of Session 27)
+**Federation + BIP-300 bridging.** Work queue:
+1. Monitor Fuji sync to completion (snowside-fuji, started Oct 25 ~10:07 UTC, 2 vCPU — expect days; verify NRestarts=0)
+2. L1 redeploys from genesis — authority `0xE5104794FB44D45b0f821d77a685A17ee2E35b9C`, NO ewoq; check Avalanche-CLI > v1.9.6 first (v1.15.x compatibility unverified)
+3. Federation pre-launch fixes (inventoried Session 26): parameterize chain IDs (`packages/federation/src/index.ts:51-53`, old IDs dead) · rename `EWOQ_PRIVATE_KEY`→`MINTER_PRIVATE_KEY` · strip/gate `test-mint.ts` · generate new HD_MNEMONIC offline (Project Lead holds) + wire `.env` template
+4. Federation go-live on snowside (image `snowside-federation:latest` already staged, 530MB)
+5. BIP-300/301 phase planning (bip300301_enforcer, sidechain slot registration on eCash)
+6. DNS repoint `rpc.snowside.network` → 172.81.178.61 + nginx + certbot
+7. ICM → USDC ICTT → validator economics
+**Deferred:** R2 off-box backups · `snowside-sync-old` (172.81.181.52, old account) termination · key-rotation decision (chat-transmitted key) · 13.37 ECX peg-in revisit · dependabot vulns (19).
+
+---
 
 ## Session 27 — 2026-10-25 (PM): dedicated Fuji box provisioned + syncing
 
