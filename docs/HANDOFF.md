@@ -33,14 +33,15 @@
 
 ### rpc.snowside.network (nginx + certbot)
 - `/etc/nginx/sites-available/rpc.snowside.network` (symlinked, sites-enabled): locations /mainnet /testnet /signet → the three L1 RPCs. certbot `--nginx` installed + LE cert issued (expires ~2027-01-24), 80→443 redirect.
-- **Verified end-to-end:** `https://rpc.snowside.network/{mainnet,testnet,signet}` → correct chain IDs; **Worker proxy `https://snowside.network/mainnet` → 0x8088 (32904) LIVE**. DNS `rpc` A → 172.81.178.61 still grey-cloud; **user action: flip orange-cloud + SSL/TLS Full (strict)** — safe now (valid origin cert).
+- **Verified end-to-end:** `https://rpc.snowside.network/{mainnet,testnet,signet}` → correct chain IDs; **Worker proxy `https://snowside.network/mainnet` → 0x8088 (32904) LIVE**. DNS `rpc` A → 172.81.178.61, **orange-cloud flip DONE + verified (PM):** CF edge cert (Google Trust Services WE1), `server: cloudflare` + cf-ray, all 3 chains 200, no redirect loop (SSL mode is Full or better). Origin LE cert valid → keep mode at **Full (strict)**.
+- **aBitSuite VirtualBox VM SHUT DOWN (PM, Project Lead approved)** — was only up for Cloudflare deploys (holds the working `CLOUDFLARE_API_TOKEN` at `~/.cloudflare.env`; restart it headless via `VBoxManage startvm aBitSuite --type headless` + `ssh abitsuite-vm` if CF API access is needed again).
 - Explorer package needs NO changes (queries URL paths, chain IDs preserved). Desktop app needs NO changes (Worker URLs + runtime chain detect).
 
 ### Remaining
 - Federation go-live (agenda 3-4): chain IDs in `packages/federation/src/index.ts:51-53` are now CORRECT again (32904/33160/33416); still needs EWOQ_PRIVATE_KEY rename + test-mint.ts gate + new HD_MNEMONIC + image rebuild/re-stage if changed, then `docker compose up -d`.
 - BIP-300/301 planning (agenda 5), ICM→USDC ICTT (agenda 7), Fuji sync monitoring (agenda 1).
 - Desktop app live smoke test (`pnpm tauri dev`) — backends are now live, so this is unblocked.
-- Optional: orange-cloud flip + Full (strict) (user), R2 backups reinstatement (deferred), systemd units for the 3 L1 nodes (currently CLI-managed local network; survives via `avalanche network start` after reboot — automating is future work).
+- Optional: R2 backups reinstatement (deferred), systemd units for the 3 L1 nodes (currently CLI-managed local network; survives via `avalanche network start` after reboot — automating is future work).
 
 ---
 
