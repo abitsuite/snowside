@@ -1,4 +1,4 @@
-# Snowside Handoff — 2026-10-26 (Session 28 IN PROGRESS — desktop client Track 1 built; next: wire to real RPC + mainnet launch)
+# Snowside Handoff — 2026-10-26 (Session 28 PM — ALL THREE L1s REDEPLOYED + rpc.snowside.network LIVE w/ LE TLS; desktop app has live backends)
 
 ## ⏭️ NEXT SESSION AGENDA (Project Lead directive, end of Session 27)
 **Federation + BIP-300 bridging.** Work queue:
@@ -10,6 +10,37 @@
 6. DNS repoint `rpc.snowside.network` → 172.81.178.61 + nginx + certbot
 7. ICM → USDC ICTT → validator economics
 **Deferred:** R2 off-box backups · `snowside-sync-old` (172.81.181.52, old account) termination · key-rotation decision (chat-transmitted key) · 13.37 ECX peg-in revisit · dependabot vulns (19).
+
+---
+
+## Session 28 (PM) — 2026-10-26: L1 redeploys COMPLETE + rpc.snowside.network live + genesis canonicalized
+
+**Agenda items (2) and (6) DONE.** All three L1s redeployed from canonical repo genesis and verified end-to-end; public RPC live with Let's Encrypt TLS.
+
+### Genesis canonicalization (commit `1c617c21`)
+- ewoq (`0x8db97C7cEcE249c2b98bDC0226Cc4C2A57BF52FC`) removed from ALL 6 canonical genesis files (3 occurrences in each genesis.subnet.json, 2 in each genesis.json); replaced with authority `0xE5104794FB44D45b0f821d77a685A17ee2E35b9C` (checksum-validated via viem). Chain IDs preserved: mainnet 32904 / testnet 33160 / signet 33416. README verification command updated.
+- **README selector fix (PM):** correct `readAllowList(address)` selector is `0xeb54dae1` (was documented as 0xab6f7e5a — wrong; precompile errors "invalid function selector").
+
+### L1 redeploy (avalanche-cli v1.9.6, avalanchego v1.14.0 + subnet-evm v0.8.0, all on snowside box)
+| L1 | ChainID | Blockchain ID | L1 node API port |
+|---|---|---|---|
+| SnowsideMainnet | 32904 ✓ | XUW2TNsFmyKDEubBG6e4TfeZo33e5dzogg8kBpzXH8zcWWrwZ | 9656 |
+| SnowsideTestnet | 33160 ✓ | 9Z7YJqinePVfUG9or3twu6aHYxfymqJNsmcJ8iW6pC2JVAkZV | 9658 |
+| SnowsideSignet | 33416 ✓ | SSM5SAKaoXPpMmHmYvKYMdsKQya4JBYKj6Z13163Ka7dh34MK | 9654 |
+- Verified per chain: `eth_chainId` correct + `readAllowList(authority)` = 0x02 (admin) + authority balance = 1,000,000 ECX. ICM Messenger 0x253b2784... + Registry 0xf95e4182c0a0F42a3d997ea66117585160187ea7 deployed on all three + local C-chain; Relayer deployed. NOTE: ContractDeployerAllowList precompile NOT present on any chain (canonical genesis deploy — Session 11's signet-only DeployerAllowList came from the old clone-patch flow; re-add only if deploy gating is wanted).
+- **TWO PERMANENT BOX MODS** (full details in `snowside:/home/ubuntu/snowside/RESTORE.md` + AGENTS.md): (1) avalanchego port shim wrapper at `~/.avalanche-cli/bin/avalanchego/avalanchego-v1.14.0/avalanchego` rewrites CLI bootstrap ports 9650-9653 → 9660-9663 (mainnet Avalanche node owns 9650/9651 — without the shim, `--local` deploys FATAL on bind); (2) `~/bin/avalanche` binary-patched: string `http://127.0.0.1:9650` → `http://127.0.0.1:9660` (orig at `avalanche.orig`) — the CLI hardcodes the local endpoint to 9650 and would otherwise talk to the REAL mainnet node (balance precheck failure). Re-apply both if CLI/avalanchego versions change.
+- CLI deploy quirks: `blockchain deploy --local` needs `-e` (ewoq P-chain key for local ops; L1 ownership is authority) + `--http-port/--staking-port` for the dedicated L1 node. Deploys are sequential (CLI lock). ICM cross-chain config prompt did NOT hang the deploy this run (exited cleanly on its own).
+
+### rpc.snowside.network (nginx + certbot)
+- `/etc/nginx/sites-available/rpc.snowside.network` (symlinked, sites-enabled): locations /mainnet /testnet /signet → the three L1 RPCs. certbot `--nginx` installed + LE cert issued (expires ~2027-01-24), 80→443 redirect.
+- **Verified end-to-end:** `https://rpc.snowside.network/{mainnet,testnet,signet}` → correct chain IDs; **Worker proxy `https://snowside.network/mainnet` → 0x8088 (32904) LIVE**. DNS `rpc` A → 172.81.178.61 still grey-cloud; **user action: flip orange-cloud + SSL/TLS Full (strict)** — safe now (valid origin cert).
+- Explorer package needs NO changes (queries URL paths, chain IDs preserved). Desktop app needs NO changes (Worker URLs + runtime chain detect).
+
+### Remaining
+- Federation go-live (agenda 3-4): chain IDs in `packages/federation/src/index.ts:51-53` are now CORRECT again (32904/33160/33416); still needs EWOQ_PRIVATE_KEY rename + test-mint.ts gate + new HD_MNEMONIC + image rebuild/re-stage if changed, then `docker compose up -d`.
+- BIP-300/301 planning (agenda 5), ICM→USDC ICTT (agenda 7), Fuji sync monitoring (agenda 1).
+- Desktop app live smoke test (`pnpm tauri dev`) — backends are now live, so this is unblocked.
+- Optional: orange-cloud flip + Full (strict) (user), R2 backups reinstatement (deferred), systemd units for the 3 L1 nodes (currently CLI-managed local network; survives via `avalanche network start` after reboot — automating is future work).
 
 ---
 

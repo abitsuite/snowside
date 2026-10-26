@@ -134,98 +134,82 @@ Deploy contract (if on DeployerAllowList):
    # 0x60006000f3 = minimal bytecode that returns 0 bytes (creates empty contract)
 
 ### Deployed L1s (Local Network on VPS)
-1. **SnowsideMainnet** (Chain ID: 32904 / 0x8088) — DEPLOYED & VERIFIED Session 12
-   - Blockchain ID: 2WGjPQF6YcV3KN19d5x21Cj8VAvxrakA72Ke7RHtZJpQBJBkdV
-   - Subnet ID: No8zvE8ZFDQhY8t5u2qTLjprzCqab4cYoVfTjskkZMzM34jXZ
-   - Local RPC: http://127.0.0.1:9656/ext/bc/2WGjPQF6YcV3KN19d5x21Cj8VAvxrakA72Ke7RHtZJpQBJBkdV/rpc
-   - Public RPC: https://rpc.snowside.network/mainnet
-   - NodeID: NodeID-PGEHenyijV18FoaRZrJqveJWac7oqWorU
-   - Port: 9656
-   - Precompiles: Warp only
-   - ICM Status: Deployed (Messenger: 0x253b2784c75e510dD0fF1da844684a1aC0aa5fcf, Registry: 0xB8e71012d3F55D9EbbFf74376dE180702c1D8A6F)
-   - Relayer: Not deployed (skipped, can deploy with `avalanche interchain relayer deploy`)
+**ALL THREE REDEPLOYED & VERIFIED Session 28 (2026-10-26)** from canonical repo genesis files (commit `1c617c21`). Chain IDs preserved via genesis. NativeMinter admin + 1M ECX alloc + ProxyAdmin owner = authority `0xE5104794FB44D45b0f821d77a685A17ee2E35b9C` on ALL THREE (ewoq fully removed).
 
-2. **SnowsideTestnet** (Chain ID: 33160 / 0x8188) — DEPLOYED & VERIFIED Session 12
-   - Blockchain ID: 2A45por6NN5o17NwKFTHTjyKhJobL8UPd92Sbi4ffaMfohRXRA
-   - Subnet ID: KByfMHbZ8ZfTbKegC16HMkVjS8gj2SGQNVmUNC8kSCikQQK5w
-   - Local RPC: http://127.0.0.1:9658/ext/bc/2A45por6NN5o17NwKFTHTjyKhJobL8UPd92Sbi4ffaMfohRXRA/rpc
-   - Public RPC: https://rpc.snowside.network/testnet
-   - NodeID: NodeID-MFYa9TTeDp7JNAEwavG5JVuY3ZorMSixe
-   - Port: 9658
-   - Precompiles: Warp only
-   - ICM Status: Deployed (Messenger: 0x253b2784c75e510dD0fF1da844684a1aC0aa5fcf, Registry: 0xB8e71012d3F55D9EbbFf74376dE180702c1D8A6F)
-   - Relayer: Not deployed (skipped)
+1. **SnowsideMainnet** (Chain ID: 32904 / 0x8088)
+   - Blockchain ID: XUW2TNsFmyKDEubBG6e4TfeZo33e5dzogg8kBpzXH8zcWWrwZ
+   - Local RPC: http://127.0.0.1:9656/ext/bc/XUW2TNsFmyKDEubBG6e4TfeZo33e5dzogg8kBpzXH8zcWWrwZ/rpc
+   - Public RPC: https://rpc.snowside.network/mainnet (nginx + certbot LE cert; also proxied by Worker at https://snowside.network/mainnet)
+   - L1 node API port: 9656 (staking 9657)
+   - Precompiles: Warp, NativeMinter (admin: authority)
+   - ICM: Messenger 0x253b2784c75e510dD0fF1da844684a1aC0aa5fcf, Registry 0xf95e4182c0a0F42a3d997ea66117585160187ea7, Relayer deployed
 
-3. **SnowsideSignet** (Chain ID: 33416 / 0x8288) — DEPLOYED & VERIFIED Session 11
-   - Blockchain ID: 26XsRMLXezgJ1mK8TSVoHsRfBcy6Mwr4kJdKUAfgegb3PH4b5f
-   - Subnet ID: 2W9boARgCWL25z6pMFNtkCfNA5v28VGg9PmBgUJfuKndEdhrvw
-   - Local RPC: http://127.0.0.1:9654/ext/bc/26XsRMLXezgJ1mK8TSVoHsRfBcy6Mwr4kJdKUAfgegb3PH4b5f/rpc
-   - Public RPC: https://rpc.snowside.network/signet
-   - NodeID: NodeID-2QpdUKC81YfKoPwU4kuUA8er5FiNQ3V6w
-   - Precompiles: Warp, NativeMinter (admin: ewoq), ContractDeployerAllowList (admin: ewoq)
-   - ICM Status: NOT deployed (deploy failed during L1 creation due to cloned genesis; deploy separately with `avalanche icm deploy`)
-   - Genesis: Cloned from SnowsideTestnet, patched with chainId 33416 + two precompile configs
-   - Verified: NativeMinter minting works, DeployerAllowList blocks non-allowlisted deploys
+2. **SnowsideTestnet** (Chain ID: 33160 / 0x8188)
+   - Blockchain ID: 9Z7YJqinePVfUG9or3twu6aHYxfymqJNsmcJ8iW6pC2JVAkZV
+   - Local RPC: http://127.0.0.1:9658/ext/bc/9Z7YJqinePVfUG9or3twu6aHYxfymqJNsmcJ8iW6pC2JVAkZV/rpc
+   - Public RPC: https://rpc.snowside.network/testnet (+ Worker https://snowside.network/testnet)
+   - L1 node API port: 9658 (staking 9659)
+   - Precompiles: Warp, NativeMinter (admin: authority)
+   - ICM: same addresses as mainnet, Relayer deployed
 
-### L1 Shared Configuration
+3. **SnowsideSignet** (Chain ID: 33416 / 0x8288)
+   - Blockchain ID: SSM5SAKaoXPpMmHmYvKYMdsKQya4JBYKj6Z13163Ka7dh34MK
+   - Local RPC: http://127.0.0.1:9654/ext/bc/SSM5SAKaoXPpMmHmYvKYMdsKQya4JBYKj6Z13163Ka7dh34MK/rpc
+   - Public RPC: https://rpc.snowside.network/signet (+ Worker https://snowside.network/signet)
+   - L1 node API port: 9654 (staking 9655)
+   - Precompiles: Warp, NativeMinter (admin: authority). NOTE: ContractDeployerAllowList NOT present (canonical genesis deploy; Session 11 had it via clone-patch only)
+   - ICM: same addresses as mainnet, Relayer deployed
+
+**Session 28 redeploy topology (all on `snowside` box, 172.81.178.61):** ONE avalanche-cli local network (networkID 1337), 2 primary-network nodes (API 9660/9662 — see port shim below) + 1 dedicated node per L1 (9654/9656/9658). avalanchego v1.14.0 + subnet-evm v0.8.0 for the local network.
+**⚠️ TWO PERMANENT BOX MODS (Session 28 — required because the mainnet Avalanche node owns 9650/9651):**
+1. **avalanchego port shim:** `~/.avalanche-cli/bin/avalanchego/avalanchego-v1.14.0/avalanchego` is a WRAPPER (real binary: `avalanchego-real`) rewriting CLI bootstrap ports 9650-9653 → 9660-9663. Re-create if the CLI re-downloads avalanchego.
+2. **avalanche CLI binary patch:** `~/bin/avalanche` string `http://127.0.0.1:9650` → `http://127.0.0.1:9660` (original: `~/bin/avalanche.orig`). The CLI hardcodes the local endpoint to 9650; unpatched it talks to the REAL mainnet node during deploys. Re-apply after any CLI upgrade.
+**ReadAllowList selector fix:** the correct `readAllowList(address)` selector is `0xeb54dae1` (old docs said 0xab6f7e5a — wrong; precompile replies "invalid function selector").
+
+### L1 Shared Configuration (Session 28 redeploy state)
 - Token Name: ECX Token
 - Token Symbol: ECX
 - Consensus: Proof of Authority (PoA)
 - ICM Messenger Address: 0x253b2784c75e510dD0fF1da844684a1aC0aa5fcf
-- ICM Registry Address: 0xB8e71012d3F55D9EbbFf74376dE180702c1D8A6F
+- ICM Registry Address: 0xf95e4182c0a0F42a3d997ea66117585160187ea7 (all 3 L1s + local C-chain; Session 28 redeploy — old 0xB8e71012... is dead)
 - PoA Validator Manager: 0x0C0DEbA5E0000000000000000000000000000000
 - Validator Transparent Proxy: 0x0Feedc0de0000000000000000000000000000000
-- Funded account (ewoq): 0x8db97C7cEcE249c2b98bDC0226Cc4C2A57BF52FC (1,000,000 ECX)
-  - Private Key: 56289e99c94b6912bfc12adc093c9b51124f0dc54ac7a766b2bc5ccf558d8027
-- ICM Deployer: 0x18cD02DB3100cb4382B61329aA2a8cBe4A24B40f (funded with 600 ECX + 1000 minted = ~1590 ECX)
-- ICM c-chain Registry: 0x17aB05351fC94a1a67Bf3f56DdbB941aE6c63E25
+- **Authority account: 0xE5104794FB44D45b0f821d77a685A17ee2E35b9C (1,000,000 ECX alloc on each L1; NativeMinter admin; ProxyAdmin owner; validator-manager-owner). Key is Project-Lead-held — NOT in this repo.**
+- ewoq (0x8db97C7cEcE249c2b98bDC0226Cc4C2A57BF52FC): NO LONGER has any L1 role/balance (removed Session 28). Still used by the CLI as the local-network P-chain ops key (`-e` flag).
+- ICM Deployer: 0x18cD02DB3100cb4382B61329aA2a8cBe4A24B40f (600 ECX alloc in genesis)
 - Validator Messages Lib: 0x9C00629cE712B0255b17A4a657171Acd15720B8C
-- Validator Proxy Admin: 0xa0AffE1234567890ABcDef1234567890ABCdEF34
-- Primary Nodes: NodeID-7Xhw2mDxuDS44j42TCB6U5579esbSt3Lg (port 9650), NodeID-MFrZFVCXPv5iCn6M9K6XduxGTYp891xXZ (port 9652)
+- Validator Proxy Admin: 0xa0AffE1234567890ABcDef1234567890ABCdEF34 (owner = authority)
+- Primary Nodes (local network): NodeID-7Xhw2mDxuDS44j42TCB6U5579esbSt3Lg (API 9660), NodeID-MFrZFVCXPv5iCn6M9K6XduxGTYp891xXZ (API 9662)
 
-### Nginx Reverse Proxy Configuration (/etc/nginx/sites-available/default)
+### Nginx Reverse Proxy Configuration (/etc/nginx/sites-available/rpc.snowside.network — Session 28)
+Dedicated file (symlinked into sites-enabled); certbot `--nginx` added the 443 block + 80→443 redirect automatically. Let's Encrypt cert (CN=rpc.snowside.network, expires ~2027-01-24, auto-renew via certbot timer). The port-80 block certbot rewrote is the redirect; the 443 block contains:
+
     server {
-        listen 80;
-        listen [::]:80;
         listen 443 ssl http2;
         listen [::]:443 ssl http2;
-
         server_name rpc.snowside.network;
+        ssl_certificate     /etc/letsencrypt/live/rpc.snowside.network/fullchain.pem; # managed by Certbot
+        ssl_certificate_key /etc/letsencrypt/live/rpc.snowside.network/privkey.pem;   # managed by Certbot
 
-        ssl_certificate      /etc/nginx/ssl/server.crt;
-        ssl_certificate_key /etc/nginx/ssl/server.key;
-
-        access_log /dev/null;
-        error_log /root/error_log;
-
-        root /var/www/html;
-        index index.html index.htm;
-
-        location / {
-            try_files $uri $uri/ /index.html;
-        }
-
-        # Snowside Mainnet (ChainID: 32904) — Updated Session 12
+        # Snowside L1 Mainnet (ChainID: 32904) — redeployed Session 28
         location /mainnet {
-            proxy_pass http://127.0.0.1:9656/ext/bc/2WGjPQF6YcV3KN19d5x21Cj8VAvxrakA72Ke7RHtZJpQBJBkdV/rpc;
+            proxy_pass http://127.0.0.1:9656/ext/bc/XUW2TNsFmyKDEubBG6e4TfeZo33e5dzogg8kBpzXH8zcWWrwZ/rpc;
             proxy_set_header Host 127.0.0.1;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_set_header X-Forwarded-Proto $scheme;
         }
-
-        # Snowside Testnet (ChainID: 33160) — Updated Session 12
+        # Snowside L1 Testnet (ChainID: 33160) — redeployed Session 28
         location /testnet {
-            proxy_pass http://127.0.0.1:9658/ext/bc/2A45por6NN5o17NwKFTHTjyKhJobL8UPd92Sbi4ffaMfohRXRA/rpc;
+            proxy_pass http://127.0.0.1:9658/ext/bc/9Z7YJqinePVfUG9or3twu6aHYxfymqJNsmcJ8iW6pC2JVAkZV/rpc;
             proxy_set_header Host 127.0.0.1;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_set_header X-Forwarded-Proto $scheme;
         }
-
-        # Snowside Signet (ChainID: 33416) — Updated Session 11
+        # Snowside L1 Signet (ChainID: 33416) — redeployed Session 28
         location /signet {
-            proxy_pass http://127.0.0.1:9654/ext/bc/26XsRMLXezgJ1mK8TSVoHsRfBcy6Mwr4kJdKUAfgegb3PH4b5f/rpc;
+            proxy_pass http://127.0.0.1:9654/ext/bc/SSM5SAKaoXPpMmHmYvKYMdsKQya4JBYKj6Z13163Ka7dh34MK/rpc;
             proxy_set_header Host 127.0.0.1;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -233,14 +217,16 @@ Deploy contract (if on DeployerAllowList):
         }
     }
 
+**Upstream of this:** Cloudflare Worker `snowside-api` (packages/api) routes `snowside.network/{mainnet,testnet,signet}*` → `https://rpc.snowside.network/{network}` (deployed Session 28, Worker version eb0d2e01). Desktop app + bridge talk to the Worker URLs; rpc.snowside.network DNS is grey-cloud (DNS-only) — orange-cloud flip safe now that the origin cert is valid; pair it with SSL/TLS mode **Full (strict)**, never Flexible.
+
 ### Node Infrastructure (rebuilt after Oct 2026 data-loss event — Session 23)
 
 **📍 FLEET STATE AT END OF SESSION 27 (2026-10-25) — total $200/mo:**
 | Box | IP | Plan | Role | Status |
 |---|---|---|---|---|
-| `snowside` | 172.81.178.61 | c.8 ($160) | Mainnet node + future: 3 L1 validators, nginx, federation | ✅ LIVE — bootstrapped Oct 23 18:01 UTC, db on local SSD, no volumes attached |
+| `snowside` | 172.81.178.61 | c.8 ($160) | Mainnet node + 3 L1 validators (REDEPLOYED Session 28) + nginx/certbot + federation | ✅ LIVE — bootstrapped Oct 23 18:01 UTC, db on local SSD, no volumes attached; L1s live 2026-10-26 |
 | `snowside-fuji` | 170.75.160.200 | c.2 ($40) | Fuji testnet (permanent testing infra) | 🔄 SYNCING from zero since Oct 25 ~10:07 UTC (2 vCPU — expect days) |
-**NEXT SESSION AGENDA: Federation + BIP-300 bridging.** Queue: (1) monitor Fuji sync to completion; (2) L1 redeploys from genesis (authority `0xE5104794...`, NO ewoq); (3) federation pre-launch fixes (chain IDs, EWOQ_PRIVATE_KEY rename, test-mint.ts gate, new HD_MNEMONIC); (4) federation go-live on snowside (staged image); (5) BIP-300/301 phase planning (enforcer, sidechain slot registration); (6) DNS repoint + nginx + certbot; (7) ICM → USDC ICTT. Pending user actions: none blocking. Deferred: R2 off-box backups, `snowside-sync-old` (172.81.181.52, old account) termination, key-rotation decision for the chat-transmitted key.
+**NEXT SESSION AGENDA: Federation + BIP-300 bridging.** Queue: (1) monitor Fuji sync to completion; ~~(2) L1 redeploys from genesis~~ **DONE Session 28** (authority `0xE5104794...`, chain IDs preserved 32904/33160/33416, new blockchain IDs — see Deployed L1s); (3) federation pre-launch fixes (chain IDs are now CORRECT at index.ts:51-53 — verify against live chains; EWOQ_PRIVATE_KEY rename, test-mint.ts gate, new HD_MNEMONIC); (4) federation go-live on snowside (staged image); (5) BIP-300/301 phase planning (enforcer, sidechain slot registration); ~~(6) DNS repoint + nginx + certbot~~ **DONE Session 28** (rpc.snowside.network → 172.81.178.61 grey-cloud, nginx + LE cert live; orange flip + Full (strict) pending user); (7) ICM → USDC ICTT. Pending user actions: orange-cloud flip + SSL mode. Deferred: R2 off-box backups, `snowside-sync-old` (172.81.181.52, old account) termination, key-rotation decision for the chat-transmitted key.
 - **Oct 2026:** a hosting provider data failure destroyed BOTH previous VPSes and all on-box data (mainnet sync progress, all 3 L1 chains + nodes, federation container, all on-box backup snapshots, HD_MNEMONIC, staking/BLS keys). Full record: docs/HANDOFF.md Session 23.
 - **LunaNode accounts:** OLD account (`lunanode_apecs_key`) is being decommissioned; NEW account `abitsuite` (`~/.ssh/lunanode_abitsuite_key`) hosts all future VMs. Migrated Session 24.
 - **⚠️ STORAGE LAW (Session 25, fio-VERIFIED): NEVER host an avalanchego db on network block storage.** LunaNode block storage (vdc) measures **16 fsync-durable write IOPS** (~62ms/fsync) with `fio --rw=randwrite --bs=4k --fdatasync=1` — the LevelDB batch-commit pattern. Local SSDs measure 841–1,345 fsync-IOPS (52–84x). This one number explains every historical slowness (X ~6k ops/h, C trie crawl, the Sep-10 25h wipe). **Always `fio --fdatasync=1` benchmark a storage class BEFORE placing a db on it — buffered-write benchmarks are meaningless.** Block storage = backup/archive tier ONLY. **⛔ RESOLVED EXCEPTION (Sessions 26–27): the live mainnet db sat on vdc for the entire state sync (Oct 19–23) — the 484G SSD could not hold the 431G+ db through sync; 5 disk-full FATALs each reset C. Sync COMPLETED Oct 23 18:01 UTC with zero restarts. Post-compaction db = 385G → moved back to SSD Oct 25; volume eliminated (Session 27). STORAGE LAW fully back in force.**

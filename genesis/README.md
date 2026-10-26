@@ -43,7 +43,7 @@ WARNING: If this precompile is NOT in the genesis, mint transactions will "succe
 
        curl -s -X POST https://rpc.snowside.network/signet \
          -H "Content-Type: application/json" \
-         -d '{"jsonrpc":"2.0","method":"eth_call","params":[{"to":"0x0200000000000000000000000000000000000001","data":"0xab6f7e5a000000000000000000000000e5104794fb44d45b0f821d77a685a17ee2e35b9c"},"latest"],"id":1}'
+         -d '{"jsonrpc":"2.0","method":"eth_call","params":[{"to":"0x0200000000000000000000000000000000000001","data":"0xeb54dae1000000000000000000000000e5104794fb44d45b0f821d77a685a17ee2e35b9c"},"latest"],"id":1}'
 
    Should return 0x...02 (role 2 = admin).
 
