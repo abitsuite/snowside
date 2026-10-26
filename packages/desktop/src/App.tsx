@@ -1,39 +1,42 @@
-import { useState } from "react";
+// packages/desktop/src/App.tsx
+import { useEffect, useState } from "react";
 import "./styles.css";
+import { useSettings } from "./lib/store";
+import { NETWORKS } from "./lib/networks";
+import { TopNav, type TabId } from "./components/TopNav";
+import { OverviewTab } from "./tabs/OverviewTab";
+import { WalletTab } from "./tabs/WalletTab";
+import { BridgeTab } from "./tabs/BridgeTab";
+import { NetworkTab } from "./tabs/NetworkTab";
+import { ConsoleTab } from "./tabs/ConsoleTab";
+import { SettingsTab } from "./tabs/SettingsTab";
 
-function App() {
-  const [network, setNetwork] = useState("signet");
+export default function App() {
+  const settings = useSettings();
+  const [tab, setTab] = useState<TabId>("overview");
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = settings.theme;
+  }, [settings.theme]);
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center justify-center p-8">
-      <h1 className="text-4xl font-bold mb-4 text-blue-400">Snowside Desktop</h1>
-      <p className="text-gray-400 mb-8">Light Client for Bitcoin Drivechains</p>
-      
-      <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md">
-        <label className="block text-sm font-medium mb-2 text-gray-300">Network</label>
-        <select 
-          value={network}
-          onChange={(e) => setNetwork(e.target.value)}
-          className="w-full bg-gray-700 border border-gray-600 rounded-md p-2 mb-4"
-        >
-          <option value="mainnet">Mainnet</option>
-          <option value="testnet">Testnet</option>
-          <option value="signet">Signet</option>
-        </select>
-
-        <div className="space-y-3 mt-6">
-          <div className="flex justify-between">
-            <span className="text-gray-400">RPC Status:</span>
-            <span className="text-green-400">Connected</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-400">BMM Status:</span>
-            <span className="text-yellow-400">Idle</span>
-          </div>
-        </div>
-      </div>
+    <div className="flex h-full flex-col bg-surface-0 text-ink">
+      <TopNav active={tab} onChange={setTab} />
+      <main className="flex-1 overflow-y-auto p-4">
+        {tab === "overview" && <OverviewTab />}
+        {tab === "wallet" && <WalletTab key={settings.activeNetwork} />}
+        {tab === "bridge" && <BridgeTab />}
+        {tab === "network" && <NetworkTab />}
+        {tab === "console" && <ConsoleTab />}
+        {tab === "settings" && <SettingsTab />}
+      </main>
+      <footer className="flex items-center justify-between border-t border-line bg-surface-1 px-4 py-1.5 text-xs text-faint">
+        <span>
+          {NETWORKS[settings.activeNetwork].label} ·{" "}
+          <span className="font-mono">{settings.rpcUrls[settings.activeNetwork]}</span>
+        </span>
+        <span>eCash drivechain · slot 88 · light client</span>
+      </footer>
     </div>
   );
 }
-
-export default App;

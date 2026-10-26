@@ -1,4 +1,4 @@
-# Snowside Handoff — 2026-10-25 (Session 27 COMPLETE — next: Federation + BIP-300)
+# Snowside Handoff — 2026-10-26 (Session 28 IN PROGRESS — desktop client Track 1 built; next: wire to real RPC + mainnet launch)
 
 ## ⏭️ NEXT SESSION AGENDA (Project Lead directive, end of Session 27)
 **Federation + BIP-300 bridging.** Work queue:
@@ -10,6 +10,18 @@
 6. DNS repoint `rpc.snowside.network` → 172.81.178.61 + nginx + certbot
 7. ICM → USDC ICTT → validator economics
 **Deferred:** R2 off-box backups · `snowside-sync-old` (172.81.181.52, old account) termination · key-rotation decision (chat-transmitted key) · 13.37 ECX peg-in revisit · dependabot vulns (19).
+
+---
+
+## Session 28 — 2026-10-26: Tauri desktop client (Track 1) built for mainnet launch
+
+**Decision (Project Lead):** two tracks — **Track 1 (this session): ship a standalone Snowside Tauri v2 desktop app before mainnet launch end of week.** Track 2 (upstream BitWindow integration for slot 88) deferred until after Track 1 ships. Slot 88 mainnet activation is real/near-term: M1 already submitted to Alphanet AND Betanet. Snowside's "lite client" model = thin client against **hosted backends at `https://snowside.network/[mainnet|testnet]`** (NOT a traditional local light node) — architecturally matches the upstream `solana` external-node precedent (`chains_config.json` `"external": true`, orchestrator keeps no wallet/binary for it; see drivechain-frontends `sidechain/solana/client.go`, BMM-only `BMMNode` impl).
+
+**Built in `packages/desktop` (Tauri v2 + React 19 + Vite 7 + Tailwind 4):** sail_ui/BitWindow-style UX cloned in React — TopNav icon+label tabs: **Overview** (wallet summary, chain stats grid mirroring explorer cards, federation status), **Wallet** (create/import key, receive QR, send w/ legacy gasPrice), **Bridge** (Deposit w/ address-assignment polling + QR / Withdraw w/ zero-address burn + submit / History — against verified Worker contracts in `packages/api/src/index.ts`), **Network** (3-network probes + switching), **Console** (log + raw JSON-RPC), **Settings** (theme, editable RPC/API endpoints, wallet danger zone). Deps added: `viem@^2.21`, `qrcode.react@^4.2`. All RPC via `@tauri-apps/plugin-http` (CORS-free in webview, native-fetch fallback in browser dev); chain ID auto-detected per endpoint for signing (survives L1 redeploys with new chain IDs). Rust: `tauri-plugin-http` registered; capabilities = `http:allow-fetch*` (verified in `gen/schemas/acl-manifests.json` — plugin has NO `default` set); window 1100x760, title Snowside; favicon copied from web. Both `pnpm build` (tsc+vite) and `cargo check` PASS.
+
+**Known gaps / follow-ups (pre-launch):** (1) RPC endpoints `https://snowside.network/[mainnet|testnet|signet]` are per Project Lead directive but NOT yet routed — today `snowside.network/v1*` = Worker, RPC lives at `rpc.snowside.network/*` (nginx, VPS) — need routing decision (Worker proxy route vs repoint defaults); (2) private key in plaintext localStorage (MVP — OS keychain hardening TODO, mirror of custodial-MVP posture); (3) no updater yet (`@tauri-apps/plugin-updater` + appcast parity with BitWindow/Thunder auto_updater); (4) chain IDs in `networks.ts` are hints only (32904/33160/33416 all DEAD post-data-loss — runtime auto-detect covers signing, hints used for display fallback); (5) wallet stores ONE key (no HD/multi-account yet); (6) desktop app NOT yet smoke-tested against a live RPC (`pnpm tauri dev` requires a display); (7) withdrawal amount formatting in History assumes ECX decimal string from API.
+
+**Track 2 prep notes (for later):** BitWindow mirror updated to `b40181d99` (was 1,387 behind): `sail_ui` RPC layer moved to new top-level `sidechain_core` package; `chains_config.json` now v27 w/ new entries `drivechaind`, `bbc` (slot 1), `freebank` (slot 130), `solana` (slot 8, external); new `docs/remote-enforcer.md` (sidechain daemons against remote `--mainchain-grpc-url`); BitWindow tabs now Overview/Wallet/Sidechains/**Mining**/Learn/Console/Chat/Settings.
 
 ---
 

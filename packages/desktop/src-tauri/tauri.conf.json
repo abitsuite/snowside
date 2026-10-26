@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "snowside-desktop",
+  "productName": "Snowside",
   "version": "0.1.0",
   "identifier": "network.snowside",
   "build": {
@@ -12,9 +12,11 @@
   "app": {
     "windows": [
       {
-        "title": "snowside-desktop",
-        "width": 800,
-        "height": 600
+        "title": "Snowside",
+        "width": 1100,
+        "height": 760,
+        "minWidth": 900,
+        "minHeight": 620
       }
     ],
     "security": {

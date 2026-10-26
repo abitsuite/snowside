@@ -1,1 +1,82 @@
+/* packages/desktop/src/styles.css */
 @import "tailwindcss";
+
+@custom-variant light (&:where([data-theme="light"], [data-theme="light"] *));
+
+:root {
+  --surface-0: #0a0f1a;
+  --surface-1: #121826;
+  --surface-2: #1a2335;
+  --surface-3: #222d44;
+  --text: #f0f7ff;
+  --text-muted: #94a3b8;
+  --text-faint: #64748b;
+  --border: rgba(255, 255, 255, 0.1);
+  --accent: #4a9fc8;
+  --accent-strong: #6bb8e0;
+  --cta: #6b2d5b;
+  --cta-hover: #562548;
+  --ok: #22c55e;
+  --warn: #f7931a;
+  --err: #ef4444;
+}
+
+:root[data-theme="light"] {
+  --surface-0: #f0f7ff;
+  --surface-1: #ffffff;
+  --surface-2: #e0f0ff;
+  --surface-3: #c8e6f7;
+  --text: #0f172a;
+  --text-muted: #475569;
+  --text-faint: #64748b;
+  --border: rgba(15, 23, 42, 0.12);
+  --accent: #2d7da8;
+  --accent-strong: #1f5e80;
+  --cta: #6b2d5b;
+  --cta-hover: #562548;
+}
+
+@theme inline {
+  --color-surface-0: var(--surface-0);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-ink: var(--text);
+  --color-muted: var(--text-muted);
+  --color-faint: var(--text-faint);
+  --color-line: var(--border);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-cta: var(--cta);
+  --color-cta-hover: var(--cta-hover);
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --color-err: var(--err);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background-color: var(--surface-0);
+  color: var(--text);
+  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--surface-3);
+  border-radius: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
