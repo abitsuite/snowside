@@ -5,7 +5,10 @@ compatibility_date = "2024-08-10"
 
 # Route configuration for snowside.network/v1
 routes = [
-  { pattern = "snowside.network/v1*", zone_name = "snowside.network" }
+  { pattern = "snowside.network/v1*", zone_name = "snowside.network" },
+  { pattern = "snowside.network/mainnet*", zone_name = "snowside.network" },
+  { pattern = "snowside.network/testnet*", zone_name = "snowside.network" },
+  { pattern = "snowside.network/signet*", zone_name = "snowside.network" }
 ]
 
 

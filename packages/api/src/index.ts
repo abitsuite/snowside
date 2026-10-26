@@ -665,6 +665,43 @@ openapi.patch(
   ),
 );
 
+// ── EVM JSON-RPC proxy ──────────────────────────────────────────
+// Pass-through to the public RPC nginx on the VPS so light clients only
+// need one origin: snowside.network/{mainnet,testnet,signet} proxies to
+// rpc.snowside.network/*. nginx owns the actual chain backends — L1
+// redeploys (new blockchain IDs) only ever touch nginx, never this Worker.
+
+const RPC_UPSTREAMS: Record<string, string> = {
+  mainnet: 'https://rpc.snowside.network/mainnet',
+  testnet: 'https://rpc.snowside.network/testnet',
+  signet: 'https://rpc.snowside.network/signet',
+};
+
+for (const [network, upstream] of Object.entries(RPC_UPSTREAMS)) {
+  const rpcProxy = async (c: any) => {
+    try {
+      const resp = await fetch(upstream, {
+        method: c.req.method,
+        headers: c.req.raw.headers,
+        body: c.req.raw.body,
+        redirect: 'manual',
+      });
+      const headers = new Headers(resp.headers);
+      headers.set('Access-Control-Allow-Origin', '*');
+      headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+      headers.set('Access-Control-Allow-Headers', 'Content-Type');
+      return new Response(resp.body, {
+        status: resp.status,
+        headers,
+      });
+    } catch {
+      return c.json({ error: 'RPC upstream fetch failed' }, 502);
+    }
+  };
+  app.all(`/${network}`, rpcProxy);
+  app.all(`/${network}/*`, rpcProxy);
+}
+
 // ── Esplora proxy (catch-all, must be last) ─────────────────────
 // Supports per-network routing via /v1/esplora/{network}/*
 // Falls back to testnet Esplora for backward compatibility.
