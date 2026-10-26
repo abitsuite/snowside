@@ -23,7 +23,7 @@ All networks must have the NativeMinter precompile configured:
 
 - Address: 0x0200000000000000000000000000000000000001
 - Purpose: Mints native ECX tokens to deposit addresses
-- Admin: 0x8db97C7cEcE249c2b98bDC0226Cc4C2A57BF52FC (EWOQ)
+- Admin: 0xE5104794FB44D45b0f821d77a685A17ee2E35b9C (authority — Project-Lead-held; replaced EWOQ in the Session 28 post-data-loss redeploy)
 - Function: mintNativeCoin(address,uint256) — selector 0x4f5aaaba
 - Config key: contractNativeMinterConfig
 
@@ -43,7 +43,7 @@ WARNING: If this precompile is NOT in the genesis, mint transactions will "succe
 
        curl -s -X POST https://rpc.snowside.network/signet \
          -H "Content-Type: application/json" \
-         -d '{"jsonrpc":"2.0","method":"eth_call","params":[{"to":"0x0200000000000000000000000000000000000001","data":"0xab6f7e5a0000000000000000000000008db97c7cece249c2b98bdc0226cc4c2a57bf52fc"},"latest"],"id":1}'
+         -d '{"jsonrpc":"2.0","method":"eth_call","params":[{"to":"0x0200000000000000000000000000000000000001","data":"0xab6f7e5a000000000000000000000000e5104794fb44d45b0f821d77a685a17ee2e35b9c"},"latest"],"id":1}'
 
    Should return 0x...02 (role 2 = admin).
 

@@ -54,13 +54,13 @@
       }
     }
   ],
-  "cChainGenesis": "{\"config\":{\"chainId\":1337},\"nonce\":\"0x0\",\"timestamp\":\"0x5fcb13d0\",\"extraData\":\"0x\",\"gasLimit\":\"0x5f5e100\",\"difficulty\":\"0x0\",\"mixHash\":\"0x0000000000000000000000000000000000000000000000000000000000000000\",\"coinbase\":\"0x0000000000000000000000000000000000000000\",\"alloc\":{\"8db97c7cece249c2b98bdc0226cc4c2a57bf52fc\":{\"balance\":\"0xc9f2c9cd04674edea40000000\"}},\"number\":\"0x0\",\"gasUsed\":\"0x0\",\"parentHash\":\"0x0000000000000000000000000000000000000000000000000000000000000000\",\"baseFeePerGas\":null,\"excessBlobGas\":null,\"blobGasUsed\":null}",
+  "cChainGenesis": "{\"config\":{\"chainId\":1337},\"nonce\":\"0x0\",\"timestamp\":\"0x5fcb13d0\",\"extraData\":\"0x\",\"gasLimit\":\"0x5f5e100\",\"difficulty\":\"0x0\",\"mixHash\":\"0x0000000000000000000000000000000000000000000000000000000000000000\",\"coinbase\":\"0x0000000000000000000000000000000000000000\",\"alloc\":{\"e5104794fb44d45b0f821d77a685a17ee2e35b9c\":{\"balance\":\"0xc9f2c9cd04674edea40000000\"}},\"number\":\"0x0\",\"gasUsed\":\"0x0\",\"parentHash\":\"0x0000000000000000000000000000000000000000000000000000000000000000\",\"baseFeePerGas\":null,\"excessBlobGas\":null,\"blobGasUsed\":null}",
   "message": "hello avalanche!",
   "config": {
     "contractNativeMinterConfig": {
       "blockTimestamp": 0,
       "adminAddresses": [
-        "0x8db97C7cEcE249c2b98bDC0226Cc4C2A57BF52FC"
+        "0xE5104794FB44D45b0f821d77a685A17ee2E35b9C"
       ]
     }
   }
