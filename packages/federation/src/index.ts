@@ -28,7 +28,7 @@ import {
 const API_URL = process.env.API_URL || 'https://snowside.network/v1';
 const FEDERATION_TOKEN = process.env.FEDERATION_TOKEN || 'dev-secret';
 const HD_MNEMONIC = process.env.HD_MNEMONIC || '';
-const EWOQ_PRIVATE_KEY = process.env.EWOQ_PRIVATE_KEY || '';
+const MINTER_PRIVATE_KEY = process.env.MINTER_PRIVATE_KEY || '';
 const POLL_MS = parseInt(process.env.POLL_MS || '10000');
 
 const RPC_URLS: Record<string, string> = {
@@ -115,10 +115,10 @@ let account: PrivateKeyAccount | null = null;
 
 function getAccount(): PrivateKeyAccount {
   if (!account) {
-    if (!EWOQ_PRIVATE_KEY) throw new Error('EWOQ_PRIVATE_KEY not set');
-    const key = EWOQ_PRIVATE_KEY.startsWith('0x')
-      ? EWOQ_PRIVATE_KEY
-      : `0x${EWOQ_PRIVATE_KEY}`;
+    if (!MINTER_PRIVATE_KEY) throw new Error('MINTER_PRIVATE_KEY not set');
+    const key = MINTER_PRIVATE_KEY.startsWith('0x')
+      ? MINTER_PRIVATE_KEY
+      : `0x${MINTER_PRIVATE_KEY}`;
     account = privateKeyToAccount(key as `0x${string}`);
     console.log(`[viem] Account: ${account.address}`);
   }
@@ -262,7 +262,7 @@ async function mintEcx(
   toAddress: string,
   satAmount: number,
 ): Promise<string | null> {
-  if (!RPC_URLS[network] || !EWOQ_PRIVATE_KEY) {
+  if (!RPC_URLS[network] || !MINTER_PRIVATE_KEY) {
     console.log(`[mint] No RPC or private key for ${network}, skipping`);
     return null;
   }
@@ -429,8 +429,8 @@ async function processWithdrawal(withdrawal: Withdrawal): Promise<void> {
     return;
   }
 
-  if (!EWOQ_PRIVATE_KEY) {
-    console.log(`[withdraw] ${withdrawal.id}: no EWOQ key, skipping`);
+  if (!MINTER_PRIVATE_KEY) {
+    console.log(`[withdraw] ${withdrawal.id}: no MINTER key, skipping`);
     return;
   }
 
@@ -573,7 +573,7 @@ async function main(): Promise<void> {
   console.log('Snowside Federation Service (viem)');
   console.log(`  API: ${API_URL}`);
   console.log(`  HD wallet: ${HD_MNEMONIC ? 'set' : 'NOT SET'}`);
-  console.log(`  EWOQ key: ${EWOQ_PRIVATE_KEY ? 'set' : 'NOT SET'}`);
+  console.log(`  MINTER key: ${MINTER_PRIVATE_KEY ? 'set' : 'NOT SET'}`);
   console.log('  L2 Networks (Snowside RPC):');
   for (const [net, rpc] of Object.entries(RPC_URLS)) {
     console.log(`    ${net}: ${rpc || '(not set)'}`);
