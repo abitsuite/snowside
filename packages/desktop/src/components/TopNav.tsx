@@ -53,7 +53,7 @@ export function TopNav({ active, onChange }: { active: TabId; onChange: (t: TabI
     <nav className="flex items-stretch gap-1 border-b border-line bg-surface-1 px-3">
       <div className="mr-3 flex items-center gap-2 py-2">
         <img src="/favicon.svg" alt="Snowside" className="h-7 w-7" />
-        <span className="text-sm font-bold text-ink">Snowside</span>
+        <span className="text-sm font-bold text-ink">Snowside Lodge</span>
       </div>
       {TABS.map((t) => (
         <button
