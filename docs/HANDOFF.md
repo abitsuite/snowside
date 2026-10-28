@@ -25,12 +25,29 @@
 5. **Deploy crashed after subnet+chain creation** → patched sidecar with real IDs → `blockchain convert --mainnet --verify-input=false --bootstrap-filepath ... --validator-manager-address 0x0Feedc0de... --validator-manager-blockchain-id ZLcxUyu...` ✅.
 6. **Second signature-aggregator v0.6.0 instance for mainnet:** config `/home/ubuntu/sigagg-mainnet-config.json` (api-port **9294**, metrics 9295, tracked 252afdxn..., peer 127.0.0.1:9651), log `sigagg-mainnet.log`, verified `Connected` on both primary net + L1 subnet. Peer field is `"ip"` not `"address"`. Fuji instance (9194) still running alongside.
 
+### Session 29 PM addendum — Signet made permanent + ICM deployed on both public L1s
+
+**Project Lead decisions executed:** (A) keep SnowsideSignet as a LOCAL L1 **indefinitely** (no public Avalanche signet exists; $0 marginal cost on the snowside box); (B) deploy ICM Messenger/Registry on both public L1s.
+
+**A. Signet persistence (DONE):**
+- `avalanche-local-network.service` — systemd unit (enabled) that starts the avalanche-cli local network at boot via `/home/ubuntu/snowside/scripts/start-local-network.sh` (idempotent: health-checks signet RPC for chainId 0x8288, no-ops when healthy — `avalanche network start` errors if the network is already running). Tested: active (exited), SUCCESS.
+- Backup scope: local-network chain state was ALREADY covered (`backup-snowside.sh` copies the current run dir + `local/` + `localNetworks.json`). Added the previously-missing pieces: `rpc.snowside.network` nginx file (the script only had the stale `default`), both sigagg configs, all systemd units (avalanchego-mainnet, avalanchego-fuji, avalanche-local-network, snowside-backup.*), and the importhelper tool (`/tmp` is volatile). Test backup verified: 30M archive, all new items present.
+- **SCRIPT BUG FOUND + FIXED:** the starter script initially used the stale pre-Session-28 signet blockchain ID (`SSM5SAcB8...`) from a handoff summary; live chain is `SSM5SAKaoXPpMmHmYvKYMdsKQya4JBYKj6Z13163Ka7dh34MK` (repo AGENTS.md was already correct).
+- **ARCHITECTURE FACT (corrects an earlier note):** there is NO socat rpc-proxy on the snowside box. Both boxes sit on the same LunaNode private LAN `172.16.0.0/20` (snowside=172.16.0.3, fuji=172.16.0.6); nginx `/testnet` proxies straight to the fuji box's API over the LAN. Fully boot-persistent (avalanchego-fuji.service on the fuji box). NOTE: the fuji box's API port 9650 is reachable on the LAN interface — consider ufw-restricting it to the LAN subnet.
+
+**B. ICM deploys (DONE, bytecode-verified on both chains):**
+- SnowsideTestnet (Fuji): Messenger `0x253b2784c75e510dD0fF1da844684a1aC0aa5fcf`, Registry `0xb44A78D552BD05410eE57e24Fdb6c4E8DeC098f1`
+- SnowsideMainnet (Mainnet): Messenger `0x253b2784c75e510dD0fF1da844684a1aC0aa5fcf`, Registry `0xf95e4182c0a0F42a3d997ea66117585160187ea7`
+- Command pattern: `avalanche icm deploy --blockchain <Name> --fuji/--mainnet --endpoint <api> --rpc-url <chainRPC> --genesis-key` — the CLI funds the deploy from the genesis-allocated ICM deployer key `0x18cD02DB3100cb4382B61329aA2a8cBe4A24B40f` (600 ECX alloc; CLI stores it as `cli-teleporter-deployer.pk`). Registry addresses differ per network (deployer nonce); Messenger is canonical everywhere.
+- Genesis alloc note: funded accounts on the public L1s are authority `0xE5104794...` (1M ECX), ICM deployer `0x18cD02...` (600 ECX), and `0xA5B6ac71129e9E5904a5C021728dBaBA61454B54` (60 ECX — likely `cli-awm-relayer.pk`; unverified).
+
 ### Next steps (priority order)
-1. ICM Messenger/Registry deploys on BOTH public L1s (testnet-Fuji + mainnet)
+1. ~~ICM Messenger/Registry deploys on BOTH public L1s~~ **DONE Session 29 PM**
 2. Federation pre-launch fixes + go-live (chain IDs already correct at index.ts:51-53 — verify against live chains)
 3. BIP-300/301 phase planning; ICM → USDC ICTT
-4. Retire local signet + the shared local 5-node network (last piece of local infra)
-5. Deferred: R2 off-box backups, snowside-sync-old termination, key-rotation decision
+4. ~~Retire local signet~~ **CANCELLED — signet is permanent local infra** (Session 29 PM decision); the shared local 5-node network stays up permanently under `avalanche-local-network.service`. Optional cleanup: untrack the retired local mainnet chain (`XUW2TN...`) from the local network.
+5. Add validator-balance monitoring alert (<0.5 AVAX) for the mainnet L1 validator fee (burn: ~512 nAVAX/s ≈ 1.33 AVAX/mo at floor price; top up via `avalanche validator increaseBalance`)
+6. Deferred: R2 off-box backups, snowside-sync-old termination, key-rotation decision
 
 ---
 
