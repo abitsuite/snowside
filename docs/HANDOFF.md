@@ -1,8 +1,42 @@
-# Snowside Handoff — 2026-10-28 (Session 29 — SnowsideTestnet LIVE ON PUBLIC FUJI; testnet public RPC cut over; Mainnet deployment IN PROGRESS)
+# Snowside Handoff — 2026-10-28 (Session 29 — SNOWSIDE MAINNET LAUNCHED: SnowsideMainnet LIVE on Avalanche Mainnet + SnowsideTestnet LIVE on Fuji; both public RPCs cut over)
 
-## Session 29 — 2026-10-28: SnowsideTestnet deployed to Fuji + public RPC cutover + local testnet retired
+## Session 29 (PM) — 2026-10-28: 🎉 SNOWSIDEMAINNET DEPLOYED TO AVALANCHE MAINNET — MAINNET LAUNCH COMPLETE
 
-**All Project Lead-approved agenda items executed: (1) public RPC cutover ✅, (2) local testnet retired ✅, (3) docs updated ✅, (4) Mainnet deployment → IN PROGRESS (funding gate).**
+**Project Lead funded the deployer key with 5 AVAX; full deployment executed in one run. Snowside's mainnet is LIVE.**
+
+### Final on-chain state (all verified on Avalanche Mainnet via our own mainnet node)
+- **Subnet ID:** `252afdxnKNWTVgpjLfCY9KrAs4rBU7DwFaPoS1LQ4BCw1TTAXL`
+- **Blockchain ID:** `ZLcxUyuZxVshKtyhK7ZnaUJRCyS6cvb7CPHXWryjjsMCWa63f` · EVM chainId **32904 (0x8088)** (preserved — federation config stays valid)
+- **ConvertSubnetToL1Tx:** `bGeRpNwhCBVUn584FTjyMUsaS5baQkTfgwxnH9DEKYcRRPP8Y` (fee: 0.000036992 AVAX — post-Etna dynamic fees; NO static 1 AVAX subnet fee any more)
+- **Validator:** `NodeID-HhtdACE7m9XfiRgQHb2dGchvW8WYMod1V` (the snowside box's mainnet node itself; weight 100; ValidationID `2YE3hLXtMXQroz9WkHxGWUYFa9RLdwrAB26o59BWxwHKqCAYQM`; 3 AVAX bootstrap balance ≈ 2+ months of the ~1.33 AVAX/mo continuous L1 validator fee — **top up before exhaustion**)
+- **PoA Validator Manager INITIALIZED** ✅ — proxy `0x0Feedc0de0000000000000000000000000000000`
+- VMID `dk9HWWWW1YGB5mZX48ABvu8fq2YTqdByWP7XjL2HnvkNGa5nr` (= ids.FromString("SnowsideMainnet"), verified by base58 decode); subnet-evm v1.15.1 plugin staged at `/home/ubuntu/avax-data/mainnet/plugins/dk9HWWWW...` (sha256 42f68125..., byte-identical to the Fuji testnet's plugin)
+- Genesis: canonical repo `genesis.mainnet.json` (authority `0xE5104794...`, no ewoq)
+- Deployer key `snowside-mainnet-deployer`: C `0x0D0ce1b68dFA781620F344abE9Bd1e4BB3723C2b` / P `P-avax1c6lwxjmjvja364mct3e4auprjjan52ys8dqyz2`; **remaining: 1.8998 AVAX on P + 0.0999 on C** (total spent ≈ 3.0002 AVAX of the 5)
+- **Public RPC CUT OVER:** nginx `/mainnet` on the snowside box → `http://127.0.0.1:9650/ext/bc/ZLcxUyu.../rpc` (mainnet node, same box — no rpc-proxy needed). Verified publicly: `eth_chainId` = 0x8088, `net_version` = 32904. `/testnet` unchanged (0x8188, Fuji-backed).
+- Node config: `--track-subnets 252afdxn...` added to `avalanchego-mainnet.service` (daemon-reload + restart executed with approval; node fully synced → no state-sync exposure; primary network re-bootstrapped in ~2 min, node added to the L1 validator set, health passing)
+- **Local mainnet L1 instance (`XUW2TN...`, port 9656) RETIRED** as public backend (nginx no longer references it). The shared local 5-node avalanche-cli network stays up ONLY for local signet (`SSM5SA.../9654`). Full teardown deferred until signet migrates.
+
+### New mainnet-only blockers solved (full details in AGENTS.md gotcha #6)
+1. **`avax.getAtomicTxStatus` removed in avalanchego v1.15** → `avalanche key transfer` C→P dies after the export, stranding 4.9 AVAX in atomic memory. **FIX: wrote `/tmp/avalanche-cli-src/importhelper/main.go`** (Go helper using the CLI module's wallet SDK) — issued P-chain ImportTx `2ptzUR6whuYDWJ4KUSA5ZMmGLswXpKsMEu716eqU1nk3bevxUE`, funds landed.
+2. **blst SIGILL on LunaNode vCPUs** — FIX: `CGO_CFLAGS="-O -D__BLST_PORTABLE__"`. Go 1.24.9 tarball at `/home/ubuntu/go-sdk`.
+3. **Interactive prompts in non-TTY:** `--bootstrap-endpoints http://127.0.0.1:9650` skips the local-machine-validator prompt (else the CLI would spin up a throwaway local node as the L1 validator!); other prompts answered via `printf '\\033[B\n' | script -qec "avalanche ..." /dev/null`.
+4. **`--change-owner-address` must be P-chain bech32** (`P-avax1...`), not hex.
+5. **Deploy crashed after subnet+chain creation** → patched sidecar with real IDs → `blockchain convert --mainnet --verify-input=false --bootstrap-filepath ... --validator-manager-address 0x0Feedc0de... --validator-manager-blockchain-id ZLcxUyu...` ✅.
+6. **Second signature-aggregator v0.6.0 instance for mainnet:** config `/home/ubuntu/sigagg-mainnet-config.json` (api-port **9294**, metrics 9295, tracked 252afdxn..., peer 127.0.0.1:9651), log `sigagg-mainnet.log`, verified `Connected` on both primary net + L1 subnet. Peer field is `"ip"` not `"address"`. Fuji instance (9194) still running alongside.
+
+### Next steps (priority order)
+1. ICM Messenger/Registry deploys on BOTH public L1s (testnet-Fuji + mainnet)
+2. Federation pre-launch fixes + go-live (chain IDs already correct at index.ts:51-53 — verify against live chains)
+3. BIP-300/301 phase planning; ICM → USDC ICTT
+4. Retire local signet + the shared local 5-node network (last piece of local infra)
+5. Deferred: R2 off-box backups, snowside-sync-old termination, key-rotation decision
+
+---
+
+## Session 29 (AM) — 2026-10-28: SnowsideTestnet deployed to Fuji + public RPC cutover + local testnet retired
+
+**Agenda items executed: (1) public RPC cutover ✅, (2) local testnet retired ✅, (3) docs updated ✅, (4) Mainnet deployment → COMPLETED same-day PM (see above).**
 
 ### Fuji deployment completed (from Session 28's local-only state)
 - **Subnet ID:** `pm4MzUMND7UwYgpxrh5W3N4nMLH2oTABv2MzDMJcR22LTX2Ac` · **Blockchain ID:** `2QBczAGdbEM1AUraueoHea5LqDkB8oxyQfJbzq4oSNBrCyXTd1` · EVM chainId **33160** (unchanged — federation chain-ID config stays valid)
