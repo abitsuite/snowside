@@ -1,4 +1,39 @@
-# Snowside Handoff — 2026-10-26 (Session 28 PM — ALL THREE L1s REDEPLOYED + rpc.snowside.network LIVE w/ LE TLS; desktop app has live backends)
+# Snowside Handoff — 2026-10-28 (Session 29 — SnowsideTestnet LIVE ON PUBLIC FUJI; testnet public RPC cut over; Mainnet deployment IN PROGRESS)
+
+## Session 29 — 2026-10-28: SnowsideTestnet deployed to Fuji + public RPC cutover + local testnet retired
+
+**All Project Lead-approved agenda items executed: (1) public RPC cutover ✅, (2) local testnet retired ✅, (3) docs updated ✅, (4) Mainnet deployment → IN PROGRESS (funding gate).**
+
+### Fuji deployment completed (from Session 28's local-only state)
+- **Subnet ID:** `pm4MzUMND7UwYgpxrh5W3N4nMLH2oTABv2MzDMJcR22LTX2Ac` · **Blockchain ID:** `2QBczAGdbEM1AUraueoHea5LqDkB8oxyQfJbzq4oSNBrCyXTd1` · EVM chainId **33160** (unchanged — federation chain-ID config stays valid)
+- ConvertSubnetToL1Tx: `LypNksbLMm1hUm9X4dQodLfKRbEGtsNouMbk4KK4gxWGsXeri` (Fuji P-chain)
+- Validator: `NodeID-CpGgARD7bidReR7bPCr7k23aSBtq8Q2eA` (snowside-fuji box; weight 100; ValidationID `mX4WLw3qHj1BWGcs3iCnhEjggxwRUYBDGJAK41C1qnbU48VUE`); unit has `--track-subnets pm4Mz...`; chain bootstrapped, blocks advancing
+- **PoA Validator Manager INITIALIZED** (`avalanche contract initValidatorManager` ✅) — proxy `0x0Feedc0de0000000000000000000000000000000`
+- Deployer key `snowside-fuji-deployer` = `0xA2B7D20E2E3F759512A5625AE858DdBF8b2A728B`; genesis = canonical repo testnet genesis (authority `0xE5104794...`, no ewoq)
+
+### Root-cause trilogy for `failed to connect to a threshold of stake` (full detail in AGENTS.md → "Public-network L1 deployment")
+1. **avalanchego min-version law:** v1.15.1 nodes enforce `MinimumCompatibleVersion=1.15.0` on handshake (`peer.go shouldDisconnect()`); CLI-pinned signature-aggregator **v0.5.3** embeds a **1.14.0** client → silently disconnected → aggregator never reached our only validator. FIX: manually run **signature-aggregator v0.6.0** (connects cleanly; verified `"Connected"` on primary + subnet).
+2. **CLI wipes aggregator config** (`tracked-subnet-ids`/`manually-tracked-peers` emptied on every run) → manual config `/home/ubuntu/sigagg-config.json` on the snowside box (api 9194 / metrics 9195; binary `/home/ubuntu/sigagg-v060/signature-aggregator`; log `/home/ubuntu/sigagg-manual.log`).
+3. **`--signature-aggregator-endpoint` needs the FULL path**: `http://127.0.0.1:9194/aggregate-signatures` (`init_validator_manager.go:264`).
+- Also: `blockchain deploy --fuji` dies at the interactive VMC prompt → sidecar patch + `blockchain convert --fuji --verify-input=false` (procedure in AGENTS.md).
+
+### Public RPC cutover (rpc.snowside.network/testnet)
+- Fuji box API binds 127.0.0.1 only and the box sits behind 1:1 NAT (private addr 172.16.0.6) → **`rpc-proxy.service`** (socat `172.16.0.6:9650` → `127.0.0.1:9650`, systemd, enabled). ufw: `9650/tcp` allowed from **172.16.0.3 only** (snowside box private IP — same /20 LunaNode fabric, traffic never leaves the DC).
+- snowside box nginx `/etc/nginx/sites-available/rpc.snowside.network`: `/testnet` → `http://172.16.0.6:9650/ext/bc/2QBcz.../rpc`; `nginx -t` + reload; **VERIFIED PUBLICLY: `https://rpc.snowside.network/testnet` → eth_chainId 0x8188, blockNumber advancing.** /mainnet and /signet untouched (still local L1s).
+
+### Local testnet retired
+- nginx no longer serves local chain `9Z7YJq...`. **The shared 5-node local network keeps running** (local mainnet XUW2TN/9656 + signet SSM5SA/9654 still depend on it) — per-chain teardown impossible; full cleanup deferred until those cut over.
+
+### Mainnet deployment (IN PROGRESS)
+- Same flow + gotchas as Fuji (all documented). Gate: **mainnet deployer key needs AVAX funding** (Project Lead action).
+
+### Next steps
+1. Fund mainnet deployer key → run the Mainnet deploy (create→convert→track→init VMC) → cut over rpc.snowside.network/mainnet → retire local mainnet+signet network.
+2. ICM Messenger/Registry on Fuji-backed testnet; federation wiring; docs/HANDOFF for Snowside Lodge backend URLs.
+
+---
+
+# Previous: 2026-10-26 (Session 28 PM — ALL THREE L1s REDEPLOYED + rpc.snowside.network LIVE w/ LE TLS; desktop app has live backends)
 
 ## ⏭️ NEXT SESSION AGENDA (Project Lead directive, end of Session 27)
 **Federation + BIP-300 bridging.** Work queue:
