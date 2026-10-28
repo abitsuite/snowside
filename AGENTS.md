@@ -204,7 +204,24 @@ Deploy contract (if on DeployerAllowList):
 - Validator Transparent Proxy: 0x0Feedc0de0000000000000000000000000000000
 - **Authority account: 0xE5104794FB44D45b0f821d77a685A17ee2E35b9C (1,000,000 ECX alloc on each L1; NativeMinter admin; ProxyAdmin owner; validator-manager-owner). Key is Project-Lead-held — NOT in this repo.**
 - ewoq (0x8db97C7cEcE249c2b98bDC0226Cc4C2A57BF52FC): NO LONGER has any L1 role/balance (removed Session 28). Still used by the CLI as the local-network P-chain ops key (`-e` flag).
-- ICM Deployer: 0x18cD02DB3100cb4382B61329aA2a8cBe4A24B40f (600 ECX alloc in genesis)
+- ICM/DEX ops deployer: 0xA5B6ac71129e9E5904a5C021728dBaBA61454B54 (on-box key `~/.avalanche-cli/key/cli-teleporter-deployer.pk`; ~589.7 ECX on both public L1s after Session 29 PM deploys). 0x18cD02DB3100cb4382B61329aA2a8cBe4A24B40f also has a 600 ECX genesis alloc (different CLI key). NOTE: ~/.avalanche-cli/subnets/*/genesis.json is NOT authoritative for the deployed public chains (sidecar-patch deploy flow) — on-chain balances are the source of truth.
+
+### DEX Deployment (Session 29 PM — eCash Farm liquidity launch)
+Uniswap V2 deployed to BOTH public L1s for ecashfarm.com/liquidity (deadline: eCash fork block 973,728 ≈ Oct 29 14:45 UTC). Full record: contracts/deployments/dex/ (sources, artifacts, addresses.json, deploy script). Consumer handoff: docs/HANDOFF-SNOWSIDE-RESPONSE.md in the eCash Farm repo.
+
+| Contract | Testnet (33160) | Mainnet (32904) |
+|---|---|---|
+| WECX (WETH9, 18 dec) | 0xD5E90470388661D6310070C310be99a8EB4234DD (blk 22) | 0x91E65BfeE696723E85C34CFA553fc089661EaF04 (blk 8) |
+| UniswapV2Factory | 0xC628cfA673B2d2CE371078a1f3c6814d76C7574f (blk 23) | 0xb691bbBB812cF480F0DB2F2086943C995cd19BCC (blk 9) |
+| UniswapV2Router02 | 0xA401757017E9c4b260071F736339081E1e86Ab1F (blk 24) | 0x8E80Bd138484b81B70921bC15032e3412B0607e8 (blk 10) |
+| MockUSDC (6 dec) | 0xcd30aB96E165194b98CB42e14D608040dfBa3df6 (blk 25) | 0x83C871a136d769Aa07aC349dde1326d179Bf20BA (blk 11) |
+| MockBTCb (8 dec) | 0x2a9b729f93F95206C1056e0B6021bE71d217A24D (blk 26) | 0x5fA58C10e180BA6aF23a90Df2eB0a443fAa74AE3 (blk 12) |
+
+- Factory/Router02 = canonical @uniswap/v2-core@1.0.1 + @uniswap/v2-periphery@1.1.0-beta.0 bytecode; pair init_code_hash = canonical 0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f (verified).
+- feeToSetter = authority 0xE5104794...; feeTo UNSET (protocol fee off, LPs get full 30 bps). Pairs NOT pre-created — Farm federation creates + seeds.
+- **MockUSDC/MockBTCb are PLACEHOLDERS** (MockERC20, owner-gated mint, owner = ops deployer; 10M USDC + 100k BTC.b per network held by deployer) until real ICTT USDC / BTC.b ship. Native ECX = 18 decimals on-chain (the 8-decimal figure is the L1 peg representation).
+- Farm deliverables pending: their federation treasury Snowside address (for mock-token transfer); their testnet preflight go/no-go.
+- **Explorer gap found:** explorer.snowside.network has NO tx/block/address detail pages (search routes to 404s) — build list.
 - Validator Messages Lib: 0x9C00629cE712B0255b17A4a657171Acd15720B8C
 - Validator Proxy Admin: 0xa0AffE1234567890ABcDef1234567890ABCdEF34 (owner = authority)
 - Primary Nodes (local network): NodeID-7Xhw2mDxuDS44j42TCB6U5579esbSt3Lg (API 9660), NodeID-MFrZFVCXPv5iCn6M9K6XduxGTYp891xXZ (API 9662)

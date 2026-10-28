@@ -41,8 +41,23 @@
 - Command pattern: `avalanche icm deploy --blockchain <Name> --fuji/--mainnet --endpoint <api> --rpc-url <chainRPC> --genesis-key` — the CLI funds the deploy from the genesis-allocated ICM deployer key `0x18cD02DB3100cb4382B61329aA2a8cBe4A24B40f` (600 ECX alloc; CLI stores it as `cli-teleporter-deployer.pk`). Registry addresses differ per network (deployer nonce); Messenger is canonical everywhere.
 - Genesis alloc note: funded accounts on the public L1s are authority `0xE5104794...` (1M ECX), ICM deployer `0x18cD02...` (600 ECX), and `0xA5B6ac71129e9E5904a5C021728dBaBA61454B54` (60 ECX — likely `cli-awm-relayer.pk`; unverified).
 
+### Session 29 PM #3 — DEX (Uniswap V2) deployed on both public L1s for eCash Farm
+
+**Driver:** eCash Farm wants ECX trading live on Snowside at/before the eCash mainnet fork (block 973,728 ≈ Oct 29 ~14:45 UTC; their handoff ETA was stale by ~26h). Their ask: 5 contract addresses per network (factory, router, WECX, USDC, BTC.b) + BIP-300 peg procedure.
+
+**DONE (both networks, all wiring verified on-chain):**
+- Deployed canonical Uniswap V2 (Factory + Router02, npm artifact bytecode, pair init hash = canonical 0x96e8ac...845f verified), WECX (WETH9 rename, 18 dec), MockUSDC + MockBTCb (MockERC20 placeholders pending real ICTT tokens). Addresses + blocks in AGENTS.md "DEX Deployment" table + contracts/deployments/dex/addresses.json.
+- feeToSetter = authority 0xE5104794...; protocol fee OFF. Pairs left for Farm to create + seed.
+- Deployed from the on-box ops key (cli-teleporter-deployer.pk = 0xA5B6ac...; installed foundry on the snowside box so the key never left it; kit at /home/ubuntu/dex-deploy + versioned in repo).
+- Response doc written: eCash Farm repo docs/HANDOFF-SNOWSIDE-RESPONSE.md (paste-ready JSON blocks + §2 answers). NOT committed to their repo (their call).
+- Corrected Farm's assumptions: native ECX = 18 decimals (not 8); explorer has no tx detail pages / no Blockscout API (gap now on build list); BIP-300 answered honestly (custodial MVP this week, trustless Phase 2+).
+
+**AWAITING FROM FARM:** federation treasury Snowside address (to transfer mock seed balances); testnet preflight go/no-go.
+
 ### Next steps (priority order)
 1. ~~ICM Messenger/Registry deploys on BOTH public L1s~~ **DONE Session 29 PM**
+1b. ~~DEX contracts for eCash Farm~~ **DONE Session 29 PM #3** — pending Farm's treasury address + preflight
+1c. **Federation go-live is now CRITICAL PATH** (it is Farm's ECX on-ramp; eCash fork ~21h away at writing)
 2. Federation pre-launch fixes + go-live (chain IDs already correct at index.ts:51-53 — verify against live chains)
 3. BIP-300/301 phase planning; ICM → USDC ICTT
 4. ~~Retire local signet~~ **CANCELLED — signet is permanent local infra** (Session 29 PM decision); the shared local 5-node network stays up permanently under `avalanche-local-network.service`. Optional cleanup: untrack the retired local mainnet chain (`XUW2TN...`) from the local network.

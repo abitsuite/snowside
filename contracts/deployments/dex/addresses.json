@@ -1,0 +1,31 @@
+{
+  "deployedAt": "2026-10-28",
+  "deployer": "0xA5B6ac71129e9E5904a5C021728dBaBA61454B54",
+  "feeToSetter": "0xE5104794FB44D45b0f821d77a685A17ee2E35b9C",
+  "pairInitCodeHash": "0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f",
+  "testnet": {
+    "chainId": 33160,
+    "rpcUrl": "https://rpc.snowside.network/testnet",
+    "WECX":   { "address": "0xD5E90470388661D6310070C310be99a8EB4234DD", "block": 22 },
+    "factory": { "address": "0xC628cfA673B2d2CE371078a1f3c6814d76C7574f", "block": 23 },
+    "router":  { "address": "0xA401757017E9c4b260071F736339081E1e86Ab1F", "block": 24 },
+    "MockUSDC": { "address": "0xcd30aB96E165194b98CB42e14D608040dfBa3df6", "block": 25, "initialSupply": "10000000 USDC (6 decimals)" },
+    "MockBTCb": { "address": "0x2a9b729f93F95206C1056e0B6021bE71d217A24D", "block": 26, "initialSupply": "100000 BTC.b (8 decimals)" }
+  },
+  "mainnet": {
+    "chainId": 32904,
+    "rpcUrl": "https://rpc.snowside.network/mainnet",
+    "WECX":   { "address": "0x91E65BfeE696723E85C34CFA553fc089661EaF04", "block": 8 },
+    "factory": { "address": "0xb691bbBB812cF480F0DB2F2086943C995cd19BCC", "block": 9 },
+    "router":  { "address": "0x8E80Bd138484b81B70921bC15032e3412B0607e8", "block": 10 },
+    "MockUSDC": { "address": "0x83C871a136d769Aa07aC349dde1326d179Bf20BA", "block": 11, "initialSupply": "10000000 USDC (6 decimals)" },
+    "MockBTCb": { "address": "0x5fA58C10e180BA6aF23a90Df2eB0a443fAa74AE3", "block": 12, "initialSupply": "100000 BTC.b (8 decimals)" }
+  },
+  "notes": [
+    "Factory + Router02 are the canonical @uniswap/v2-core@1.0.1 / @uniswap/v2-periphery@1.1.0-beta.0 builds (bytecode-identical to Ethereum mainnet).",
+    "WECX is WETH9 (Dapphub GPL) renamed to Wrapped ECX / WECX, 18 decimals, solc 0.5.17, optimizer off.",
+    "MockUSDC / MockBTCb are MockERC20 (owner-gated mint, owner = deployer ops key) — PLACEHOLDERS until real ICTT USDC / BTC.b land. On-chain name/symbol/decimals match the real assets for UI compatibility.",
+    "Factory feeTo unset (protocol fee OFF) — LPs earn full 30 bps. feeToSetter = Snowside authority 0xE5104794....",
+    "Pairs NOT pre-created — eCash Farm federation creates + seeds ECX/USDC and BTC.b/ECX."
+  ]
+}
