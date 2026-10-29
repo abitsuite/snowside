@@ -39,6 +39,7 @@ export default defineConfig({
             { label: 'Connect a Web3 Wallet', slug: 'guides/connect-wallet' },
             { label: 'Deploying Contracts', slug: 'guides/deploying-contracts' },
             { label: 'Bridging USDC', slug: 'guides/bridging-usdc' },
+            { label: 'Bridging ECX (eCash Peg)', slug: 'guides/bridging-ecx' },
           ],
         },
         {
