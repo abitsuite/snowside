@@ -21,6 +21,13 @@
 - Owed to Farm after authority-key actions: deposit/withdraw procedure doc + mainnet confirmation count.
 - **Slot-88 ruling (Project Lead, 2026-10-28):** the 1,001,200 ECX/chain pre-mine is a recognized liability; it will be collateralized 1:1 by REAL ECX when Snowside registers in sidechain slot 88 (post-eCash-mainnet-fork M1/M2). All post-genesis mints are 1:1-backed by observed L1 deposits by construction.
 
+**Secrets hygiene (Project Lead directive "save → use → FORGET", 2026-10-28):**
+- Backup copy of all three federation secrets (HD_MNEMONIC, MINTER_PRIVATE_KEY, FEDERATION_TOKEN) saved to **abitsuite-vm `~/.snowside/federation-secrets.env` (chmod 600)**. Canonical live copy remains the box `.env` (600).
+- **FEDERATION_TOKEN ROTATED** — the Session-15-era token value was committed to public git history (commit dbe8d198's HANDOFF diff) and pasted in chat; that value is now DEAD. New token set on Worker `snowside-api` + box `.env` + VM backup; container restarted; `federation_online: true` re-verified with the new token. Working tree grep-verified clean of all three secret values.
+- Repo working tree contains NO secret values (addresses/fingerprints only). Git history exposure limited to the old (now-dead) token.
+- **Key-rotation decision item extended:** MINTER_PRIVATE_KEY + HD_MNEMONIC were transmitted via chat (Project Lead's own message) — rotate before mainnet value flows if deemed necessary (minter key currently role-0/no powers; mnemonic wallet currently holds zero deposits).
+- **Authority key status:** Project Lead holds `0xE5104794…` in a platform-cli keystore (name "snowside", encrypted). The PRIVATE KEY has NOT been transmitted — agent verified the federation HD_MNEMONIC does NOT derive it (derives 0x205AD02c…). **STILL PENDING: authority key export (`platform-cli keys export`) → the 2× setEnabled txs + Farm 10k testnet ECX seed then execute immediately.**
+
 ## Session 29 (PM) — 2026-10-28: 🎉 SNOWSIDEMAINNET DEPLOYED TO AVALANCHE MAINNET — MAINNET LAUNCH COMPLETE
 
 **Project Lead funded the deployer key with 5 AVAX; full deployment executed in one run. Snowside's mainnet is LIVE.**
