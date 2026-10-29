@@ -2,22 +2,32 @@
  * Withdrawal transaction builder for Snowside Federation.
  *
  * Handles building, signing, and broadcasting L1 withdrawal transactions:
- *   - Bitcoin signet: P2WPKH (segwit) with SIGHASH_ALL
- *   - eCash (mainnet/testnet): P2PKH with SIGHASH_FORKID (BCH-style)
+ *   - ALL networks: P2WPKH (segwit) with SIGHASH_ALL (standard Bitcoin rules)
+ *   - eCash (mainnet/betanet): replay-protection nLockTime set per network
+ *     (mainnet 499999998, betanet 499999999) + non-final input sequences,
+ *     per github.com/ecash-com/fast-facts. Signet uses lockTime 0.
  *
  * Uses @scure/btc-signer for transaction construction.
  */
 
-import { Transaction, p2wpkh, p2pkh, NETWORK, TEST_NETWORK, SigHash } from '@scure/btc-signer';
+import { Transaction, p2wpkh, NETWORK, TEST_NETWORK, SigHash } from '@scure/btc-signer';
 import { hex } from '@scure/base';
 import { HDWallet } from './wallet.js';
 
 // Get @scure/btc-signer network object for address decoding
-// signet/testnet use TEST_NETWORK (bech32 prefix 'tb')
-// mainnet uses NETWORK (bech32 prefix 'bc')
+// signet uses TEST_NETWORK (bech32 prefix 'tb')
+// eCash mainnet + betanet use mainnet Bitcoin formats (bech32 prefix 'bc')
 function getBtcNetwork(network: string): typeof NETWORK {
-  return network === 'signet' || network === 'testnet' ? TEST_NETWORK : NETWORK;
+  return network === 'signet' ? TEST_NETWORK : NETWORK;
 }
+
+// eCash replay-protection locktime markers (fast-facts 03-replay-protection):
+// a tx stamped with the wrong network's value is non-final on that network.
+const REPLAY_LOCKTIME: Record<string, number> = {
+  mainnet: 499999998,
+  testnet: 499999999, // betanet
+  signet: 0, // Bitcoin signet: standard rules, no marker
+};
 
 export interface Utxo {
   txid: string;
@@ -46,13 +56,10 @@ export interface WithdrawalRequest {
   status: string;
 }
 
-// 1 ECX = 10^18 (18 decimals), 1 ECX = 100 satoshis on eCash L1
-// sats = ecx / 10^16
-// Network-specific conversion: 1 ECX pegged to 1 BTC (signet) or 100 sats (eCash L1)
-// signet (Bitcoin): 1 ECX = 1 BTC = 100,000,000 sats → divisor = 10^10
-// eCash (mainnet/testnet): 1 ECX = 100 sats → divisor = 10^16
-const ECX_TO_SATS_SIGNET = BigInt(10) ** BigInt(10);
-const ECX_TO_SATS_ECASH = BigInt(10) ** BigInt(16);
+// Peg rule (Project Lead law): ALL Snowside ECX is backed 1:1 by REAL ECX.
+// L1 ECX has 8 decimals (Bitcoin-style, 1 ECX = 10^8 sats); Snowside ECX has
+// 18 decimals → 1 ECX = 10^18 wei = 10^8 sats. Uniform divisor on all networks.
+const ECX_TO_SATS = BigInt(10) ** BigInt(10);
 
 /**
  * Convert ECX amount (18 decimals) to satoshis.
@@ -64,17 +71,14 @@ export function ecxToSats(
   if (!amountEcx) return 0;
   try {
     const str = String(amountEcx);
-    const isSignet = network === 'signet';
     if (str.includes('.')) {
       // Decimal ECX amount (e.g., "0.1337" ECX from UI)
       const ecxFloat = parseFloat(str);
-      const satsPerEcx = isSignet ? 100_000_000 : 100;
-      return Math.floor(ecxFloat * satsPerEcx);
+      return Math.floor(ecxFloat * 100_000_000);
     } else {
       // Wei integer string (e.g., "1337000000000000000" from federation)
       const ecx = BigInt(str);
-      const divisor = isSignet ? ECX_TO_SATS_SIGNET : ECX_TO_SATS_ECASH;
-      return Number(ecx / divisor);
+      return Number(ecx / ECX_TO_SATS);
     }
   } catch {
     return 0;
@@ -181,8 +185,6 @@ export async function buildSignAndBroadcastWithdrawal(
   wallet: HDWallet,
   changeAddress: string,
 ): Promise<string | null> {
-  const isSignet = network === 'signet';
-
   // Calculate withdrawal amount in satoshis
   const targetSats =
     withdrawal.amount_sats || ecxToSats(withdrawal.amount_ecx, withdrawal.network);
@@ -195,7 +197,7 @@ export async function buildSignAndBroadcastWithdrawal(
   const DUST_LIMIT = 546;
   if (targetSats < DUST_LIMIT) {
     console.error(
-      `[withdraw-tx] Amount ${targetSats} sats below dust limit (${DUST_LIMIT} sats). Minimum withdrawal is ${DUST_LIMIT / 100} ECX.`,
+      `[withdraw-tx] Amount ${targetSats} sats below dust limit (${DUST_LIMIT} sats). Minimum withdrawal is ${DUST_LIMIT / 100_000_000} ECX.`,
     );
     return null;
   }
@@ -236,8 +238,9 @@ export async function buildSignAndBroadcastWithdrawal(
   );
 
   try {
-    // Build transaction
-    const tx = new Transaction();
+    // Build transaction (eCash replay-protection locktime per network)
+    const lockTime = REPLAY_LOCKTIME[network] ?? 0;
+    const tx = new Transaction({ lockTime });
 
     // Add inputs
     for (const { utxo, deposit } of selected) {
@@ -249,32 +252,18 @@ export async function buildSignAndBroadcastWithdrawal(
         return null;
       }
 
-      if (isSignet) {
-        // P2WPKH (segwit): witnessUtxo with P2WPKH script
-        const script = p2wpkh(keyPair.publicKey).script;
-        tx.addInput({
-          txid: hex.decode(utxo.txid),
-          index: utxo.vout,
-          witnessUtxo: {
-            script,
-            amount: BigInt(utxo.value),
-          },
-          sequence: 0xfffffffd,
-        });
-      } else {
-        // P2PKH (eCash): use witnessUtxo to force BIP-143 sighash
-        // The script is the P2PKH scriptPubKey
-        const script = p2pkh(keyPair.publicKey).script;
-        tx.addInput({
-          txid: hex.decode(utxo.txid),
-          index: utxo.vout,
-          witnessUtxo: {
-            script,
-            amount: BigInt(utxo.value),
-          },
-          sequence: 0xfffffffd,
-        });
-      }
+      // P2WPKH (segwit) on ALL networks: witnessUtxo with P2WPKH script.
+      // sequence 0xfffffffd = non-final (required by eCash replay-protection rule).
+      const script = p2wpkh(keyPair.publicKey).script;
+      tx.addInput({
+        txid: hex.decode(utxo.txid),
+        index: utxo.vout,
+        witnessUtxo: {
+          script,
+          amount: BigInt(utxo.value),
+        },
+        sequence: 0xfffffffd,
+      });
     }
 
     // Add output to user's withdrawal address
@@ -287,10 +276,9 @@ export async function buildSignAndBroadcastWithdrawal(
       tx.addOutputAddress(cleanChangeAddr, BigInt(changeSats), getBtcNetwork(network));
     }
 
-    // Determine correct sighash type for the network
-    // Bitcoin (signet): SIGHASH_ALL (0x01)
-    // eCash: SIGHASH_ALL | SIGHASH_FORKID (0x41)
-    const sighashType = network === 'signet' ? SigHash.ALL : (SigHash.ALL | 0x40) as SigHash;
+    // Sighash: standard SIGHASH_ALL (0x01) on ALL networks.
+    // The new eCash is a Bitcoin Core fork — no BCH-style SIGHASH_FORKID.
+    const sighashType = SigHash.ALL;
 
     // Sign each input with the correct derived private key
     for (let i = 0; i < selected.length; i++) {

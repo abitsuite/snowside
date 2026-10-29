@@ -2,13 +2,16 @@
  * HD Wallet for deposit address generation.
  *
  * Derives unique deposit addresses per network:
- *   eCash (mainnet/testnet): m/44'/899'/0'/0/{index} → ecash:qz... (CashAddr P2PKH)
- *   Bitcoin signet:          m/44'/1'/0'/0/{index}  → tb1q...      (Bech32 P2WPKH)
+ *   eCash (mainnet/betanet): m/84'/0'/0'/0/{index} → bc1q... (Bech32 P2WPKH, Bitcoin formats, coin type 0')
+ *   Bitcoin signet:          m/44'/1'/0'/0/{index} → tb1q... (Bech32 P2WPKH)
+ *
+ * NOTE: eCash (ecash.com, the L2L Bitcoin hard-fork) uses standard Bitcoin
+ * address/key formats — NOT CashAddr. Betanet is a mainnet-fork rehearsal, so
+ * mainnet and betanet share derivation (same addresses on both networks).
  */
 
 import { HDKey } from '@scure/bip32';
 import { mnemonicToSeedSync } from '@scure/bip39';
-import { encodeCashAddress } from 'ecashaddrjs';
 import { bech32 } from '@scure/base';
 import { createHash } from 'crypto';
 
@@ -54,8 +57,8 @@ function encodeSegwitAddress(
 
 /** HD derivation paths per network */
 const DERIVATION_PATHS: Record<string, string> = {
-  mainnet: "m/44'/899'/0'/0/", // eCash mainnet (coin type 899)
-  testnet: "m/44'/899'/0'/0/", // eCash drynet4 (same coin type)
+  mainnet: "m/84'/0'/0'/0/", // eCash mainnet (Bitcoin coin type 0, BIP84 P2WPKH)
+  testnet: "m/84'/0'/0'/0/", // eCash betanet (mainnet-fork formats; same addresses as mainnet)
   signet: "m/44'/1'/0'/0/", // Bitcoin signet (coin type 1 = testnet)
 };
 
@@ -88,8 +91,8 @@ export class HDWallet {
       return encodeSegwitAddress('tb', 0, new Uint8Array(pubKeyHash));
     }
 
-    // eCash: CashAddr P2PKH with 'ecash' prefix
-    return encodeCashAddress('ecash', 'p2pkh', new Uint8Array(pubKeyHash));
+    // eCash (mainnet/betanet): standard Bitcoin P2WPKH bech32 with 'bc' HRP
+    return encodeSegwitAddress('bc', 0, new Uint8Array(pubKeyHash));
   }
 
   /**

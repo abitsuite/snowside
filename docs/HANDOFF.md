@@ -1,5 +1,17 @@
 # Snowside Handoff — 2026-10-28 (Session 29 — SNOWSIDE MAINNET LAUNCHED: SnowsideMainnet LIVE on Avalanche Mainnet + SnowsideTestnet LIVE on Fuji; both public RPCs cut over)
 
+## Session 29 (PM #2) — 2026-10-28: Federation go-live — code complete, 2 user actions pending
+
+**Supply audit (Project Lead question — answered, on-chain verified):** full-history scan of both public L1s (mainnet blocks 0–13, testnet 0–27) → **ZERO `mintNativeCoin` calls ever; ZERO ECX minted post-genesis**. Deployed genesis supply per chain = **1,001,200 ECX** (authority `0xE5104794…` 1,000,000 + ICM deployer `0x18cD02…` 600 + ops key `0xA5B6ac…` 600 — CLI-funded at Session 28 deploy). The 10 ECX/chain given to the federation minter key was a **transfer** from the ops key's existing 600. **⚠️ POLICY DECISION PENDING (Project Lead):** the 1,001,200 ECX per-chain pre-mine is currently unbacked by real ECX; options: (a) designate as to-be-backed treasury, (b) burn unbacked balance, (c) codify genesis-supply carve-out so the 1:1 BIP-300 backing rule applies to all post-genesis mints.
+
+**Network correction (drynet4 RETIRED):** eCash drynet1–4 + alphanet retired; **Betanet** is the testnet (forked @ BTC block 967,680); **eCash mainnet forks at BTC block 973,728 (~Oct 29 15:00 UTC)**. Facts source: `github.com/ecash-com/fast-facts`. Federation patched: wallet.ts → Bitcoin-format P2WPKH (mainnet+betanet m/84'/0'/0'/0/{i} → bc1q; signet unchanged tb1q); withdraw.ts → unified SIGHASH_ALL (no FORKID — new eCash is a Bitcoin Core fork) + replay locktime (mainnet 499999998 / betanet 499999999 / signet 0); esplora defaults esplora.ecash.ninja (live, 200) + esplora.beta.ecash.ninja (live, 200); **peg rule: all Snowside ECX backed 1:1 by real ECX, uniform 10^10 sats→wei multiplier (L1 ECX = 8 decimals)**. Farm response doc updated with the corrected testnet procedure (left uncommitted in that repo).
+
+**Federation state:** container `snowside-federation` RUNNING on snowside box (rebuilt image, all 3 networks configured, correct esploras, 10s poll). New secrets in on-box `.env` (600): HD_MNEMONIC (new), MINTER_PRIVATE_KEY (new key `0xE2a708982EC84237285dc9c833b0bC203D8569c5`, funded 10 ECX/chain from ops key), FEDERATION_TOKEN (new).
+
+**⚠️ TWO PENDING USER ACTIONS (nothing else blocks go-live):**
+1. **CF Worker secret:** set `FEDERATION_TOKEN = 2d9bebb6ffebbe17e5b739d41e15e6817e7aa580d6802b3aed5fd3041deaa635` on Worker `snowside-api` in the aBitSuite CF account (dash → Workers → snowside-api → Settings → Variables and Secrets → type Secret, or `wrangler login` as hello@abitsuite.com + `wrangler secret put FEDERATION_TOKEN` from packages/api). NOTE: abitsuite-vm's wrangler OAuth expired 2026-03-27 and its refresh token is revoked — credentials there are dead. Until set, federation gets 401 (status shows `federation_online: false`).
+2. **Authority txs (authority key 0xE5104794…):** call NativeMinter (`0x0200000000000000000000000000000000000001`) `setEnabled(0xE2a708982EC84237285dc9c833b0bC203D8569c5)` on **mainnet AND testnet** — grants mint-only role (role 1) to the federation minter key; admin stays with authority. Without it, every federation mint reverts.
+
 ## Session 29 (PM) — 2026-10-28: 🎉 SNOWSIDEMAINNET DEPLOYED TO AVALANCHE MAINNET — MAINNET LAUNCH COMPLETE
 
 **Project Lead funded the deployer key with 5 AVAX; full deployment executed in one run. Snowside's mainnet is LIVE.**

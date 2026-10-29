@@ -39,9 +39,9 @@ const RPC_URLS: Record<string, string> = {
 
 const ESPLORA_URLS: Record<string, string> = {
   mainnet:
-    process.env.MAINNET_ESPLORA || '',
+    process.env.MAINNET_ESPLORA || 'https://esplora.ecash.ninja',
   testnet:
-    process.env.TESTNET_ESPLORA || 'https://esplora.drynet4.drivechain.dev',
+    process.env.TESTNET_ESPLORA || 'https://esplora.beta.ecash.ninja',
   signet:
     process.env.SIGNET_ESPLORA || 'https://esplora.signet.drivechain.info',
 };
@@ -53,16 +53,13 @@ const CHAIN_IDS: Record<string, number> = {
   signet: 33416,
 };
 
-// 1 ECX = 100 satoshis on eCash L1; 1 ECX = 10^18 (18 decimals)
-// Mint amount = satoshis * 10^16 to convert sats → ECX with 18 decimals
-// Network-specific satoshi→ECX conversion
-// signet (Bitcoin): 1 ECX = 1 BTC = 100,000,000 sats → 1 sat = 10^10 wei
-// eCash: 1 ECX = 100 sats → 1 sat = 10^16 wei
-const SATS_TO_ECX_SIGNET = BigInt(10) ** BigInt(10);
-const SATS_TO_ECX_ECASH = BigInt(10) ** BigInt(16);
+// Peg rule (Project Lead law): ALL Snowside ECX is backed 1:1 by REAL ECX.
+// L1 ECX has 8 decimals (Bitcoin-style: 1 ECX = 10^8 sats); Snowside ECX has
+// 18 decimals (1 ECX = 10^18 wei) → mint amount = sats * 10^10 on all networks.
+const SATS_TO_ECX = BigInt(10) ** BigInt(10);
 
 function satsToEcxMultiplier(network: string): bigint {
-  return network === 'signet' ? SATS_TO_ECX_SIGNET : SATS_TO_ECX_ECASH;
+  return SATS_TO_ECX;
 }
 
 // ── Types ───────────────────────────────────────────────────────
@@ -212,7 +209,7 @@ async function checkAddressForDeposits(
   const esploraUrl = ESPLORA_URLS[network];
   if (!esploraUrl) return null;
 
-  // Strip ecash: prefix for Esplora API
+  // Strip legacy prefix if present (defensive; eCash uses plain Bitcoin formats)
   const cleanAddr = address.replace('ecash:', '').replace('bitcoincash:', '');
 
   try {
