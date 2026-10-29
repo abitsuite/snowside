@@ -198,9 +198,40 @@ function getWallet(): HDWallet {
 
 // ── Esplora ─────────────────────────────────────────────────────
 
+// Minimum L1 confirmations before a deposit becomes mintable (per network).
+// Override via CONFIRMATIONS_MAINNET / CONFIRMATIONS_TESTNET / CONFIRMATIONS_SIGNET.
+const MIN_CONFIRMATIONS: Record<string, number> = {
+  mainnet: Number(process.env.CONFIRMATIONS_MAINNET || 3),
+  testnet: Number(process.env.CONFIRMATIONS_TESTNET || 1),
+  signet: Number(process.env.CONFIRMATIONS_SIGNET || 1),
+};
+
+// eCash Betanet → Mainnet fork height (shared BTC-chain history ends here).
+// Mainnet deposits are NOT processable before the fork: pre-fork the esplora
+// serves the shared BTC chain and a mainnet deposit address is a valid BTC
+// address — minting against pre-fork UTXOs would accept BTC, not ECX.
+const ECASH_MAINNET_FORK_HEIGHT = Number(
+  process.env.ECASH_MAINNET_FORK_HEIGHT || 973728,
+);
+
+/**
+ * Fetch the current chain tip height from Esplora. Returns 0 on error.
+ */
+async function getTipHeight(esploraUrl: string): Promise<number> {
+  try {
+    const resp = await fetch(`${esploraUrl}/blocks/tip/height`);
+    if (!resp.ok) return 0;
+    return Number(await resp.text()) || 0;
+  } catch {
+    return 0;
+  }
+}
+
 /**
  * Check if a deposit address has received any UTXOs via Esplora.
  * Returns the total received amount (in satoshis) and tx hash, or null.
+ * Only UTXOs with >= MIN_CONFIRMATIONS[network] confirmations count.
+ * Mainnet deposits return null until the eCash fork height is reached.
  */
 async function checkAddressForDeposits(
   network: string,
@@ -213,19 +244,34 @@ async function checkAddressForDeposits(
   const cleanAddr = address.replace('ecash:', '').replace('bitcoincash:', '');
 
   try {
+    const tip = await getTipHeight(esploraUrl);
+    if (tip === 0) return null; // esplora unreachable — do nothing this cycle
+
+    // Fork gate: pre-fork "mainnet" UTXOs are BTC-chain UTXOs, not ECX.
+    if (network === 'mainnet' && tip < ECASH_MAINNET_FORK_HEIGHT) return null;
+
     const resp = await fetch(`${esploraUrl}/address/${cleanAddr}/utxo`);
     if (!resp.ok) return null;
     const utxos = (await resp.json()) as Array<{
       txid: string;
       value: number;
+      status?: { confirmed?: boolean; block_height?: number };
     }>;
     if (!Array.isArray(utxos) || utxos.length === 0) return null;
 
-    const totalSats = utxos.reduce(
+    const minConfs = MIN_CONFIRMATIONS[network] ?? 1;
+    const confirmed = utxos.filter((utxo) => {
+      const st = utxo.status || {};
+      if (!st.confirmed || typeof st.block_height !== 'number') return false;
+      return tip - st.block_height + 1 >= minConfs;
+    });
+    if (confirmed.length === 0) return null;
+
+    const totalSats = confirmed.reduce(
       (sum: number, utxo: any) => sum + (utxo.value || 0),
       0,
     );
-    const txHash = utxos[0].txid || '';
+    const txHash = confirmed[0].txid || '';
 
     return { amount: totalSats, txHash };
   } catch (err) {
